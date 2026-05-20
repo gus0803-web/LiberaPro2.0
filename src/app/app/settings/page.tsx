@@ -4,18 +4,33 @@ import { useTheme } from '@/components/ThemeProvider';
 import { Settings, Globe, Palette } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { theme, toggleTheme, language, setLanguage } = useTheme();
+  const { theme, setTheme, language, setLanguage } = useTheme();
   
   const isEs = language === 'es';
   const t = {
     title: isEs ? 'Configuración' : 'Settings',
     appearance: isEs ? 'Apariencia' : 'Appearance',
     language: isEs ? 'Idioma' : 'Language',
-    themeDawn: isEs ? 'Amanecer (Claro)' : 'Dawn (Light)',
-    themeFestive: isEs ? 'Festivo (Tradicional)' : 'Festive (Traditional)',
+    themes: {
+      dawn: isEs ? 'Amanecer (Claro)' : 'Dawn (Light)',
+      festive: isEs ? 'Festivo (Tradicional)' : 'Festive (Traditional)',
+      muertos: isEs ? 'Día de Muertos' : 'Day of the Dead',
+      playa: isEs ? 'Playa (Relajante)' : 'Beach (Relaxing)',
+      space: isEs ? 'Espacio (Oscuro)' : 'Space (Dark)',
+      mitierra: isEs ? 'Mi Tierra (Paisaje)' : 'My Land (Landscape)'
+    },
     langEs: 'Español',
     langEn: 'English',
   };
+
+  const themeOptions = [
+    { id: 'dawn', label: t.themes.dawn },
+    { id: 'festive', label: t.themes.festive },
+    { id: 'muertos', label: t.themes.muertos },
+    { id: 'playa', label: t.themes.playa },
+    { id: 'space', label: t.themes.space },
+    { id: 'mitierra', label: t.themes.mitierra },
+  ] as const;
 
   return (
     <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -56,21 +71,17 @@ export default function SettingsPage() {
             <Palette className="w-6 h-6 text-pink-500" />
             <h2 className="text-xl font-bold text-slate-800">{t.appearance}</h2>
           </div>
-          <div className="flex flex-col space-y-4">
-            <button 
-              onClick={toggleTheme}
-              className={`px-6 py-3 rounded-xl border font-bold transition-all text-left flex justify-between items-center ${theme === 'dawn' ? 'bg-gradient-to-r from-orange-400 to-pink-500 text-white border-pink-600 shadow-md' : 'bg-white/50 text-slate-700 border-white/60 hover:bg-white/80'}`}
-            >
-              <span>{t.themeDawn}</span>
-              {theme === 'dawn' && <span>✨</span>}
-            </button>
-            <button 
-              onClick={toggleTheme}
-              className={`px-6 py-3 rounded-xl border font-bold transition-all text-left flex justify-between items-center ${theme === 'festive' ? 'bg-gradient-to-r from-orange-400 to-pink-500 text-white border-pink-600 shadow-md' : 'bg-white/50 text-slate-700 border-white/60 hover:bg-white/80'}`}
-            >
-              <span>{t.themeFestive}</span>
-              {theme === 'festive' && <span>✨</span>}
-            </button>
+          <div className="flex flex-col space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {themeOptions.map((option) => (
+              <button 
+                key={option.id}
+                onClick={() => setTheme(option.id)}
+                className={`px-6 py-3 rounded-xl border font-bold transition-all text-left flex justify-between items-center ${theme === option.id ? 'bg-gradient-to-r from-orange-400 to-pink-500 text-white border-pink-600 shadow-md' : 'bg-white/50 text-slate-700 border-white/60 hover:bg-white/80'}`}
+              >
+                <span>{option.label}</span>
+                {theme === option.id && <span>✨</span>}
+              </button>
+            ))}
           </div>
         </div>
 

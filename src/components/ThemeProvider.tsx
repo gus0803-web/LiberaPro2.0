@@ -2,13 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Theme = 'dawn' | 'festive';
+type Theme = 'dawn' | 'festive' | 'muertos' | 'playa' | 'space' | 'mitierra';
 type Language = 'es' | 'en';
 
 interface AppContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
   language: Language;
   setLanguage: (lang: Language) => void;
 }
@@ -22,7 +21,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Load state from localStorage on mount
     const savedTheme = localStorage.getItem('liberapro_theme') as Theme;
-    if (savedTheme && (savedTheme === 'dawn' || savedTheme === 'festive')) {
+    const validThemes = ['dawn', 'festive', 'muertos', 'playa', 'space', 'mitierra'];
+    if (savedTheme && validThemes.includes(savedTheme)) {
       setThemeState(savedTheme);
     }
 
@@ -37,17 +37,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('liberapro_theme', newTheme);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dawn' ? 'festive' : 'dawn');
-  };
-
   const setLanguage = (newLang: Language) => {
     setLanguageState(newLang);
     localStorage.setItem('liberapro_language', newLang);
   };
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, toggleTheme, language, setLanguage }}>
+    <AppContext.Provider value={{ theme, setTheme, language, setLanguage }}>
       <div 
         className={`min-h-screen w-full transition-all duration-1000 bg-cover bg-center bg-no-repeat bg-fixed`}
         style={{

@@ -25,9 +25,15 @@ export default async function AdminDashboardPage() {
   const { supabase, user } = await verifyAdmin();
 
   // Fetch actual total users from Supabase for the global counter
-  const { count: totalUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true });
+  let totalUsers: number | null = null;
+  try {
+    const { count } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+    totalUsers = count;
+  } catch (error) {
+    console.error('Failed to fetch user count, falling back to mock data', error);
+  }
 
   const displayUsers = totalUsers ? totalUsers : 12845901; // fallback to mockup number if db empty
 

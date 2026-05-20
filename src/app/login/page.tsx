@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,21 +41,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 flex items-center justify-center p-4">
-      {/* Decorative background blobs */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-pink-400/20 rounded-full blur-3xl"></div>
-      </div>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/login-bg.png')" }}
+    >
+      {/* Decorative background overlay */}
+      <div className="absolute top-0 left-0 w-full h-full bg-slate-900/30 -z-10 pointer-events-none"></div>
 
       <div className="w-full max-w-md">
         <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-white/80 p-10 flex flex-col items-center">
-          
           {/* LiberaPro Logo */}
-          <div className="w-20 h-20 bg-gradient-to-tr from-orange-400 to-pink-500 rounded-3xl flex items-center justify-center shadow-lg shadow-orange-500/20 mb-6">
-            <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
+          <div className="mb-6 relative w-20 h-20 shadow-lg shadow-green-900/20 rounded-3xl overflow-hidden">
+            <Image src="/login-logo.png" alt="LiberaPro Logo" fill className="object-cover" />
           </div>
 
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">LiberaPro</h1>
@@ -83,9 +82,9 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-bold text-slate-700">Password</label>
-                <a href="#" className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                <Link href="/forgot-password" className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
                   Forgot Password?
-                </a>
+                </Link>
               </div>
               <input
                 type="password"
@@ -108,9 +107,9 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-200/50 w-full text-center">
-            <a href="#" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">
+            <Link href="/join-beta" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">
               Join the Beta Test →
-            </a>
+            </Link>
           </div>
 
         </div>
