@@ -50,6 +50,8 @@ export default async function AdminDashboardPage() {
     );
   }
 
+  if (!supabase) return null;
+
   // Fetch actual total users from Supabase for the global counter
   let totalUsers: number | null = null;
   try {
