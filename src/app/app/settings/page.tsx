@@ -30,7 +30,7 @@ export default async function SettingsPage() {
     const deviceId = formData.get('deviceId') as string;
     if (!deviceId) return;
     
-    const supabaseAction = createClient();
+    const supabaseAction = await createClient();
     const { data: { user: actionUser } } = await supabaseAction.auth.getUser();
     if (!actionUser) return;
 
