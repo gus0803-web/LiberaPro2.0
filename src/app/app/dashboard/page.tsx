@@ -4,14 +4,14 @@ import { useTheme } from '@/components/ThemeProvider';
 import { Calendar, Clock, CheckCircle2, Circle, MoreHorizontal, AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { theme, toggleTheme, language } = useTheme();
+  const { theme, language } = useTheme();
 
   const isEs = language === 'es';
 
   const t = {
     greeting: isEs ? '¡Buenos días, Profesora Sarah Davies!' : 'Good morning, Mrs. Sarah Davies!',
     time: isEs ? '(5:01 AM - 11:30 AM)' : '(5:01 AM - 11:30 AM)',
-    toggleFestive: isEs ? '✨ Cambiar Tema Festivo' : '✨ Toggle Festive Theme',
+    time: isEs ? '(5:01 AM - 11:30 AM)' : '(5:01 AM - 11:30 AM)',
     newPlan: isEs ? 'Nueva Planeación' : 'New Plan',
     viewAgenda: isEs ? 'Ver Agenda' : 'View Agenda',
     date: isEs ? 'Jueves, 26 de Octubre, 2023' : 'Thursday, October 26, 2023',
@@ -55,12 +55,6 @@ export default function DashboardPage() {
         </div>
         
         <div className="flex items-center space-x-3">
-          <button 
-            onClick={toggleTheme}
-            className="px-4 py-2 bg-gradient-to-r from-orange-400 to-pink-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center space-x-2"
-          >
-            <span>{t.toggleFestive}</span>
-          </button>
           <button className="hidden md:flex px-4 py-2 bg-white/60 border border-white/80 text-slate-800 font-bold rounded-xl shadow-sm hover:bg-white/80 transition-all text-sm items-center space-x-2">
             <span className="text-lg">+</span>
             <span>{t.newPlan}</span>
