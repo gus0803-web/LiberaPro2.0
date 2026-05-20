@@ -1,111 +1,227 @@
 'use client';
 import React, { useState } from 'react';
-import { PlanificarIcon } from '@/components/icons/NeoAztecIcons';
-
-// Mock data for the daily checklist
-const dailyPlan = [
-  { id: 1, time: '08:00 AM', title: 'Actividad Detonadora: Lluvia de Ideas', description: 'Preguntar a los alumnos qué saben sobre el ciclo del agua.', completed: true, type: 'inicio' },
-  { id: 2, time: '09:00 AM', title: 'Desarrollo: Maqueta con materiales reciclados', description: 'Usar botellas PET (Eco-Ally) para simular la evaporación.', completed: false, type: 'desarrollo' },
-  { id: 3, time: '11:30 AM', title: 'Pausa Activa', description: 'Ejercicio de estiramiento de 5 minutos.', completed: false, type: 'pausa' },
-  { id: 4, time: '12:00 PM', title: 'Cierre: Reflexión Grupal', description: 'Los alumnos escriben 3 cosas que aprendieron en su cuaderno.', completed: false, type: 'cierre' },
-];
+import { useTheme } from '@/components/ThemeProvider';
+import { Calendar, Clock, CheckCircle2, Circle, MoreHorizontal, Settings, Users, BookOpen, AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [tasks, setTasks] = useState(dailyPlan);
-
-  const toggleTask = (id: number) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-  };
-
-  const progress = Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100);
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* Cabecera del Dashboard */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold text-white tracking-tight drop-shadow-md">
-            Buenas tardes, Maestro.
-          </h2>
-          <p className="text-sm text-gray-200 font-medium max-w-sm leading-relaxed drop-shadow">
-            Tu planeación del día está lista. Llevas un <span className="font-bold text-turquoise-neon">{progress}%</span> de progreso.
-          </p>
+      {/* Header Area */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Good morning, Mrs. Sarah Davies!
+          </h1>
+          <span className="text-xl">🌅</span>
+          <span className="text-sm font-semibold text-slate-500 bg-white/50 px-3 py-1 rounded-full border border-white/60">
+            (5:01 AM - 11:30 AM)
+          </span>
         </div>
         
-        {/* Badge de usuario */}
-        <div className="flex items-center space-x-3 px-4 py-2 bg-black/20 backdrop-blur-md border border-white/20 rounded-xl shadow-glass">
-          <div className="w-8 h-8 rounded-lg bg-gold-pale/20 border border-gold-pale/50 flex items-center justify-center">
-            <svg className="w-4 h-4 text-gold-pale" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2l3 6 6 .5-4.5 4 1.5 6-6-3.5L6 18.5l1.5-6-4.5-4 6-.5z" /></svg>
-          </div>
-          <span className="text-sm font-semibold text-white">Nahui Ollin</span>
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={toggleTheme}
+            className="px-4 py-2 bg-gradient-to-r from-orange-400 to-pink-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm flex items-center space-x-2"
+          >
+            <span>✨ Toggle Festive Theme</span>
+          </button>
+          <button className="px-4 py-2 bg-white/60 border border-white/80 text-slate-800 font-bold rounded-xl shadow-sm hover:bg-white/80 transition-all text-sm flex items-center space-x-2">
+            <span className="text-lg">+</span>
+            <span>New Plan</span>
+          </button>
+          <button className="px-4 py-2 bg-white/60 border border-white/80 text-slate-800 font-bold rounded-xl shadow-sm hover:bg-white/80 transition-all text-sm flex items-center space-x-2">
+            <Calendar className="w-4 h-4" />
+            <span>View Agenda</span>
+          </button>
         </div>
       </div>
 
-      {/* Planeador Interactivo (Checklist Diario) */}
-      <section className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-2xl font-bold text-white flex items-center">
-            <PlanificarIcon className="w-6 h-6 mr-3 text-turquoise-neon" />
-            Checklist Diario
-          </h3>
-          <div className="px-4 py-1.5 rounded-full bg-turquoise-neon/20 border border-turquoise-neon/40 text-turquoise-neon text-sm font-semibold">
-            Proyecto: El Ciclo del Agua
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Calendar & Reminders */}
+        <div className="space-y-6">
+          {/* Calendar Widget */}
+          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-slate-800 flex items-center space-x-2">
+                <Calendar className="w-5 h-5 text-blue-500" />
+                <span>Thursday, October 26, 2023</span>
+              </h2>
+              <div className="flex space-x-1">
+                <button className="p-1.5 hover:bg-white rounded-lg transition-colors"><Calendar className="w-4 h-4 text-slate-500" /></button>
+                <button className="p-1.5 hover:bg-white rounded-lg transition-colors"><Clock className="w-4 h-4 text-slate-500" /></button>
+              </div>
+            </div>
+            
+            {/* Fake Calendar Grid */}
+            <div className="bg-white/40 rounded-2xl p-4 border border-white/50">
+              <div className="flex justify-between items-center mb-4 px-2">
+                <button className="text-slate-400 hover:text-slate-800">&lt;</button>
+                <span className="font-bold text-slate-800">October</span>
+                <button className="text-slate-400 hover:text-slate-800">&gt;</button>
+              </div>
+              <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-500 mb-2">
+                <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+              </div>
+              <div className="grid grid-cols-7 gap-1 text-center text-sm font-medium text-slate-700">
+                <div className="py-1"></div><div className="py-1"></div><div className="py-1">1</div><div className="py-1">2</div><div className="py-1">3</div><div className="py-1">4</div><div className="py-1">5</div>
+                <div className="py-1">6</div><div className="py-1">7</div><div className="py-1">8</div><div className="py-1">9</div><div className="py-1">10</div><div className="py-1">11</div><div className="py-1">12</div>
+                <div className="py-1">13</div><div className="py-1">14</div><div className="py-1">15</div><div className="py-1">16</div><div className="py-1">17</div><div className="py-1">18</div><div className="py-1">19</div>
+                <div className="py-1">20</div><div className="py-1">21</div><div className="py-1">22</div><div className="py-1">23</div><div className="py-1">24</div><div className="py-1">25</div>
+                <div className="py-1 bg-blue-500 text-white rounded-lg shadow-sm">26</div>
+                <div className="py-1">27</div><div className="py-1">28</div><div className="py-1">29</div><div className="py-1">30</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reminders */}
+          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-slate-800 text-lg">Reminders</h3>
+              <Bell className="w-5 h-5 text-slate-400" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-medium text-slate-700">Grade Exams 7B</span>
+                <span className="font-bold text-slate-900 bg-white/50 px-2 py-1 rounded-md">by 3 PM</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-medium text-slate-700">Parent Meeting</span>
+                <span className="font-bold text-slate-900 bg-white/50 px-2 py-1 rounded-md">10:15 AM</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-medium text-slate-700">Submit Attendance</span>
+                <span className="font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-md">Now</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          {tasks.map((task) => (
-            <div 
-              key={task.id} 
-              onClick={() => toggleTask(task.id)}
-              className={`group flex items-start space-x-4 p-5 rounded-2xl border transition-all cursor-pointer ${
-                task.completed 
-                  ? 'bg-turquoise-neon/5 border-turquoise-neon/30 opacity-70' 
-                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
-              }`}
-            >
-              {/* Checkbox custom */}
-              <div className={`mt-1 w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center transition-all ${
-                task.completed 
-                  ? 'bg-turquoise-neon text-black' 
-                  : 'border-2 border-gray-400 group-hover:border-turquoise-neon'
-              }`}>
-                {task.completed && (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-1">
-                  <span className="text-xs font-bold text-gold-pale">{task.time}</span>
-                  <h4 className={`text-lg font-semibold transition-colors ${task.completed ? 'text-gray-400 line-through' : 'text-white'}`}>
-                    {task.title}
-                  </h4>
-                </div>
-                <p className={`text-sm ${task.completed ? 'text-gray-500' : 'text-gray-300'}`}>
-                  {task.description}
-                </p>
-              </div>
-              
-              {/* Badge type */}
-              <div className="hidden md:block">
-                <span className={`text-xs px-2 py-1 rounded uppercase tracking-wider font-bold ${
-                  task.type === 'inicio' ? 'bg-blue-500/20 text-blue-300' :
-                  task.type === 'desarrollo' ? 'bg-purple-500/20 text-purple-300' :
-                  task.type === 'cierre' ? 'bg-green-500/20 text-green-300' :
-                  'bg-gray-500/20 text-gray-300'
-                }`}>
-                  {task.type}
-                </span>
+        {/* Middle Column: Daily Agenda */}
+        <div className="lg:col-span-1">
+          <div className="space-y-3">
+            {/* Agenda Items */}
+            <div className="flex items-start space-x-4">
+              <div className="w-16 text-right text-sm font-bold text-slate-500 pt-3">8:00 AM</div>
+              <div className="flex-1 bg-blue-50 border border-blue-100 rounded-2xl p-4 shadow-sm text-blue-900 font-medium">
+                Prep
               </div>
             </div>
-          ))}
+            <div className="flex items-start space-x-4">
+              <div className="w-16 text-right text-sm font-bold text-slate-500 pt-3">8:30 AM</div>
+              <div className="flex-1 bg-sky-50 border border-sky-100 rounded-2xl p-4 shadow-sm text-sky-900 font-medium">
+                Homeroom
+              </div>
+            </div>
+            <div className="flex items-start space-x-4">
+              <div className="w-16 text-right text-sm font-bold text-slate-500 pt-3">9:00 AM</div>
+              <div className="flex-1 bg-blue-100 border border-blue-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                <h4 className="font-bold text-blue-900">History 7B</h4>
+                <p className="text-sm text-blue-800 mt-1">Topic: Medieval Europe</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-4">
+              <div className="w-16 text-right text-sm font-bold text-slate-500 pt-3">10:00 AM</div>
+              <div className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm text-slate-700 font-medium">
+                Recess/Prep
+              </div>
+            </div>
+            <div className="flex items-start space-x-4">
+              <div className="w-16 text-right text-sm font-bold text-slate-500 pt-3">10:30 AM</div>
+              <div className="flex-1 bg-amber-50 border border-amber-100 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+                <h4 className="font-bold text-amber-900">English 8A</h4>
+                <p className="text-sm text-amber-800 mt-1">Theme: Creative Writing</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-4">
+              <div className="w-16 text-right text-sm font-bold text-slate-500 pt-3">11:15 AM</div>
+              <div className="flex-1 bg-orange-50 border border-orange-100 rounded-2xl p-4 shadow-sm text-orange-900 font-medium">
+                Staff Meeting
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
 
+        {/* Right Column: Checklist & Stats */}
+        <div className="space-y-6">
+          {/* Lesson Plan Checklist */}
+          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm h-[400px]">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-slate-800 text-xl">Lesson Plan Checklist</h3>
+              <MoreHorizontal className="w-5 h-5 text-slate-400 cursor-pointer hover:text-slate-600" />
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Today's Lesson Plan:</p>
+              <p className="text-lg font-bold text-slate-900">History 7B (9:00 AM)</p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                  <span className="font-medium text-slate-500 line-through">Review Homework</span>
+                </div>
+                <span className="text-sm font-bold text-slate-400">(5m)</span>
+              </div>
+              <div className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                  <span className="font-medium text-slate-500 line-through">Intro: Medieval Europe</span>
+                </div>
+                <span className="text-sm font-bold text-slate-400">(15m)</span>
+              </div>
+              <div className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <Circle className="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors" />
+                  <span className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Group Activity: Manor Life</span>
+                </div>
+                <span className="text-sm font-bold text-slate-500">(25m)</span>
+              </div>
+              <div className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <Circle className="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors" />
+                  <span className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Key Terms Discussion</span>
+                </div>
+                <span className="text-sm font-bold text-slate-500">(10m)</span>
+              </div>
+              <div className="flex items-center justify-between group cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <Circle className="w-5 h-5 text-slate-300 group-hover:text-blue-400 transition-colors" />
+                  <span className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Assessment: Map Quiz</span>
+                </div>
+                <span className="text-sm font-bold text-slate-500">(5m)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats row */}
+          <div className="grid grid-cols-2 gap-4">
+             <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl p-4 shadow-sm flex flex-col justify-center">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Attendance</p>
+                <div className="flex items-end space-x-2">
+                  <span className="text-3xl font-black text-slate-900">95%</span>
+                  <span className="text-xs font-bold text-green-500 mb-1">+2%</span>
+                </div>
+             </div>
+             <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl p-4 shadow-sm flex flex-col justify-center">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Homework Due</p>
+                <div className="flex items-end space-x-2">
+                  <span className="text-3xl font-black text-slate-900">87%</span>
+                  <AlertCircle className="w-4 h-4 text-orange-500 mb-1.5" />
+                </div>
+             </div>
+          </div>
+
+        </div>
+
+      </div>
     </div>
   );
 }

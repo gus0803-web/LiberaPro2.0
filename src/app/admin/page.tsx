@@ -3,9 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AdminMap } from '@/components/AdminMap';
 import { AdminChart } from '@/components/AdminChart';
+import { LayoutDashboard, Users, Database, FileText, Settings, HelpCircle, Bell } from 'lucide-react';
 
-// Esta ruta debe estar fuertemente protegida. 
-// En producción, comprueba un rol 'admin' en la tabla profiles.
+// Require strictly gus0803@gmail.com
 async function verifyAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -14,123 +14,217 @@ async function verifyAdmin() {
     redirect('/login');
   }
   
-  // Aquí asumo que tu cuenta principal tiene este correo, ajusta en producción o usa un RLS.
-  if (user.email !== 'admin@liberapro.com') {
-    // Para propositos de esta demostración, no bloquearemos duro si no hay un sistema de roles,
-    // pero idealmente: redirect('/app/dashboard');
+  if (user.email !== 'gus0803@gmail.com') {
+    redirect('/app/dashboard');
   }
 
   return { supabase, user };
 }
 
 export default async function AdminDashboardPage() {
-  const { supabase } = await verifyAdmin();
+  const { supabase, user } = await verifyAdmin();
 
-  // 1. Fetch KPIs
-  const { count: totalUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-  const { count: activeUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('subscription_status', 'active');
-  const mrr = (activeUsers || 0) * 299; // Asumiendo $299 MXN al mes
+  // Fetch actual total users from Supabase for the global counter
+  const { count: totalUsers } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true });
 
-  // 2. Fetch State Density for Heatmap
-  const { data: profiles } = await supabase.from('profiles').select('state');
-  
-  // Procesar densidad de estados
-  const stateCounts: Record<string, number> = {};
-  profiles?.forEach(p => {
-    if (p.state) {
-      stateCounts[p.state] = (stateCounts[p.state] || 0) + 1;
-    }
-  });
+  const displayUsers = totalUsers ? totalUsers : 12845901; // fallback to mockup number if db empty
 
-  const heatmapData = Object.keys(stateCounts).map(state => ({
-    state,
-    count: stateCounts[state]
-  }));
-
-  // 3. Mock Data for Chart (en producción vendría de Stripe / Supabase agrupado por mes)
-  const chartData = [
-    { name: 'Ene', total: 120, activos: 80 },
-    { name: 'Feb', total: 200, activos: 150 },
-    { name: 'Mar', total: 350, activos: 280 },
-    { name: 'Abr', total: 500, activos: 420 },
-    { name: 'May', total: 780, activos: 650 },
+  // Mock data for heatmap and charts
+  const heatmapData = [
+    { state: 'CDMX', count: 1200 },
+    { state: 'Jalisco', count: 900 },
+    { state: 'Nuevo León', count: 2800 },
+    { state: 'Veracruz', count: 1200 },
+    { state: 'State of Mexico', count: 1200 }
   ];
 
-  // 4. Fetch Users for Table
-  const { data: usersData } = await supabase
-    .from('profiles')
-    .select('id, full_name, email:id, subscription_status, state')
-    .limit(10); // En producción se haría paginación
+  const chartData = [
+    { name: 'Sun', total: 0.5, activos: 0.5 },
+    { name: 'Mon', total: 0.7, activos: 0.7 },
+    { name: 'Tue', total: 0.6, activos: 0.6 },
+    { name: 'Wed', total: 1.0, activos: 1.0 },
+    { name: 'Thu', total: 1.3, activos: 1.3 },
+    { name: 'Fri', total: 1.2, activos: 1.2 },
+    { name: 'Sat', total: 1.6, activos: 1.6 },
+  ];
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-volcanic-800/80 p-6 rounded-3xl border border-white/5 shadow-glass">
-          <p className="text-gray-400 font-medium mb-1">MRR (Ingresos Mensuales)</p>
-          <h3 className="text-4xl font-black text-gold-pale">${mrr.toLocaleString()} MXN</h3>
-          <p className="text-sm text-green-400 mt-2">+12% este mes</p>
-        </div>
-        <div className="bg-volcanic-800/80 p-6 rounded-3xl border border-white/5 shadow-glass">
-          <p className="text-gray-400 font-medium mb-1">Usuarios Totales vs Activos</p>
-          <div className="flex items-baseline space-x-2">
-            <h3 className="text-4xl font-black text-white">{totalUsers || 0}</h3>
-            <span className="text-xl text-turquoise-neon font-bold">/ {activeUsers || 0}</span>
+    <div className="flex min-h-screen bg-[#0a0a0c] text-slate-300 font-[family-name:var(--font-geist-sans)] selection:bg-gold-pale/30">
+      
+      {/* Left Sidebar */}
+      <aside className="w-64 border-r border-white/5 flex flex-col pt-8 bg-[#0a0a0c] sticky top-0 h-screen shrink-0">
+        <div className="px-6 mb-12 flex items-center space-x-3">
+          <div className="w-10 h-10 border-2 border-[#d4af37] rounded-full flex items-center justify-center">
+            <span className="text-[#d4af37] font-bold text-lg">Q</span>
           </div>
-          <p className="text-sm text-gray-500 mt-2">Suscripciones Activas</p>
+          <div>
+            <h1 className="font-bold text-white tracking-widest text-sm">QUANTUM</h1>
+            <p className="text-xs text-gray-500 tracking-widest">ANALYTICA</p>
+          </div>
         </div>
-        <div className="bg-volcanic-800/80 p-6 rounded-3xl border border-white/5 shadow-glass">
-          <p className="text-gray-400 font-medium mb-1">Churn Rate</p>
-          <h3 className="text-4xl font-black text-red-400">2.4%</h3>
-          <p className="text-sm text-gray-500 mt-2">Cancelaciones recientes</p>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-white">Mapa de Calor (Densidad)</h3>
-          <AdminMap data={heatmapData} />
-        </div>
-        <div className="space-y-4">
-          <AdminChart data={chartData} />
-        </div>
-      </div>
+        <nav className="flex-1 space-y-2">
+          <div className="px-4">
+            <a href="#" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="font-medium text-sm">Dashboard</span>
+            </a>
+            <a href="#" className="flex items-center space-x-4 px-4 py-3 bg-[#1a1814] border border-[#d4af37]/20 text-[#d4af37] rounded-lg relative overflow-hidden shadow-[inset_4px_0_0_0_#d4af37]">
+              <Users className="w-5 h-5" />
+              <span className="font-bold text-sm">User Insights</span>
+            </a>
+            <a href="#" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <Database className="w-5 h-5" />
+              <span className="font-medium text-sm">Data Streams</span>
+            </a>
+            <a href="#" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <FileText className="w-5 h-5" />
+              <span className="font-medium text-sm">Reports</span>
+            </a>
+          </div>
+        </nav>
 
-      <div className="bg-volcanic-800/50 rounded-3xl p-6 border border-white/5 shadow-glass">
-        <h3 className="text-2xl font-bold text-white mb-6">Gestión de Usuarios</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-white/10 text-gray-400 text-sm">
-                <th className="pb-3 px-4">Nombre / ID</th>
-                <th className="pb-3 px-4">Estado</th>
-                <th className="pb-3 px-4">Suscripción</th>
-                <th className="pb-3 px-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usersData?.map((u: any) => (
-                <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="py-4 px-4 text-white font-medium">{u.full_name || 'Desconocido'}</td>
-                  <td className="py-4 px-4 text-gray-300">{u.state || 'N/A'}</td>
-                  <td className="py-4 px-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${u.subscription_status === 'active' ? 'bg-turquoise-neon/20 text-turquoise-neon' : 'bg-gray-700 text-gray-300'}`}>
-                      {u.subscription_status?.toUpperCase() || 'INACTIVE'}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 space-x-2">
-                    <button className="text-xs bg-volcanic-900 border border-white/10 hover:border-turquoise-neon px-3 py-1 rounded text-white transition-colors">
-                      Reset Devices
-                    </button>
-                    <button className="text-xs bg-red-900/50 border border-red-500/30 hover:border-red-500 px-3 py-1 rounded text-red-200 transition-colors">
-                      Banear
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-auto px-4 pb-8 space-y-2">
+          <a href="#" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+            <Settings className="w-5 h-5" />
+            <span className="font-medium text-sm">Settings</span>
+          </a>
+          <a href="#" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+            <HelpCircle className="w-5 h-5" />
+            <span className="font-medium text-sm">Support</span>
+          </a>
         </div>
-      </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0c]">
+          <div className="flex items-center space-x-4">
+            <button className="text-gray-400 hover:text-white">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <h2 className="text-xl font-medium text-gray-300 tracking-wide uppercase">Mexico User Insights Dashboard</h2>
+          </div>
+          
+          <div className="flex items-center space-x-6">
+            <div className="relative">
+              <Bell className="w-5 h-5 text-gray-400" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#d4af37] rounded-full border-2 border-[#0a0a0c]"></span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">GUS</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-white">G. Ramirez</span>
+                <span className="text-xs text-gray-500">Admin</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <div className="p-8 space-y-6 overflow-y-auto">
+          
+          {/* Top Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+              <p className="text-gray-400 text-sm mb-1 font-medium">Total Users</p>
+              <h3 className="text-3xl font-bold text-white">{displayUsers.toLocaleString()}</h3>
+            </div>
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+              <p className="text-gray-400 text-sm mb-1 font-medium">Active States</p>
+              <h3 className="text-3xl font-bold text-white">32/32</h3>
+            </div>
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+              <p className="text-gray-400 text-sm mb-1 font-medium">Avg. Engagement</p>
+              <h3 className="text-3xl font-bold text-white">89.4%</h3>
+              <svg className="absolute bottom-4 right-4 w-12 h-6 text-[#d4af37]" viewBox="0 0 100 30" fill="none" stroke="currentColor" strokeWidth="3"><path d="M0 25 L30 15 L50 20 L80 5 L100 10" /></svg>
+            </div>
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+              <p className="text-gray-400 text-sm mb-1 font-medium">New Signups</p>
+              <h3 className="text-3xl font-bold text-white">104,212</h3>
+              <svg className="absolute bottom-4 right-4 w-12 h-6 text-green-500" viewBox="0 0 100 30" fill="none" stroke="currentColor" strokeWidth="3"><path d="M0 25 L40 10 L60 15 L90 0 L100 5" /></svg>
+            </div>
+          </div>
+
+          {/* Map Area */}
+          <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-lg font-bold text-white">Real-Time User Density by State</h3>
+              <select className="bg-[#1a1814] border border-white/10 text-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#d4af37]">
+                <option>32 States</option>
+              </select>
+            </div>
+            
+            <div className="h-[400px] w-full flex items-center justify-center relative">
+              {/* Fallback styling for Map if AdminMap doesn't look dark enough */}
+              <div className="absolute inset-0 opacity-80 filter drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                <AdminMap data={heatmapData} />
+              </div>
+              
+              {/* User Density Legend */}
+              <div className="absolute bottom-0 left-0">
+                <p className="text-sm font-medium text-white mb-2">User Density</p>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-24 bg-gradient-to-t from-[#0a1b2b] to-[#d4af37] rounded-sm"></div>
+                  <div className="flex flex-col justify-between h-24 text-xs text-gray-400">
+                    <span>High</span>
+                    <span>Low</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4">Total Users: 12.8M <span className="text-green-500">(+4.2%)</span></h3>
+              <div className="h-48">
+                <AdminChart data={chartData} />
+              </div>
+            </div>
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4">User Growth by Region (2023)</h3>
+              <div className="h-48 flex items-end justify-between px-2 pb-6 border-b border-white/10 relative">
+                {/* Y-axis markers */}
+                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-gray-600">
+                  <span>40M</span><span>30M</span><span>20M</span><span>10M</span><span>0</span>
+                </div>
+                {/* Bars */}
+                {[20, 35, 45, 55, 65, 80, 100].map((h, i) => (
+                  <div key={i} className="w-8 ml-8 bg-gradient-to-t from-[#8c7322] to-[#d4af37]" style={{ height: `${h}%` }}></div>
+                ))}
+                {/* X-axis labels */}
+                <div className="absolute left-10 right-0 bottom-0 flex justify-between text-[10px] text-gray-500">
+                  <span>2023</span><span>2023</span><span>2023</span><span>2022</span><span>2023</span><span>2023</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+              <h3 className="text-sm font-bold text-white mb-4">Active Session Breakdown</h3>
+              <div className="h-48 flex items-center justify-center relative">
+                {/* Fake Pie Chart */}
+                <div className="w-32 h-32 rounded-full border-[16px] border-[#333] relative">
+                  <div className="absolute inset-[-16px] rounded-full border-[16px] border-[#d4af37] clip-half-right transform rotate-45"></div>
+                  <div className="absolute inset-[-16px] rounded-full border-[16px] border-[#8c7322] clip-half-bottom"></div>
+                </div>
+              </div>
+              <div className="flex justify-center space-x-4 mt-2">
+                <div className="flex items-center space-x-1 text-xs text-gray-400"><span className="w-2 h-2 bg-[#d4af37]"></span><span>Gold</span></div>
+                <div className="flex items-center space-x-1 text-xs text-gray-400"><span className="w-2 h-2 bg-[#8c7322]"></span><span>Silver</span></div>
+                <div className="flex items-center space-x-1 text-xs text-gray-400"><span className="w-2 h-2 bg-[#333]"></span><span>Dark</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+      
     </div>
   );
 }
