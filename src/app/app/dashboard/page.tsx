@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
-import { Calendar, Clock, CheckCircle2, Circle, MoreHorizontal, Settings, Users, BookOpen, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, Circle, MoreHorizontal, Settings, Users, BookOpen, AlertCircle, Bell } from 'lucide-react';
 
 export default function DashboardPage() {
   const { theme, toggleTheme } = useTheme();
