@@ -1,22 +1,38 @@
 'use client';
 import React, { useState } from 'react';
-import { login } from './actions';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('password', password);
+    setError(null);
+    
+    const supabase = createClient();
+    
     try {
-      await login(formData);
-    } catch (error) {
-      console.error(error);
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) throw authError;
+
+      // If login is successful, redirect based on email
+      if (email === 'gus0803@gmail.com') {
+        router.push('/admin');
+      } else {
+        router.push('/app/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error signing in. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -44,6 +60,12 @@ export default function LoginPage() {
           <p className="text-sm font-semibold text-slate-500 text-center mb-8 uppercase tracking-wide">
             Maestros Modernos Lidereando la Educación en México
           </p>
+
+          {error && (
+            <div className="w-full bg-red-50 text-red-500 border border-red-200 p-3 rounded-lg text-sm mb-4 text-center font-medium">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="w-full space-y-5">
             <div>
