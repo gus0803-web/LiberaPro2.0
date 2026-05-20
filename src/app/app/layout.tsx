@@ -4,6 +4,8 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { Settings, Bell, Search, LogOut } from 'lucide-react';
 import Image from 'next/image';
 
+import { TopNav } from '@/components/TopNav';
+
 export default function AppLayout({
   children,
 }: {
@@ -33,13 +35,7 @@ export default function AppLayout({
             </div>
 
             {/* Centered Nav Links */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/app/dashboard" className="text-slate-900 font-bold border-b-2 border-blue-500 pb-1">Home</Link>
-              <Link href="/app/planner" className="text-slate-600 font-medium hover:text-slate-900 transition-colors">Calendar</Link>
-              <Link href="/app/students" className="text-slate-600 font-medium hover:text-slate-900 transition-colors">Students</Link>
-              <Link href="/app/gradebook" className="text-slate-600 font-medium hover:text-slate-900 transition-colors">Gradebook</Link>
-              <Link href="/app/reports" className="text-slate-600 font-medium hover:text-slate-900 transition-colors">Reports</Link>
-            </nav>
+            <TopNav />
 
             {/* Right Side Icons & Profile */}
             <div className="flex items-center space-x-4">
