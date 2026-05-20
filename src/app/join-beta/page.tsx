@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function JoinBetaPage() {
   const [formData, setFormData] = useState({ name: '', email: '', school: '' });
@@ -19,57 +20,68 @@ export default function JoinBetaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] shadow-xl border border-white/80 p-10 flex flex-col items-center">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/login-bg.png')" }}
+    >
+      {/* Decorative background overlay */}
+      <div className="absolute top-0 left-0 w-full h-full bg-slate-900/30 -z-10 pointer-events-none"></div>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-slate-900/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-slate-700/80 p-10 flex flex-col items-center">
           
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Join the Beta Test</h1>
-          <p className="text-sm font-medium text-slate-500 text-center mb-8">
+          {/* LiberaPro Logo */}
+          <div className="mb-6 relative w-20 h-20 shadow-lg shadow-green-900/20 rounded-3xl overflow-hidden">
+            <Image src="/login-logo.png" alt="LiberaPro Logo" fill className="object-cover" />
+          </div>
+
+          <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Join the Beta Test</h1>
+          <p className="text-sm font-medium text-slate-400 text-center mb-8">
             Enter your details below to request a temporary username and password to test the app.
           </p>
 
           {isSubmitted ? (
              <div className="w-full flex flex-col items-center space-y-4">
-               <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center text-3xl">
+               <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-3xl">
                  ✓
                </div>
-               <h2 className="text-xl font-bold text-slate-800">Request Received!</h2>
-               <p className="text-center text-slate-600 text-sm">
-                 Thank you, {formData.name}. We will review your request and send your temporary credentials to <b>{formData.email}</b> soon.
+               <h2 className="text-xl font-bold text-white">Request Received!</h2>
+               <p className="text-center text-slate-400 text-sm">
+                 Thank you, {formData.name}. We will review your request and send your temporary credentials to <b className="text-white">{formData.email}</b> soon.
                </p>
              </div>
           ) : (
             <form onSubmit={handleSubmit} className="w-full space-y-5">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                <label className="block text-sm font-bold text-slate-300 mb-2">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-5 py-4 rounded-xl bg-white/50 border border-white/80 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 font-medium"
+                  className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white font-medium placeholder:text-slate-500"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                <label className="block text-sm font-bold text-slate-300 mb-2">Email Address</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-5 py-4 rounded-xl bg-white/50 border border-white/80 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 font-medium"
+                  className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white font-medium placeholder:text-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">School Name</label>
+                <label className="block text-sm font-bold text-slate-300 mb-2">School Name</label>
                 <input
                   type="text"
                   required
                   value={formData.school}
                   onChange={(e) => setFormData({...formData, school: e.target.value})}
-                  className="w-full px-5 py-4 rounded-xl bg-white/50 border border-white/80 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 font-medium"
+                  className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white font-medium placeholder:text-slate-500"
                 />
               </div>
 
@@ -83,8 +95,8 @@ export default function JoinBetaPage() {
             </form>
           )}
 
-          <div className="mt-8 pt-6 border-t border-slate-200/50 w-full text-center">
-            <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">
+          <div className="mt-8 pt-6 border-t border-slate-700/50 w-full text-center">
+            <Link href="/login" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">
               ← Back to Login
             </Link>
           </div>

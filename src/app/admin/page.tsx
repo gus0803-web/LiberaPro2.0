@@ -3,26 +3,52 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AdminMap } from '@/components/AdminMap';
 import { AdminChart } from '@/components/AdminChart';
-import { LayoutDashboard, Users, Database, FileText, Settings, HelpCircle, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Database, FileText, Settings, HelpCircle, Bell, AlertCircle } from 'lucide-react';
 
-// Require strictly gus0803@gmail.com
-async function verifyAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    redirect('/login');
-  }
-  
-  if (user.email !== 'gus0803@gmail.com') {
-    redirect('/app/dashboard');
-  }
+import Link from 'next/link';
 
-  return { supabase, user };
+async function getAdminStatus() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return { status: 'unauthenticated', user: null, supabase };
+    if (user.email !== 'gus0803@gmail.com') return { status: 'unauthorized', user, supabase };
+    
+    return { status: 'authorized', user, supabase };
+  } catch (e) {
+    return { status: 'error', user: null, supabase: null };
+  }
 }
 
 export default async function AdminDashboardPage() {
-  const { supabase, user } = await verifyAdmin();
+  const { status, user, supabase } = await getAdminStatus();
+
+  if (status !== 'authorized') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-4">
+        <div className="bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-700 text-center max-w-md w-full">
+          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+            <AlertCircle className="w-10 h-10" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-white mb-2">HQ Access Denied</h1>
+          <p className="text-slate-400 mb-8">
+            {status === 'unauthenticated' ? 'You are currently not logged in.' : `You are logged in as ${user?.email}.`}
+            <br/><br/>
+            The Director HQ is highly classified and strictly restricted to <b>gus0803@gmail.com</b>.
+          </p>
+          <div className="flex flex-col space-y-3">
+            <Link href="/login" className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-colors">
+              Go to Login Page
+            </Link>
+            <Link href="/app/dashboard" className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition-colors">
+              Return to Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch actual total users from Supabase for the global counter
   let totalUsers: number | null = null;
