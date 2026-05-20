@@ -11,7 +11,6 @@ export default function DashboardPage() {
   const t = {
     greeting: isEs ? '¡Buenos días, Profesora Sarah Davies!' : 'Good morning, Mrs. Sarah Davies!',
     time: isEs ? '(5:01 AM - 11:30 AM)' : '(5:01 AM - 11:30 AM)',
-    time: isEs ? '(5:01 AM - 11:30 AM)' : '(5:01 AM - 11:30 AM)',
     newPlan: isEs ? 'Nueva Planeación' : 'New Plan',
     viewAgenda: isEs ? 'Ver Agenda' : 'View Agenda',
     date: isEs ? 'Jueves, 26 de Octubre, 2023' : 'Thursday, October 26, 2023',
