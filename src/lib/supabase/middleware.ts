@@ -10,8 +10,15 @@ export async function updateSession(request: NextRequest) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^"|"$/g, '') || ''
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.replace(/^"|"$/g, '') || ''
+  const isProtectedPath = request.nextUrl.pathname.startsWith('/app')
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[Middleware] Missing Supabase config:', { hasUrl: !!supabaseUrl, hasKey: !!supabaseAnonKey })
+    if (isProtectedPath) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
     return supabaseResponse
   }
 
@@ -69,8 +76,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isProtectedPath = request.nextUrl.pathname.startsWith('/app')
-  
   if (isProtectedPath && !user) {
     // If the user is not logged in and tries to access a protected route
     const url = request.nextUrl.clone()
@@ -80,16 +85,35 @@ export async function updateSession(request: NextRequest) {
 
   // If user is logged in, we check whether their beta access is still active.
   if (user) {
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('subscription_status, beta_tester, beta_expires_at')
-      .eq('id', user.id)
-      .single()
+    // Fetch profile but be resilient if the DB schema doesn't include the
+    // `beta_tester` column yet (older DBs). In that case we assume the user
+    // is not a beta tester and continue normally.
+    let profile: any = null
+    let profileError: any = null
+
+    try {
+      const res = await supabase
+        .from('profiles')
+        .select('subscription_status, beta_tester, beta_expires_at')
+        .eq('id', user.id)
+        .single()
+      profile = res.data
+      profileError = res.error
+    } catch (err: any) {
+      profileError = err
+    }
 
     if (profileError) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
+      const msg = (profileError.message || String(profileError)).toLowerCase()
+      if (msg.includes('beta_tester') || msg.includes('column') || msg.includes('does not exist')) {
+        // Missing column in DB; fall back to a safe default profile
+        console.warn('[Middleware] profiles.beta_tester column missing; assuming non-beta user')
+        profile = { subscription_status: profile?.subscription_status || 'inactive', beta_tester: false, beta_expires_at: null }
+      } else {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        return NextResponse.redirect(url)
+      }
     }
 
     if (profile?.beta_tester && profile.beta_expires_at && new Date(profile.beta_expires_at) <= new Date()) {

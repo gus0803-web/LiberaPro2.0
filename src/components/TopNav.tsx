@@ -12,9 +12,8 @@ export function TopNav() {
 
   const links = [
     { href: '/app/dashboard', labelEn: 'Home', labelEs: 'Inicio' },
-    { href: '/app/planner', labelEn: 'Calendar', labelEs: 'Calendario' },
-    { href: '/app/students', labelEn: 'Students', labelEs: 'Estudiantes' },
-    { href: '/app/gradebook', labelEn: 'Gradebook', labelEs: 'Calificaciones' },
+    { href: '/app/planner', labelEn: 'Lesson Plans', labelEs: 'Planeaciones' },
+    { href: '/app/calendar', labelEn: 'Calendar', labelEs: 'Calendario' },
     { href: '/app/reports', labelEn: 'Reports', labelEs: 'Reportes' },
   ];
 

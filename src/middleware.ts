@@ -1,7 +1,15 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
+  // Skip middleware for public routes that don't require auth
+  const publicPaths = ['/login', '/join-beta', '/forgot-password', '/reset-password']
+  const pathname = request.nextUrl.pathname
+  
+  if (publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
+    return NextResponse.next()
+  }
+  
   return await updateSession(request)
 }
 

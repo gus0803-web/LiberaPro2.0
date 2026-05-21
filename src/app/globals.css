@@ -4,6 +4,7 @@
   /* Mandatory Dark Mode - Volcanic Theme */
   --background: #0f172a; /* slate-900 */
   --foreground: #ffffff;
+  --app-font-color: #1d4ed8; /* Default Blue */
 }
 
 @theme inline {
@@ -52,4 +53,16 @@ body {
 
 .pattern-dark-4 {
   animation: patternDarken 1.2s ease-in-out forwards 0.75s;
+}
+
+@page {
+  size: letter portrait;
+  margin: 1in;
+}
+
+@media print {
+  body {
+    width: 8.5in;
+    height: 11in;
+  }
 }

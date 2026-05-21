@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { streamObject, embed } from 'ai';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
@@ -27,6 +27,19 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
+    const apiKey =
+      process.env.OPENAI_API_KEY ||
+      process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
+      process.env.NEXT_PUBLIC_OPENAI_KEY;
+    if (!apiKey) {
+      return new Response(
+        'OpenAI API key is missing. Set OPENAI_API_KEY, NEXT_PUBLIC_OPENAI_API_KEY, or NEXT_PUBLIC_OPENAI_KEY.',
+        { status: 500 }
+      );
+    }
+
+    const openai = createOpenAI({ apiKey });
 
     // Comentar esto localmente si se está probando sin autenticación
     if (!user) {

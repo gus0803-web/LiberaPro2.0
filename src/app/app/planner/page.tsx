@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
+import { AgendaItem, addAgendaItem, loadSelectedPlanDate } from '@/lib/agenda';
 
 const planningSchema = z.object({
   vistaRapida: z.array(z.object({
@@ -30,14 +31,66 @@ export default function PlannerPage() {
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [principio, setPrincipio] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [hasSavedPlan, setHasSavedPlan] = useState(false);
 
   const { object, submit, isLoading, error } = useObject({
     api: '/api/planner/generate',
     schema: planningSchema,
   });
 
+  useEffect(() => {
+    const storedDate = loadSelectedPlanDate();
+    if (storedDate) {
+      setSelectedDate(storedDate);
+    } else {
+      setSelectedDate(new Date().toISOString().slice(0, 10));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      localStorage.setItem('selectedPlanDate', selectedDate);
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (object && selectedDate && !hasSavedPlan) {
+      const newPlan: AgendaItem = {
+        id: `${Date.now()}-${selectedDate}`,
+        date: selectedDate,
+        type: 'planeacion',
+        title: tema || proyecto || 'Planeación Generada',
+        description: `Fase: ${fase}. ${campoFormativo} - ${metodologia}`,
+        metadata: {
+          fase,
+          proyecto,
+          campoFormativo,
+          metodologia,
+          tema,
+          principio,
+          object,
+        },
+        createdAt: new Date().toISOString(),
+      };
+
+      addAgendaItem(newPlan);
+      setSaveMessage('Planeación guardada en calendario.');
+      setHasSavedPlan(true);
+      window.setTimeout(() => setSaveMessage(''), 5000);
+    }
+  }, [object, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio]);
+
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
+    setHasSubmitted(true);
+    if (!selectedDate) {
+      setSaveMessage('Selecciona la fecha de inicio para la planeación.');
+      return;
+    }
+    setHasSavedPlan(false);
     submit({ fase, duracion, proyecto, campoFormativo, metodologia, tema, principio });
   };
 
@@ -71,6 +124,15 @@ export default function PlannerPage() {
             <option>Quincenal</option>
             <option>Mensual</option>
           </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Fecha de inicio</label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            className="w-full bg-volcanic-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-turquoise-neon transition-colors"
+          />
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-300 mb-2">Proyecto de la NEM</label>
@@ -112,12 +174,20 @@ export default function PlannerPage() {
           <label className="block text-sm font-medium text-gray-300 mb-2">Eje Articulador (Opcional)</label>
           <input type="text" value={principio} onChange={e => setPrincipio(e.target.value)} placeholder="Ej. Inclusión, Pensamiento Crítico, Interculturalidad crítica..." className="w-full bg-volcanic-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-turquoise-neon transition-colors" />
         </div>
-        <div className="md:col-span-2 pt-4 flex justify-end">
-          <button disabled={isLoading} type="submit" className="bg-turquoise-neon text-volcanic-900 font-bold px-8 py-3 rounded-xl hover:bg-white hover:text-turquoise-neon transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <div className="md:col-span-2 pt-4 flex flex-col gap-3 items-end">
+          <button disabled={isLoading || !selectedDate} type="submit" className="bg-turquoise-neon text-volcanic-900 font-bold px-8 py-3 rounded-xl hover:bg-white hover:text-turquoise-neon transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {isLoading ? 'Generando Magia...' : 'Generar Planeación'}
           </button>
+          {!selectedDate ? (
+            <p className="text-sm text-yellow-300">Selecciona una fecha de inicio antes de generar.</p>
+          ) : null}
         </div>
       </form>
+      {saveMessage ? (
+        <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-6 text-sm text-emerald-800">
+          {saveMessage}
+        </div>
+      ) : null}
 
       {/* Loading State / Skeleton */}
       {isLoading && !object && (
@@ -135,6 +205,18 @@ export default function PlannerPage() {
             <div className="h-48 rounded-2xl bg-volcanic-800 border border-turquoise-neon/10 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
             <div className="h-48 rounded-2xl bg-volcanic-800 border border-turquoise-neon/10 animate-[pulse_2s_ease-in-out_infinite]"></div>
           </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-3xl bg-red-500/10 border border-red-500/20 p-6 text-red-700">
+          <strong>Error:</strong> {typeof error === 'string' ? error : error?.message || 'No se pudo generar la planeación. Por favor intenta de nuevo.'}
+        </div>
+      )}
+
+      {hasSubmitted && !isLoading && !object && !error && (
+        <div className="rounded-3xl bg-yellow-500/10 border border-yellow-500/20 p-6 text-yellow-700">
+          No se generó ningún resultado aún. Revisa tu conexión o intenta de nuevo con otros datos.
         </div>
       )}
 

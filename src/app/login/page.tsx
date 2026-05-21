@@ -29,13 +29,31 @@ export default function LoginPage() {
 
       const userId = data?.user?.id;
       if (userId) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('beta_tester, beta_expires_at')
-          .eq('id', userId)
-          .single();
+        // Guard against cases where the DB schema hasn't been migrated yet
+        // and the `beta_tester` column does not exist.
+        let profile: any = null
+        let profileError: any = null
+        try {
+          const res = await supabase
+            .from('profiles')
+            .select('beta_tester, beta_expires_at')
+            .eq('id', userId)
+            .single()
+          profile = res.data
+          profileError = res.error
+        } catch (err: any) {
+          profileError = err
+        }
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          const msg = (profileError.message || String(profileError)).toLowerCase()
+          if (msg.includes('beta_tester') || msg.includes('column') || msg.includes('does not exist')) {
+            console.warn('[Login] profiles.beta_tester column missing; allowing login')
+            profile = { beta_tester: false, beta_expires_at: null }
+          } else {
+            throw profileError
+          }
+        }
 
         if (profile?.beta_tester && profile.beta_expires_at && new Date(profile.beta_expires_at) <= new Date()) {
           await supabase.auth.signOut();
@@ -74,7 +92,7 @@ export default function LoginPage() {
         <div className="group bg-slate-900/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-slate-700/60 p-10 flex flex-col items-center opacity-80 transition-opacity duration-300 ease-out hover:opacity-100 focus-within:opacity-100">
           {/* LiberaPro Logo */}
           <div className="mb-6 relative w-24 h-24 rounded-[1.75rem] border-2 border-red-500/85 bg-black shadow-[inset_0_4px_18px_rgba(255,255,255,0.05),0_30px_90px_-40px_rgba(0,0,0,0.9)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1">
-            <Image src="/login-logo.png" alt="LiberaPro Logo" fill className="object-cover object-center scale-[1.05]" />
+            <Image src="/login-logo.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-cover object-center scale-[1.05]" />
           </div>
 
           <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">LiberaPro</h1>

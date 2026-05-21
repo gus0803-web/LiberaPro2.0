@@ -23,7 +23,7 @@ export default function AppLayout({
             {/* Logo / Title Area */}
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 relative rounded-2xl overflow-hidden shadow-lg shadow-slate-900/20">
-                <Image src="/login-logo.png" alt="LiberaPro Logo" fill className="object-cover" />
+                <Image src="/login-logo.png" alt="LiberaPro Logo" fill sizes="3rem" className="object-cover" />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">LiberaPro</span>
