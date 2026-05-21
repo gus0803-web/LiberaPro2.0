@@ -9,7 +9,7 @@ export default function DashboardPage() {
   const isEs = language === 'es';
 
   const t = {
-    greeting: isEs ? '¡Buenos días, Profesora Sarah Davies!' : 'Good morning, Mrs. Sarah Davies!',
+    greeting: isEs ? '¡Buenos días, Profesora Erendira Mendez!' : 'Good morning, Mrs. Erendira Mendez!',
     time: isEs ? '(5:01 AM - 11:30 AM)' : '(5:01 AM - 11:30 AM)',
     newPlan: isEs ? 'Nueva Planeación' : 'New Plan',
     viewAgenda: isEs ? 'Ver Agenda' : 'View Agenda',

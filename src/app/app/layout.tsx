@@ -22,11 +22,8 @@ export default function AppLayout({
           <header className="h-24 px-8 flex items-center justify-between border-b border-white/20 shrink-0">
             {/* Logo / Title Area */}
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-tr from-orange-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-                {/* Sun icon */}
-                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+              <div className="w-12 h-12 relative rounded-2xl overflow-hidden shadow-lg shadow-slate-900/20">
+                <Image src="/login-logo.png" alt="LiberaPro Logo" fill className="object-cover" />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">LiberaPro</span>
