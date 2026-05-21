@@ -66,6 +66,7 @@ export default function CalendarPage() {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [createType, setCreateType] = useState<AgendaItemType>('recordatorio');
+  const [formDate, setFormDate] = useState<string>(getTodayDate());
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [formMessage, setFormMessage] = useState('');
@@ -89,6 +90,7 @@ export default function CalendarPage() {
   useEffect(() => {
     if (selectedDate) {
       saveSelectedPlanDate(selectedDate);
+      setFormDate(selectedDate);
     }
   }, [selectedDate]);
 
@@ -109,8 +111,8 @@ export default function CalendarPage() {
     }
 
     const item: AgendaItem = {
-      id: `${Date.now()}-${selectedDate}-${createType}`,
-      date: selectedDate,
+      id: `${Date.now()}-${formDate}-${createType}`,
+      date: formDate,
       type: createType,
       title: newTitle,
       description: newDescription,
@@ -166,8 +168,8 @@ export default function CalendarPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <section className="space-y-6">
+      <div className="space-y-6">
+        <section>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -218,29 +220,33 @@ export default function CalendarPage() {
                     <div className="flex items-center justify-between w-full mb-2">
                       <span className="text-sm font-semibold text-slate-800">{cell.value}</span>
                     </div>
-                    <div className="flex flex-col gap-1 w-full overflow-hidden">
-                      {agendaItems.filter(i => i.date === cell.dateKey).slice(0, 3).map(item => (
-                        <div key={item.id} className="text-[10px] truncate w-full px-2 py-1 rounded bg-blue-100 text-blue-800 font-medium text-left">
-                           {item.title}
-                        </div>
-                      ))}
-                      {agendaItems.filter(i => i.date === cell.dateKey).length > 3 && (
-                        <div className="text-[10px] text-slate-500 font-medium text-left px-2">
-                          +{agendaItems.filter(i => i.date === cell.dateKey).length - 3} más
-                        </div>
-                      )}
+                    <div className="flex flex-col gap-1 w-full max-h-[120px] overflow-y-auto pr-1 custom-scrollbar">
+                      {agendaItems.filter(i => i.date === cell.dateKey).map(item => {
+                        const typeColors: Record<string, string> = {
+                          planeacion: 'bg-blue-100 text-blue-800',
+                          material: 'bg-emerald-100 text-emerald-800',
+                          junta: 'bg-purple-100 text-purple-800',
+                          recordatorio: 'bg-amber-100 text-amber-800',
+                          examen: 'bg-red-100 text-red-800',
+                          tarea: 'bg-orange-100 text-orange-800',
+                          evento: 'bg-pink-100 text-pink-800',
+                        };
+                        const colorClass = typeColors[item.type] || 'bg-slate-100 text-slate-800';
+                        return (
+                          <div key={item.id} className={`text-[10px] truncate w-full px-2 py-1 rounded font-bold text-left ${colorClass}`}>
+                             {item.title}
+                          </div>
+                        );
+                      })}
                     </div>
                   </button>
                 );
               })}
             </div>
-
-            <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              {isEs
-                ? 'Selecciona un día para ver tus actividades ancladas y crear nuevos recordatorios o materiales.'
-                : 'Select a day to see your pinned activities and create new reminders or materials.'}
-            </div>
           </div>
+        </section>
+
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center gap-3">
@@ -254,12 +260,22 @@ export default function CalendarPage() {
             </div>
 
             <form onSubmit={handleAddItem} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Tipo' : 'Type'}</label>
-                <select value={createType} onChange={(e) => setCreateType(e.target.value as AgendaItemType)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200">
-                  <option value="recordatorio">{isEs ? 'Recordatorio' : 'Reminder'}</option>
-                  <option value="material">{isEs ? 'Material' : 'Material'}</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Fecha' : 'Date'}</label>
+                  <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Tipo' : 'Type'}</label>
+                  <select value={createType} onChange={(e) => setCreateType(e.target.value as AgendaItemType)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                    <option value="recordatorio">{isEs ? 'Recordatorio' : 'Reminder'}</option>
+                    <option value="material">{isEs ? 'Material' : 'Material'}</option>
+                    <option value="junta">{isEs ? 'Junta' : 'Meeting'}</option>
+                    <option value="examen">{isEs ? 'Examen' : 'Exam'}</option>
+                    <option value="tarea">{isEs ? 'Tarea' : 'Homework'}</option>
+                    <option value="evento">{isEs ? 'Evento Especial' : 'Special Event'}</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -283,80 +299,64 @@ export default function CalendarPage() {
           </div>
         </section>
 
-        <section className="space-y-6">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col h-full max-h-[600px]">
+            <div className="flex items-center gap-3 mb-6 shrink-0">
               <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-600">
-                <Bell className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{isEs ? 'Agenda del Día' : 'Day Agenda'}</p>
-                <h3 className="text-xl font-semibold text-slate-900">{selectedDate}</h3>
-              </div>
-            </div>
-
-            {selectedDateHasItems ? (
-              <div className="space-y-4">
-                {dayItems.map((item) => (
-                  <article key={item.id} className={`rounded-3xl border p-5 shadow-sm ${getAgendaItemColor(item.type)}`}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.24em] text-slate-500">{typeLabel(item.type, isEs)}</p>
-                        <h4 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h4>
-                        <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2 text-slate-700">
-                        <button type="button" onClick={() => handlePreviewToggle(item.id)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100">
-                          <Eye className="w-4 h-4" />
-                          {isEs ? 'Vista' : 'Preview'}
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => downloadAgendaItem(item)} className="rounded-full border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-100">
-                            <Download className="w-4 h-4" />
-                          </button>
-                          <button type="button" onClick={() => handlePrint(item)} className="rounded-full border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-100">
-                            <Printer className="w-4 h-4" />
-                          </button>
-                          <button type="button" onClick={() => handleDelete(item.id)} className="rounded-full border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {previewId === item.id ? (
-                      <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                        <p className="font-semibold text-slate-800 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
-                        <pre className="whitespace-pre-wrap text-sm leading-6">{item.description || (item.metadata?.object ? JSON.stringify(item.metadata.object, null, 2) : '')}</pre>
-                      </div>
-                    ) : null}
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
-                {isEs
-                  ? 'No hay actividades para este día. Agrega una nueva entrada o selecciona otro día.'
-                  : 'No activities for this day. Add a new entry or select another day.'}
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{isEs ? 'Resumen' : 'Summary'}</p>
-                <h3 className="text-lg font-semibold text-slate-900">{isEs ? 'Tus días en orden' : 'Your day in order'}</h3>
+                <h3 className="text-xl font-semibold text-slate-900">{selectedDate}</h3>
               </div>
             </div>
-            <p className="text-sm text-slate-600">
-              {isEs
-                ? 'Crea recordatorios y materiales aquí. Todos los documentos descargables se pueden abrir en Windows y Mac, y la impresión se genera en tamaño carta.'
-                : 'Create reminders and materials here. All downloadable documents open on Windows and Mac, and printing will use letter size.'}
-            </p>
+
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+              {selectedDateHasItems ? (
+                <div className="space-y-4">
+                  {dayItems.map((item) => (
+                    <article key={item.id} className={`rounded-3xl border p-5 shadow-sm ${getAgendaItemColor(item.type)}`}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.24em] font-bold text-slate-500">{typeLabel(item.type, isEs)}</p>
+                          <h4 className="mt-1 text-lg font-bold text-slate-900">{item.title}</h4>
+                          <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 text-slate-700 shrink-0">
+                          <button type="button" onClick={() => handlePreviewToggle(item.id)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white transition-colors">
+                            <Eye className="w-4 h-4" />
+                            {isEs ? 'Vista' : 'Preview'}
+                          </button>
+                          <div className="flex items-center gap-2 mt-2">
+                            <button type="button" onClick={() => downloadAgendaItem(item)} className="rounded-full border border-slate-200 bg-white/50 p-2 text-slate-700 hover:bg-white transition-colors">
+                              <Download className="w-4 h-4" />
+                            </button>
+                            <button type="button" onClick={() => handlePrint(item)} className="rounded-full border border-slate-200 bg-white/50 p-2 text-slate-700 hover:bg-white transition-colors">
+                              <Printer className="w-4 h-4" />
+                            </button>
+                            <button type="button" onClick={() => handleDelete(item.id)} className="rounded-full border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100 transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {previewId === item.id ? (
+                        <div className="mt-5 rounded-3xl border border-white/40 bg-white/60 p-4 text-sm text-slate-800">
+                          <p className="font-bold text-slate-900 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
+                          <pre className="whitespace-pre-wrap text-sm leading-6 overflow-x-auto">{item.description || (item.metadata?.object ? JSON.stringify(item.metadata.object, null, 2) : '')}</pre>
+                        </div>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 text-center h-full flex items-center justify-center">
+                  {isEs
+                    ? 'No hay actividades para este día. Agrega una nueva entrada desde el formulario.'
+                    : 'No activities for this day. Add a new entry from the form.'}
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>

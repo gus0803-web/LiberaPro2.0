@@ -15,6 +15,7 @@ export function TopNav() {
     { href: '/app/planner', labelEn: 'Lesson Plans', labelEs: 'Planeaciones' },
     { href: '/app/calendar', labelEn: 'Calendar', labelEs: 'Calendario' },
     { href: '/app/reports', labelEn: 'Reports', labelEs: 'Reportes' },
+    { href: '/app/scanner', labelEn: 'Scanner', labelEs: 'Escáner' },
   ];
 
   return (

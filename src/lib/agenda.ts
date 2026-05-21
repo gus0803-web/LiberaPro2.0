@@ -1,6 +1,6 @@
 'use client';
 
-export type AgendaItemType = 'planeacion' | 'recordatorio' | 'material';
+export type AgendaItemType = 'planeacion' | 'recordatorio' | 'material' | 'junta' | 'examen' | 'tarea' | 'evento';
 
 export type AgendaItem = {
   id: string;
@@ -92,6 +92,14 @@ export function getAgendaItemColor(type: AgendaItemType) {
       return 'border-amber-300/80 bg-amber-50 text-amber-900';
     case 'material':
       return 'border-emerald-300/80 bg-emerald-50 text-emerald-900';
+    case 'junta':
+      return 'border-purple-300/80 bg-purple-50 text-purple-900';
+    case 'examen':
+      return 'border-red-300/80 bg-red-50 text-red-900';
+    case 'tarea':
+      return 'border-orange-300/80 bg-orange-50 text-orange-900';
+    case 'evento':
+      return 'border-pink-300/80 bg-pink-50 text-pink-900';
     default:
       return 'border-slate-200 bg-slate-50 text-slate-900';
   }
@@ -105,6 +113,14 @@ export function typeLabel(type: AgendaItemType, isEs: boolean) {
       return isEs ? 'Recordatorio' : 'Reminder';
     case 'material':
       return isEs ? 'Material' : 'Material';
+    case 'junta':
+      return isEs ? 'Junta' : 'Meeting';
+    case 'examen':
+      return isEs ? 'Examen' : 'Exam';
+    case 'tarea':
+      return isEs ? 'Tarea' : 'Homework';
+    case 'evento':
+      return isEs ? 'Evento Especial' : 'Special Event';
     default:
       return type;
   }

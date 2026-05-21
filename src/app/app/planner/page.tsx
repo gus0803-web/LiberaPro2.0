@@ -23,6 +23,24 @@ const planningSchema = z.object({
   }))
 });
 
+function getBusinessDays(startDateStr: string, count: number) {
+  const dates = [];
+  const [y, m, day] = startDateStr.split('-').map(Number);
+  const d = new Date(y, m - 1, day);
+  
+  while (dates.length < count) {
+    const dayOfWeek = d.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
+      const yy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      dates.push(`${yy}-${mm}-${dd}`);
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
 export default function PlannerPage() {
   const [fase, setFase] = useState('Fase 4: Primaria (3º y 4º)');
   const [duracion, setDuracion] = useState('Semanal');
@@ -58,30 +76,39 @@ export default function PlannerPage() {
 
   useEffect(() => {
     if (object && selectedDate && !hasSavedPlan) {
-      const newPlan: AgendaItem = {
-        id: `${Date.now()}-${selectedDate}`,
-        date: selectedDate,
-        type: 'planeacion',
-        title: tema || proyecto || 'Planeación Generada',
-        description: `Fase: ${fase}. ${campoFormativo} - ${metodologia}`,
-        metadata: {
-          fase,
-          proyecto,
-          campoFormativo,
-          metodologia,
-          tema,
-          principio,
-          object,
-        },
-        createdAt: new Date().toISOString(),
-      };
+      let daysCount = 5;
+      if (duracion === 'Quincenal') daysCount = 10;
+      if (duracion === 'Mensual') daysCount = 20;
 
-      addAgendaItem(newPlan);
-      setSaveMessage('Planeación guardada en calendario.');
+      const datesToCover = getBusinessDays(selectedDate, daysCount);
+
+      datesToCover.forEach((dateStr, index) => {
+        const diaData = object.diaADia?.[index] || null;
+        const newPlan: AgendaItem = {
+          id: `${Date.now()}-${dateStr}-${index}`,
+          date: dateStr,
+          type: 'planeacion',
+          title: tema || proyecto || 'Planeación Generada',
+          description: `Día ${index + 1}: Fase: ${fase}. ${campoFormativo} - ${metodologia}`,
+          metadata: {
+            fase,
+            proyecto,
+            campoFormativo,
+            metodologia,
+            tema,
+            principio,
+            object: diaData ? { diaADia: [diaData] } : object, // Only store the specific day's data if possible
+          },
+          createdAt: new Date().toISOString(),
+        };
+        addAgendaItem(newPlan);
+      });
+
+      setSaveMessage('Planeación distribuida en el calendario.');
       setHasSavedPlan(true);
       window.setTimeout(() => setSaveMessage(''), 5000);
     }
-  }, [object, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio]);
+  }, [object, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio, duracion]);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
