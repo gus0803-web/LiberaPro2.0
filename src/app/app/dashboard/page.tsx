@@ -199,11 +199,6 @@ export default function DashboardPage() {
       return;
     }
 
-    if (!materialTitle.trim()) {
-      setMaterialMessage(isEs ? 'Agrega un título para el material.' : 'Add a title for the material.');
-      return;
-    }
-
     const selectedPlan = planeacionItems.find((item) => item.id === selectedPlaneacionId) ?? planeacionItems[0];
     if (!selectedPlan) {
       setMaterialMessage(isEs ? 'No hay una planeación válida seleccionada.' : 'No valid plan selected.');
@@ -223,8 +218,6 @@ export default function DashboardPage() {
     const updated = addAgendaItem(newMaterial);
     setAgendaItems(updated);
     setMaterialMessage(isEs ? 'Material guardado en calendario.' : 'Material saved to calendar.');
-    setMaterialTitle('');
-    setMaterialDescription('');
     window.setTimeout(() => setMaterialMessage(''), 4000);
   };
 
