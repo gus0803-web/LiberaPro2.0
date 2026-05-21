@@ -30,8 +30,6 @@ export default function DashboardPage() {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
   const [selectedPlaneacionId, setSelectedPlaneacionId] = useState<string>('');
-  const [materialTitle, setMaterialTitle] = useState('');
-  const [materialDescription, setMaterialDescription] = useState('');
   const [materialMessage, setMaterialMessage] = useState('');
 
   const isEs = language === 'es';
@@ -55,11 +53,6 @@ export default function DashboardPage() {
     const storedDate = loadSelectedPlanDate();
     const defaultDate = storedDate || loadedAgenda[0]?.date || pinnedPlanDates[0].date;
     setSelectedDate(defaultDate);
-
-    const storedChecks = localStorage.getItem(`checklist-${defaultDate}`);
-    if (storedChecks) {
-      setCheckedItems(JSON.parse(storedChecks));
-    }
   }, []);
 
   useEffect(() => {
@@ -67,10 +60,6 @@ export default function DashboardPage() {
     saveSelectedPlanDate(selectedDate);
   }, [selectedDate]);
 
-  useEffect(() => {
-    if (!selectedDate) return;
-    localStorage.setItem(`checklist-${selectedDate}`, JSON.stringify(checkedItems));
-  }, [selectedDate, checkedItems]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -169,7 +158,6 @@ export default function DashboardPage() {
     ? Array.from(new Set(agendaItems.map((item) => item.date))).sort()
     : pinnedPlanDates.map((plan) => plan.date);
 
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (selectedPlaneacion?.id) {
