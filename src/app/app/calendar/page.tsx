@@ -297,8 +297,6 @@ export default function CalendarPage() {
               </div>
             </form>
           </div>
-        </section>
-
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col h-full max-h-[600px]">
             <div className="flex items-center gap-3 mb-6 shrink-0">
               <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-600">
