@@ -149,8 +149,8 @@ export default function DashboardPage() {
   );
 
   const planeacionItems = useMemo(
-    () => selectedDayItems.filter((item) => item.type === 'planeacion'),
-    [selectedDayItems]
+    () => agendaItems.filter((item) => item.type === 'planeacion'),
+    [agendaItems]
   );
 
   const recordatorioItems = useMemo(

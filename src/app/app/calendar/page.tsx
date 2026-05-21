@@ -166,7 +166,7 @@ export default function CalendarPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <section className="space-y-6">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
@@ -213,11 +213,22 @@ export default function CalendarPage() {
                     key={cell.dateKey}
                     type="button"
                     onClick={() => setSelectedDate(cell.dateKey || getTodayDate())}
-                    className={`group h-14 rounded-3xl border p-2 text-left transition ${isSelected ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'} ${isToday ? 'ring-2 ring-blue-200' : ''}`}
+                    className={`group min-h-[120px] flex flex-col items-start rounded-3xl border p-3 transition ${isSelected ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'} ${isToday ? 'ring-2 ring-blue-200' : ''}`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between w-full mb-2">
                       <span className="text-sm font-semibold text-slate-800">{cell.value}</span>
-                      {hasItems ? <span className="h-2 w-2 rounded-full bg-blue-500" /> : null}
+                    </div>
+                    <div className="flex flex-col gap-1 w-full overflow-hidden">
+                      {agendaItems.filter(i => i.date === cell.dateKey).slice(0, 3).map(item => (
+                        <div key={item.id} className="text-[10px] truncate w-full px-2 py-1 rounded bg-blue-100 text-blue-800 font-medium text-left">
+                           {item.title}
+                        </div>
+                      ))}
+                      {agendaItems.filter(i => i.date === cell.dateKey).length > 3 && (
+                        <div className="text-[10px] text-slate-500 font-medium text-left px-2">
+                          +{agendaItems.filter(i => i.date === cell.dateKey).length - 3} más
+                        </div>
+                      )}
                     </div>
                   </button>
                 );

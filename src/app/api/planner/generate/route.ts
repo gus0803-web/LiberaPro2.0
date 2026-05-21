@@ -94,6 +94,12 @@ export async function POST(req: Request) {
       - Eje Articulador principal: ${principio}
       - Duración: ${duracion}
       
+      IMPORTANTE:
+      - Si la Duración es "Semanal", DEBES generar EXACTAMENTE 5 días (elementos en diaADia y vistaRapida).
+      - Si la Duración es "Quincenal", DEBES generar EXACTAMENTE 10 días.
+      - Si la Duración es "Mensual", DEBES generar EXACTAMENTE 20 días.
+      No te desvíes de esta cantidad de días bajo ninguna circunstancia.
+
       Prioriza la metodología indicada y asegúrate de que las opciones 'Eco-Ally' sean realistas para zonas con bajos recursos.
     `;
 
