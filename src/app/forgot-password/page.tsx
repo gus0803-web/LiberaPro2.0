@@ -1,14 +1,19 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
+  const [redirectUrl, setRedirectUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRedirectUrl(`${window.location.origin}/reset-password`);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +25,7 @@ export default function ForgotPasswordPage() {
     
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/app/settings`,
+        redirectTo: redirectUrl || `${window.location.origin}/reset-password`,
       });
 
       if (resetError) throw resetError;
@@ -87,6 +92,14 @@ export default function ForgotPasswordPage() {
               {isLoading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
+
+          {redirectUrl && (
+            <div className="mt-4 w-full bg-slate-900/70 border border-slate-700/80 p-4 rounded-3xl text-xs text-slate-300">
+              Password reset emails will use this redirect URL:
+              <div className="mt-2 text-sky-300 break-all">{redirectUrl}</div>
+              Add this URL to your Supabase Auth redirect URLs if you see an invalid link error.
+            </div>
+          )}
 
           <div className="mt-8 pt-6 border-t border-slate-700/50 w-full text-center">
             <Link href="/login" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">

@@ -78,15 +78,33 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in, we check their subscription status for specific modules
-  if (user && (request.nextUrl.pathname.startsWith('/app/planner') || request.nextUrl.pathname.startsWith('/app/exams'))) {
-      const { data: profile } = await supabase.from('profiles').select('subscription_status').eq('id', user.id).single()
-      
+  // If user is logged in, we check whether their beta access is still active.
+  if (user) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('subscription_status, beta_tester, beta_expires_at')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    if (profile?.beta_tester && profile.beta_expires_at && new Date(profile.beta_expires_at) <= new Date()) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    if (request.nextUrl.pathname.startsWith('/app/planner') || request.nextUrl.pathname.startsWith('/app/exams')) {
       if (!profile || profile.subscription_status !== 'active') {
-          const url = request.nextUrl.clone()
-          url.pathname = '/app/billing' // Redirigir al muro de pago
-          return NextResponse.redirect(url)
+        const url = request.nextUrl.clone()
+        url.pathname = '/app/billing' // Redirigir al muro de pago
+        return NextResponse.redirect(url)
       }
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

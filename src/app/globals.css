@@ -26,3 +26,30 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   @apply antialiased;
 }
+
+@keyframes patternDarken {
+  from {
+    filter: brightness(1.8);
+    opacity: 0.7;
+  }
+  to {
+    filter: brightness(0.3);
+    opacity: 0.08;
+  }
+}
+
+.pattern-dark-1 {
+  animation: patternDarken 1.2s ease-in-out forwards 0s;
+}
+
+.pattern-dark-2 {
+  animation: patternDarken 1.2s ease-in-out forwards 0.25s;
+}
+
+.pattern-dark-3 {
+  animation: patternDarken 1.2s ease-in-out forwards 0.5s;
+}
+
+.pattern-dark-4 {
+  animation: patternDarken 1.2s ease-in-out forwards 0.75s;
+}
