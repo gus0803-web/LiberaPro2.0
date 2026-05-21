@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const t = {
     newPlan: isEs ? 'Nueva Planeación' : 'New Plan',
     viewAgenda: isEs ? 'Ver Agenda' : 'View Agenda',
-    date: isEs ? 'Jueves, 26 de Octubre, 2023' : 'Thursday, October 26, 2023',
+    date: new Date().toLocaleDateString(isEs ? 'es-ES' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
     month: isEs ? 'Octubre' : 'October',
     reminders: isEs ? 'Recordatorios' : 'Reminders',
     gradeExams: isEs ? 'Calificar Exámenes 7B' : 'Grade Exams 7B',
@@ -169,11 +169,31 @@ export default function DashboardPage() {
     ? Array.from(new Set(agendaItems.map((item) => item.date))).sort()
     : pinnedPlanDates.map((plan) => plan.date);
 
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     if (selectedPlaneacion?.id) {
       setSelectedPlaneacionId(selectedPlaneacion.id);
     }
   }, [selectedPlaneacion]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('liberapro_checklist_memory');
+    if (saved) {
+      try {
+        setCheckedItems(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
+
+  const handleCheckTask = (taskName: string) => {
+    const key = `${selectedDate}-${taskName}`;
+    setCheckedItems((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('liberapro_checklist_memory', JSON.stringify(next));
+      return next;
+    });
+  };
 
   const planTasks = useMemo(() => {
     const tasksFromPlan = selectedPlaneacion?.metadata?.object?.diaADia
@@ -206,8 +226,8 @@ export default function DashboardPage() {
       id: `${Date.now()}-${selectedDate}-material`,
       date: selectedDate,
       type: 'material',
-      title: materialTitle,
-      description: materialDescription || `${isEs ? 'Material para' : 'Material for'} ${selectedPlan.title}`,
+      title: `LiberaPro-${selectedDate}-Leccion`,
+      description: `Material de apoyo para la planeación: ${selectedPlan.title}`,
       metadata: { linkedPlanId: selectedPlan.id },
       createdAt: new Date().toISOString(),
     };
@@ -318,27 +338,7 @@ export default function DashboardPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">{t.materialTitle}</label>
-                <input
-                  value={materialTitle}
-                  onChange={(e) => setMaterialTitle(e.target.value)}
-                  type="text"
-                  placeholder={isEs ? 'Ej. Guía de lectura' : 'E.g. Reading guide'}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">{t.selectMaterialType}</label>
-                <textarea
-                  value={materialDescription}
-                  onChange={(e) => setMaterialDescription(e.target.value)}
-                  rows={4}
-                  placeholder={isEs ? 'Describe el material que necesitas' : 'Describe the material you need'}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
+              {/* Inputs eliminados por solicitud del usuario. Solo se usa fecha y planeación. */}
 
               <button
                 onClick={handleCreateMaterial}
@@ -446,13 +446,15 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <input
                           type="checkbox"
-                          checked={!!checkedItems[item]}
-                          onChange={() => setCheckedItems((prev) => ({ ...prev, [item]: !prev[item] }))}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          checked={!!checkedItems[`${selectedDate}-${item}`]}
+                          onChange={() => handleCheckTask(item)}
+                          className="w-5 h-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 transition-colors"
                         />
-                        <span className={checkedItems[item] ? 'text-slate-400 line-through text-sm' : 'text-slate-700 text-sm'}>{item}</span>
+                        <span className={`text-sm font-medium transition-colors ${checkedItems[`${selectedDate}-${item}`] ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                          {item}
+                        </span>
                       </div>
-                      <span className="text-xs font-semibold text-slate-500">{checkedItems[item] ? (isEs ? 'Completado' : 'Done') : (isEs ? 'Pendiente' : 'Pending')}</span>
+                      <span className="text-xs font-semibold text-slate-500">{checkedItems[`${selectedDate}-${item}`] ? (isEs ? 'Completado' : 'Done') : (isEs ? 'Pendiente' : 'Pending')}</span>
                     </label>
                   ))}
                 </div>
