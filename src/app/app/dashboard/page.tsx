@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [materialMessage, setMaterialMessage] = useState('');
   const [isGeneratingMaterial, setIsGeneratingMaterial] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [currentDateString, setCurrentDateString] = useState<string>('');
 
   const isEs = language === 'es';
   const pinnedPlanDates = [
@@ -61,6 +62,12 @@ export default function DashboardPage() {
     if (!selectedDate) return;
     saveSelectedPlanDate(selectedDate);
   }, [selectedDate]);
+
+  useEffect(() => {
+    setCurrentDateString(
+      new Date().toLocaleDateString(isEs ? 'es-ES' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    );
+  }, [isEs]);
 
 
   useEffect(() => {
@@ -103,7 +110,7 @@ export default function DashboardPage() {
   const t = {
     newPlan: isEs ? 'Nueva Planeación' : 'New Plan',
     viewAgenda: isEs ? 'Ver Agenda' : 'View Agenda',
-    date: new Date().toLocaleDateString(isEs ? 'es-ES' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+    date: currentDateString,
     month: isEs ? 'Octubre' : 'October',
     reminders: isEs ? 'Recordatorios' : 'Reminders',
     gradeExams: isEs ? 'Calificar Exámenes 7B' : 'Grade Exams 7B',
