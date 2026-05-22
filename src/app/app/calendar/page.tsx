@@ -341,7 +341,26 @@ export default function CalendarPage() {
                       {previewId === item.id ? (
                         <div className="mt-5 rounded-3xl border border-white/40 bg-white/60 p-4 text-sm text-slate-800">
                           <p className="font-bold text-slate-900 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
-                          <pre className="whitespace-pre-wrap text-sm leading-6 overflow-x-auto">{item.description || (item.metadata?.object ? JSON.stringify(item.metadata.object, null, 2) : '')}</pre>
+                          {item.metadata?.object?.diaADia ? (
+                            <div className="space-y-4">
+                              {(Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia]).map((dia: any, i: number) => (
+                                <div key={i} className="border-l-4 border-blue-500 pl-4 py-1">
+                                  <h5 className="font-bold text-blue-700">{dia.dia || `Día ${i + 1}`}</h5>
+                                  {dia.inicio && <p className="mt-2 text-xs"><strong>Inicio:</strong> {dia.inicio}</p>}
+                                  {dia.desarrollo && <p className="mt-2 text-xs"><strong>Desarrollo:</strong> {dia.desarrollo}</p>}
+                                  {dia.cierre && <p className="mt-2 text-xs"><strong>Cierre:</strong> {dia.cierre}</p>}
+                                  {dia.material_estandar && <p className="mt-2 text-xs"><strong>Materiales:</strong> {dia.material_estandar}</p>}
+                                  {dia.conaliteg_cita && <p className="mt-2 text-xs"><strong>Libro:</strong> {dia.conaliteg_cita}</p>}
+                                </div>
+                              ))}
+                            </div>
+                          ) : item.metadata?.materialContent ? (
+                            <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
+                              {item.metadata.materialContent}
+                            </div>
+                          ) : (
+                            <pre className="whitespace-pre-wrap text-sm leading-6 overflow-x-auto">{item.description}</pre>
+                          )}
                         </div>
                       ) : null}
                     </article>

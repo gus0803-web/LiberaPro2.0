@@ -139,9 +139,24 @@ export function buildAgendaItemText(item: AgendaItem) {
     item.description || '',
   ];
 
-  if (item.metadata?.object) {
+  if (item.metadata?.object?.diaADia) {
+    lines.push('', '--- DESGLOSE DEL DÍA ---');
+    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
+    dias.forEach((dia: any, index: number) => {
+      lines.push(`\nDía ${index + 1}: ${dia.dia || ''}`);
+      if (dia.inicio) lines.push(`INICIO:\n${dia.inicio}`);
+      if (dia.desarrollo) lines.push(`DESARROLLO:\n${dia.desarrollo}`);
+      if (dia.cierre) lines.push(`CIERRE:\n${dia.cierre}`);
+      if (dia.material_estandar) lines.push(`MATERIALES:\n${dia.material_estandar}`);
+      if (dia.material_eco_ally) lines.push(`MATERIALES ECO:\n${dia.material_eco_ally}`);
+      if (dia.conaliteg_cita) lines.push(`LIBRO DE TEXTO (CONALITEG):\n${dia.conaliteg_cita}`);
+    });
+  } else if (item.metadata?.object) {
     lines.push('', 'Detalles adicionales:');
-    lines.push(JSON.stringify(item.metadata.object, null, 2));
+    lines.push(typeof item.metadata.object === 'string' ? item.metadata.object : JSON.stringify(item.metadata.object, null, 2));
+  } else if (item.metadata?.materialContent) {
+    lines.push('', '--- MATERIAL GENERADO ---');
+    lines.push(item.metadata.materialContent);
   }
 
   return lines.join('\n');
@@ -160,15 +175,29 @@ export function downloadAgendaItem(item: AgendaItem) {
 
 export function printAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
-  const content = buildAgendaItemText(item)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br/>');
   const printWindow = window.open('', '_blank', 'width=900,height=700');
   if (!printWindow) return;
 
-  printWindow.document.write(`<!doctype html><html><head><title>${item.title}</title><style>@page{size:letter;margin:1in;}body{font-family:Arial, sans-serif;padding:24px;color:#111;}h1{font-size:24px;margin-bottom:0.5rem;}p{margin:0.5rem 0;}pre{white-space:pre-wrap;font-size:14px;line-height:1.5;}</style></head><body><h1>${item.title}</h1><p><strong>Fecha:</strong> ${item.date}</p><p><strong>Tipo:</strong> ${item.type}</p><hr/><pre>${content}</pre></body></html>`);
+  let contentHtml = '';
+  if (item.metadata?.object?.diaADia) {
+    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
+    contentHtml = dias.map((dia: any, idx: number) => `
+      <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
+        <h3 style="margin-top:0; color:#2563eb;">Día ${idx + 1} - ${dia.dia || ''}</h3>
+        <p><strong>Inicio:</strong><br/>${dia.inicio}</p>
+        <p><strong>Desarrollo:</strong><br/>${dia.desarrollo}</p>
+        <p><strong>Cierre:</strong><br/>${dia.cierre}</p>
+        <p><strong>Materiales:</strong><br/>${dia.material_estandar}</p>
+        <p><strong>Libro (Conaliteg):</strong><br/>${dia.conaliteg_cita}</p>
+      </div>
+    `).join('');
+  } else if (item.metadata?.materialContent) {
+    contentHtml = `<pre style="white-space:pre-wrap; font-family:Arial;">${item.metadata.materialContent}</pre>`;
+  } else {
+    contentHtml = `<pre style="white-space:pre-wrap; font-family:Arial;">${item.description || ''}</pre>`;
+  }
+
+  printWindow.document.write(`<!doctype html><html><head><title>${item.title}</title><style>@page{size:letter;margin:1in;}body{font-family:Arial, sans-serif;padding:24px;color:#111;}h1{font-size:24px;margin-bottom:0.5rem;color:#1e293b;}p{margin:0.5rem 0; line-height: 1.5;}</style></head><body><h1>${item.title}</h1><p><strong>Fecha:</strong> ${item.date}</p><p><strong>Tipo:</strong> ${item.type}</p><hr/>${contentHtml}</body></html>`);
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();

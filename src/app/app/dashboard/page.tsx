@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 import { createClient } from '@/lib/supabase/client';
-import { AlertCircle, Bell, CheckCircle2, Circle, Download, Eye, FileText, MoreHorizontal, Printer, Trash2, Calendar } from 'lucide-react';
+import { AlertCircle, Bell, CheckCircle2, Circle, Download, Eye, FileText, MoreHorizontal, Printer, Trash2, Calendar, Loader2 } from 'lucide-react';
 import {
   AgendaItem,
   AgendaItemType,
@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
   const [selectedPlaneacionId, setSelectedPlaneacionId] = useState<string>('');
   const [materialMessage, setMaterialMessage] = useState('');
+  const [isGeneratingMaterial, setIsGeneratingMaterial] = useState(false);
 
   const isEs = language === 'es';
   const pinnedPlanDates = [
@@ -191,7 +192,7 @@ export default function DashboardPage() {
     return tasks.length > 0 ? (Array.from(new Set(tasks)) as string[]) : planChecklist;
   }, [selectedPlaneacion, planChecklist]);
 
-  const handleCreateMaterial = (e: React.FormEvent) => {
+  const handleCreateMaterial = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedPlaneacionId) {
@@ -205,20 +206,42 @@ export default function DashboardPage() {
       return;
     }
 
-    const newMaterial: AgendaItem = {
-      id: `${Date.now()}-${selectedDate}-material`,
-      date: selectedDate,
-      type: 'material',
-      title: `LiberaPro-${selectedDate}-Leccion`,
-      description: `Material de apoyo para la planeación: ${selectedPlan.title}`,
-      metadata: { linkedPlanId: selectedPlan.id },
-      createdAt: new Date().toISOString(),
-    };
+    setIsGeneratingMaterial(true);
+    setMaterialMessage(isEs ? 'Generando material con Inteligencia Artificial...' : 'Generating material with AI...');
 
-    const updated = addAgendaItem(newMaterial);
-    setAgendaItems(updated);
-    setMaterialMessage(isEs ? 'Material guardado en calendario.' : 'Material saved to calendar.');
-    window.setTimeout(() => setMaterialMessage(''), 4000);
+    try {
+      const response = await fetch('/api/material/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planTitle: selectedPlan.title,
+          planDescription: selectedPlan.description,
+          planData: selectedPlan.metadata?.object || {}
+        })
+      });
+
+      if (!response.ok) throw new Error('Error en IA');
+      const data = await response.json();
+
+      const newMaterial: AgendaItem = {
+        id: `${Date.now()}-${selectedDate}-material`,
+        date: selectedDate,
+        type: 'material',
+        title: `LiberaPro-${selectedDate}-Leccion`,
+        description: `Material de apoyo para la planeación: ${selectedPlan.title}`,
+        metadata: { linkedPlanId: selectedPlan.id, materialContent: data.content },
+        createdAt: new Date().toISOString(),
+      };
+
+      const updated = addAgendaItem(newMaterial);
+      setAgendaItems(updated);
+      setMaterialMessage(isEs ? '¡Material generado y guardado en calendario!' : 'Material generated and saved!');
+    } catch (error) {
+      setMaterialMessage(isEs ? 'Error al generar material.' : 'Error generating material.');
+    } finally {
+      setIsGeneratingMaterial(false);
+      window.setTimeout(() => setMaterialMessage(''), 4000);
+    }
   };
 
   const handlePreviewToggle = (id: string) => {
@@ -323,9 +346,17 @@ export default function DashboardPage() {
 
               <button
                 onClick={handleCreateMaterial}
-                className="w-full rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+                disabled={isGeneratingMaterial}
+                className="w-full rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isEs ? 'Guardar material' : 'Save material'}
+                {isGeneratingMaterial ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    {isEs ? 'Generando...' : 'Generating...'}
+                  </>
+                ) : (
+                  isEs ? 'Generar material' : 'Generate material'
+                )}
               </button>
 
               {materialMessage ? (
