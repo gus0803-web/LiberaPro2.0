@@ -162,19 +162,16 @@ export default function DashboardPage() {
   );
 
   const selectedPlaneacion = useMemo(() => {
+    if (selectedPlaneacionId) {
+      const found = planeacionItems.find(p => p.id === selectedPlaneacionId && p.date === selectedDate);
+      if (found) return found;
+    }
     return planeacionItems.find(p => p.date === selectedDate) ?? planeacionItems[0];
-  }, [planeacionItems, selectedDate]);
+  }, [planeacionItems, selectedDate, selectedPlaneacionId]);
 
   const agendaDates = agendaItems.length > 0
     ? Array.from(new Set(agendaItems.map((item) => item.date))).sort()
     : pinnedPlanDates.map((plan) => plan.date);
-
-
-  useEffect(() => {
-    if (selectedPlaneacion?.id) {
-      setSelectedPlaneacionId(selectedPlaneacion.id);
-    }
-  }, [selectedPlaneacion]);
 
   useEffect(() => {
     const saved = localStorage.getItem('liberapro_checklist_memory');
@@ -425,11 +422,13 @@ export default function DashboardPage() {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Planeación vinculada' : 'Linked plan'}</label>
-                <select value={selectedPlaneacionId} onChange={(e) => setSelectedPlaneacionId(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                <select value={selectedPlaneacion?.id || ''} onChange={(e) => setSelectedPlaneacionId(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200">
                   {planeacionItems.length > 0 ? (
-                    planeacionItems.map((plan) => (
-                      <option key={plan.id} value={plan.id}>{plan.title}</option>
-                    ))
+                    planeacionItems.filter(p => p.date === selectedDate).length > 0 
+                      ? planeacionItems.filter(p => p.date === selectedDate).map((plan) => (
+                          <option key={plan.id} value={plan.id}>{plan.title}</option>
+                        ))
+                      : <option value="">No hay planeaciones vinculadas a este día</option>
                   ) : (
                     <option value="">{isEs ? 'No hay planeaciones ancladas para este día' : 'No pinned plans for this day'}</option>
                   )}
