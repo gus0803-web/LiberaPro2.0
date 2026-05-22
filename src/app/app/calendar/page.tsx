@@ -67,11 +67,12 @@ export default function CalendarPage() {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [createType, setCreateType] = useState<AgendaItemType>('recordatorio');
-  const [formDate, setFormDate] = useState<string>(getTodayDate());
+  const [formDate, setFormDate] = useState<string>('');
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [formMessage, setFormMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [monthLabel, setMonthLabel] = useState<string>('');
 
   const isEs = language === 'es';
 
@@ -95,6 +96,19 @@ export default function CalendarPage() {
       setFormDate(selectedDate);
     }
   }, [selectedDate]);
+
+  useEffect(() => {
+    setFormDate(getTodayDate());
+  }, []);
+
+  useEffect(() => {
+    setMonthLabel(
+      calendarMonth.toLocaleString(isEs ? 'es-ES' : 'en-US', {
+        month: 'long',
+        year: 'numeric',
+      })
+    );
+  }, [calendarMonth, isEs]);
 
   const dayItems = useMemo(
     () => agendaItems.filter((item) => item.date === selectedDate),
@@ -143,10 +157,7 @@ export default function CalendarPage() {
     printAgendaItem(item);
   };
 
-  const monthLabel = calendarMonth.toLocaleString(isEs ? 'es-ES' : 'en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
+  // monthLabel is managed by useEffect to avoid hydration mismatch
 
   const agendaDates = useMemo(() => Array.from(new Set(agendaItems.map((item) => item.date))), [agendaItems]);
 
