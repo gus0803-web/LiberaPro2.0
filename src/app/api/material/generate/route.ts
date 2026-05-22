@@ -20,13 +20,21 @@ export async function POST(req: Request) {
 
     const prompt = `
 Eres un asistente educativo experto del sistema NEM (Nueva Escuela Mexicana).
-Basado en la siguiente planeación, crea un "Material de Apoyo" para el alumno.
-Esto puede ser una hoja de trabajo, un cuestionario, un formato de lectura, o una actividad práctica.
-Asegúrate de que el material sea directamente aplicable para la sesión.
-No agregues saludos ni despedidas, solo devuelve el contenido del material en formato Markdown (texto claro con viñetas, negritas y títulos).
+Basado en la siguiente planeación, crea un "Material de Apoyo Académico" EXCEPCIONAL y COMPLETO para el alumno.
+No me des un resumen de la clase. Necesito el material LISTO PARA IMPRIMIR que el alumno va a resolver o leer.
+
+Si la clase es teórica, genera: Una guía de lectura detallada con 5 preguntas de comprensión.
+Si la clase es práctica, genera: Una hoja de trabajo (worksheet) con ejercicios, espacios para responder, o instrucciones de laboratorio paso a paso.
+Si la clase es de evaluación, genera: Un cuestionario tipo examen o una rúbrica de autoevaluación.
+
+Formatea todo usando Markdown estricto y profesional:
+- Usa encabezados (##) para el título de la escuela, nombre del alumno, fecha y tema.
+- Usa listas con viñetas para instrucciones.
+- Usa líneas (_____) para que el alumno escriba sus respuestas.
+- Incluye una sección de "Reto extra" o "Pensamiento crítico" al final.
 
 TÍTULO DE LA PLANEACIÓN: ${planTitle}
-DESCRIPCIÓN: ${planDescription}
+DESCRIPCIÓN DE LA CLASE: ${planDescription}
 DATOS DEL DÍA: ${JSON.stringify(planData)}
 `;
 

@@ -153,7 +153,9 @@ export default function DashboardPage() {
     [selectedDayItems]
   );
 
-  const selectedPlaneacion = planeacionItems[0];
+  const selectedPlaneacion = useMemo(() => {
+    return planeacionItems.find(p => p.date === selectedDate) ?? planeacionItems[0];
+  }, [planeacionItems, selectedDate]);
 
   const agendaDates = agendaItems.length > 0
     ? Array.from(new Set(agendaItems.map((item) => item.date))).sort()
