@@ -14,6 +14,7 @@ import {
   PlusCircle,
   Bell,
   FileText,
+  X,
 } from 'lucide-react';
 import {
   AgendaItem,
@@ -70,6 +71,7 @@ export default function CalendarPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [formMessage, setFormMessage] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isEs = language === 'es';
 
@@ -105,25 +107,22 @@ export default function CalendarPage() {
 
   const handleAddItem = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!newTitle.trim()) {
-      setFormMessage(isEs ? 'Agrega un título para continuar.' : 'Add a title to continue.');
-      return;
-    }
+    if (!formDate) return;
+
+    const autoTitle = typeLabel(createType, isEs);
 
     const item: AgendaItem = {
       id: `${Date.now()}-${formDate}-${createType}`,
       date: formDate,
       type: createType,
-      title: newTitle,
-      description: newDescription,
+      title: autoTitle,
+      description: '',
       metadata: {},
       createdAt: new Date().toISOString(),
     };
 
     const updated = addAgendaItem(item);
     setAgendaItems(updated);
-    setNewTitle('');
-    setNewDescription('');
     setFormMessage(isEs ? 'Item agregado a tu agenda.' : 'Item added to your agenda.');
     window.setTimeout(() => setFormMessage(''), 3000);
   };
@@ -214,7 +213,10 @@ export default function CalendarPage() {
                   <button
                     key={cell.dateKey}
                     type="button"
-                    onClick={() => setSelectedDate(cell.dateKey || getTodayDate())}
+                    onClick={() => {
+                      setSelectedDate(cell.dateKey || getTodayDate());
+                      setIsModalOpen(true);
+                    }}
                     className={`group min-h-[120px] flex flex-col items-start rounded-3xl border p-3 transition ${isSelected ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'} ${isToday ? 'ring-2 ring-blue-200' : ''}`}
                   >
                     <div className="flex items-center justify-between w-full mb-2">
@@ -246,7 +248,7 @@ export default function CalendarPage() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 gap-6">
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center gap-3">
@@ -278,46 +280,46 @@ export default function CalendarPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Título' : 'Title'}</label>
-                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder={isEs ? 'Ej. Traer materiales reciclables' : 'E.g. Bring recycled materials'} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Descripción' : 'Description'}</label>
-                <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200" rows={4} placeholder={isEs ? 'Notas o instrucciones para el día seleccionado' : 'Notes or instructions for the selected day'} />
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4">
+                <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-8 py-4 text-sm font-semibold text-white hover:bg-blue-700 transition-colors w-full sm:w-auto">
                   <PlusCircle className="w-4 h-4" />
                   {isEs ? 'Agregar' : 'Add'}
                 </button>
-                {formMessage ? <p className="text-sm text-slate-600">{formMessage}</p> : null}
+                {formMessage ? <p className="text-sm font-medium text-emerald-600">{formMessage}</p> : null}
               </div>
             </form>
           </div>
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col h-full max-h-[600px]">
-            <div className="flex items-center gap-3 mb-6 shrink-0">
-              <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-600">
-                <FileText className="w-5 h-5" />
+        </section>
+
+      {/* Modal Resumen del Día */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-blue-500/10 p-2 text-blue-600">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] font-bold text-slate-400">{isEs ? 'Resumen del Día' : 'Daily Summary'}</p>
+                  <h3 className="text-xl font-bold text-slate-900">{selectedDate}</h3>
+                </div>
               </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{isEs ? 'Resumen' : 'Summary'}</p>
-                <h3 className="text-xl font-semibold text-slate-900">{selectedDate}</h3>
-              </div>
+              <button onClick={() => setIsModalOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <X className="w-6 h-6" />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/30">
               {selectedDateHasItems ? (
                 <div className="space-y-4">
                   {dayItems.map((item) => (
-                    <article key={item.id} className={`rounded-3xl border p-5 shadow-sm ${getAgendaItemColor(item.type)}`}>
+                    <article key={item.id} className={`rounded-3xl border p-5 shadow-sm bg-white ${getAgendaItemColor(item.type)}`}>
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="text-xs uppercase tracking-[0.24em] font-bold text-slate-500">{typeLabel(item.type, isEs)}</p>
                           <h4 className="mt-1 text-lg font-bold text-slate-900">{item.title}</h4>
-                          <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
+                          {item.description && <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>}
                         </div>
                         <div className="flex flex-col items-end gap-2 text-slate-700 shrink-0">
                           <button type="button" onClick={() => handlePreviewToggle(item.id)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white transition-colors">
@@ -339,20 +341,54 @@ export default function CalendarPage() {
                       </div>
 
                       {previewId === item.id ? (
-                        <div className="mt-5 rounded-3xl border border-white/40 bg-white/60 p-4 text-sm text-slate-800">
+                        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
                           <p className="font-bold text-slate-900 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
                           {item.metadata?.object?.diaADia ? (
                             <div className="space-y-4">
+                              {item.metadata.object.retoComunitario && (
+                                <div className="mb-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                  <h4 className="font-bold text-blue-800 mb-2">Reto Comunitario General</h4>
+                                  <p className="text-sm text-slate-700">{item.metadata.object.retoComunitario}</p>
+                                </div>
+                              )}
                               {(Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia]).map((dia: any, i: number) => (
                                 <div key={i} className="border-l-4 border-blue-500 pl-4 py-1">
                                   <h5 className="font-bold text-blue-700">{dia.dia || `Día ${i + 1}`}</h5>
+                                  {dia.tiemposEstimados && <p className="mt-1 text-xs text-slate-500 font-medium">Tiempos Estimados: {dia.tiemposEstimados}</p>}
                                   {dia.inicio && <p className="mt-2 text-xs"><strong>Inicio:</strong> {dia.inicio}</p>}
-                                  {dia.desarrollo && <p className="mt-2 text-xs"><strong>Desarrollo:</strong> {dia.desarrollo}</p>}
+                                  {dia.desarrollo && typeof dia.desarrollo === 'object' ? (
+                                    <div className="mt-2 text-xs">
+                                      <strong>Desarrollo:</strong>
+                                      <ul className="list-disc pl-4 mt-1">
+                                        {dia.desarrollo.visual && <li><strong>Visual:</strong> {dia.desarrollo.visual}</li>}
+                                        {dia.desarrollo.auditiva && <li><strong>Auditiva:</strong> {dia.desarrollo.auditiva}</li>}
+                                        {dia.desarrollo.kinestesica && <li><strong>Kinestésica:</strong> {dia.desarrollo.kinestesica}</li>}
+                                      </ul>
+                                    </div>
+                                  ) : dia.desarrollo && (
+                                    <p className="mt-2 text-xs"><strong>Desarrollo:</strong> {dia.desarrollo}</p>
+                                  )}
                                   {dia.cierre && <p className="mt-2 text-xs"><strong>Cierre:</strong> {dia.cierre}</p>}
-                                  {dia.material_estandar && <p className="mt-2 text-xs"><strong>Materiales:</strong> {dia.material_estandar}</p>}
+                                  {dia.materiales && typeof dia.materiales === 'object' ? (
+                                    <div className="mt-2 text-xs">
+                                      <strong>Materiales:</strong>
+                                      <ul className="list-disc pl-4 mt-1">
+                                        {dia.materiales.principal && <li><strong>Principal:</strong> {dia.materiales.principal}</li>}
+                                        {dia.materiales.sustentable && <li><strong>Eco-Ally:</strong> {dia.materiales.sustentable}</li>}
+                                      </ul>
+                                    </div>
+                                  ) : dia.material_estandar && (
+                                    <p className="mt-2 text-xs"><strong>Materiales:</strong> {dia.material_estandar}</p>
+                                  )}
                                   {dia.conaliteg_cita && <p className="mt-2 text-xs"><strong>Libro:</strong> {dia.conaliteg_cita}</p>}
                                 </div>
                               ))}
+                              {item.metadata.object.anexoMateriales && (
+                                <div className="mt-4 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                                  <h4 className="font-bold text-emerald-800 mb-2">Anexo de Materiales y Actividades</h4>
+                                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.metadata.object.anexoMateriales}</p>
+                                </div>
+                              )}
                             </div>
                           ) : item.metadata?.materialContent ? (
                             <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
@@ -367,15 +403,16 @@ export default function CalendarPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 text-center h-full flex items-center justify-center">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center text-sm text-slate-500 flex items-center justify-center h-full min-h-[200px]">
                   {isEs
-                    ? 'No hay actividades para este día. Agrega una nueva entrada desde el formulario.'
-                    : 'No activities for this day. Add a new entry from the form.'}
+                    ? 'No hay actividades registradas para este día.'
+                    : 'No activities recorded for this day.'}
                 </div>
               )}
             </div>
           </div>
-        </section>
+        </div>
+      )}
       </div>
     </div>
   );

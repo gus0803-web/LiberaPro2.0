@@ -184,11 +184,27 @@ export function printAgendaItem(item: AgendaItem) {
     contentHtml = dias.map((dia: any, idx: number) => `
       <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
         <h3 style="margin-top:0; color:#2563eb;">Día ${idx + 1} - ${dia.dia || ''}</h3>
+        ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 1rem;"><strong>Tiempos Estimados:</strong> ${dia.tiemposEstimados}</p>` : ''}
         <p><strong>Inicio:</strong><br/>${dia.inicio}</p>
-        <p><strong>Desarrollo:</strong><br/>${dia.desarrollo}</p>
+        <p><strong>Desarrollo:</strong><br/>
+          ${dia.desarrollo && typeof dia.desarrollo === 'object' ? `
+            <ul>
+              ${dia.desarrollo.visual ? `<li><strong>Visual:</strong> ${dia.desarrollo.visual}</li>` : ''}
+              ${dia.desarrollo.auditiva ? `<li><strong>Auditiva:</strong> ${dia.desarrollo.auditiva}</li>` : ''}
+              ${dia.desarrollo.kinestesica ? `<li><strong>Kinestésica:</strong> ${dia.desarrollo.kinestesica}</li>` : ''}
+            </ul>
+          ` : dia.desarrollo || ''}
+        </p>
         <p><strong>Cierre:</strong><br/>${dia.cierre}</p>
-        <p><strong>Materiales:</strong><br/>${dia.material_estandar}</p>
-        <p><strong>Libro (Conaliteg):</strong><br/>${dia.conaliteg_cita}</p>
+        <p><strong>Materiales:</strong><br/>
+          ${dia.materiales && typeof dia.materiales === 'object' ? `
+            <ul>
+              ${dia.materiales.principal ? `<li><strong>Principal:</strong> ${dia.materiales.principal}</li>` : ''}
+              ${dia.materiales.sustentable ? `<li><strong>Sustentable:</strong> ${dia.materiales.sustentable}</li>` : ''}
+            </ul>
+          ` : dia.material_estandar || ''}
+        </p>
+        <p><strong>Libro (Conaliteg):</strong><br/>${dia.conaliteg_cita || ''}</p>
       </div>
     `).join('');
   } else if (item.metadata?.materialContent) {

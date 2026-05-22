@@ -6,21 +6,29 @@ import { createClient } from '@/lib/supabase/server';
 export const maxDuration = 60; // Allow up to 60 seconds for completion
 
 const planningSchema = z.object({
+  retoComunitario: z.string().describe("Descripción general del Reto Comunitario"),
   vistaRapida: z.array(z.object({
-    dia: z.string().describe("Día de la semana, ej. Lunes"),
+    dia: z.string().describe("Día de la semana o número, ej. Día 1"),
     tema_central: z.string().max(30).describe("Máximo 5 palabras"),
     recurso_sep_clave: z.string(),
     competencia_nem: z.string(),
-  })).describe("Vista rápida At-a-Glance de la semana"),
+  })).describe("SECCIÓN 2: Vista rápida At-a-Glance del periodo"),
   diaADia: z.array(z.object({
-    dia: z.string(),
-    inicio: z.string().describe("Actividad detonadora de inicio"),
-    desarrollo: z.string().describe("Actividad principal"),
-    cierre: z.string().describe("Evaluación o reflexión de cierre"),
-    material_estandar: z.string().describe("Material de aula normal"),
-    material_eco_ally: z.string().describe("Material sustentable/reciclado menor a 50 MXN (Ej. botellas, cartón)"),
-    conaliteg_cita: z.string().describe("Referencia exacta en formato [Nombre del Libro] - Pág [X]")
-  })).describe("Desglose riguroso día a día de la planeación")
+    dia: z.string().describe("Título del día, ej: 'Día 1: ¿Quién vive aquí?'"),
+    tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
+    inicio: z.string().describe("Activación y pregunta provocadora"),
+    desarrollo: z.object({
+      visual: z.string().describe("Actividad Visual DUA"),
+      auditiva: z.string().describe("Actividad Auditiva DUA"),
+      kinestesica: z.string().describe("Actividad Kinestésica DUA")
+    }).describe("Desarrollo (Triple Vía DUA)"),
+    cierre: z.string().describe("Socialización y reflexión final"),
+    materiales: z.object({
+      principal: z.string(),
+      sustentable: z.string()
+    })
+  })).describe("SECCIÓN 3: DESARROLLO GRANULAR DÍA POR DÍA"),
+  anexoMateriales: z.string().describe("SECCIÓN 4: ANEXO DE MATERIALES Y ACTIVIDADES. Resumen general y una Idea Práctica 'Eco-Ally'")
 });
 
 export async function POST(req: Request) {

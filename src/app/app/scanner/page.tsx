@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 import { Upload, FileText, Download, Printer, Loader2 } from 'lucide-react';
+// @ts-ignore
 import Tesseract from 'tesseract.js';
 
 export default function ScannerPage() {
@@ -53,7 +54,7 @@ export default function ScannerPage() {
         imageSrc,
         isEs ? 'spa' : 'eng',
         {
-          logger: (m) => {
+          logger: (m: any) => {
             if (m.status === 'recognizing text') {
               setProgress(Math.round(m.progress * 100));
             }

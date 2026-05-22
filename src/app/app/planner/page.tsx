@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { AgendaItem, addAgendaItem, loadSelectedPlanDate } from '@/lib/agenda';
 
 const planningSchema = z.object({
+  retoComunitario: z.string().optional(),
   vistaRapida: z.array(z.object({
     dia: z.string(),
     tema_central: z.string(),
@@ -14,13 +15,23 @@ const planningSchema = z.object({
   })),
   diaADia: z.array(z.object({
     dia: z.string(),
+    tiemposEstimados: z.string().optional(),
     inicio: z.string(),
-    desarrollo: z.string(),
+    desarrollo: z.object({
+      visual: z.string().optional(),
+      auditiva: z.string().optional(),
+      kinestesica: z.string().optional(),
+    }).or(z.string()).optional(),
     cierre: z.string(),
-    material_estandar: z.string(),
-    material_eco_ally: z.string(),
-    conaliteg_cita: z.string()
-  }))
+    materiales: z.object({
+      principal: z.string().optional(),
+      sustentable: z.string().optional(),
+    }).optional(),
+    material_estandar: z.string().optional(),
+    material_eco_ally: z.string().optional(),
+    conaliteg_cita: z.string().optional()
+  })),
+  anexoMateriales: z.string().optional()
 });
 
 function getBusinessDays(startDateStr: string, count: number) {
@@ -265,16 +276,24 @@ export default function PlannerPage() {
         </section>
       )}
 
+      {object?.retoComunitario && (
+        <section className="space-y-4 pt-8 border-t border-white/10">
+          <h3 className="text-xl font-semibold text-white">Reto Comunitario General</h3>
+          <p className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5">{object.retoComunitario}</p>
+        </section>
+      )}
+
       {object?.diaADia && (
         <section className="space-y-6 pt-8 border-t border-white/10">
           <h3 className="text-2xl font-semibold text-white mb-6">Desarrollo Día a Día</h3>
           <div className="space-y-6">
             {object.diaADia.map((dia, idx) => (
               <div key={idx} className="bg-volcanic-800/50 rounded-3xl p-8 border border-white/5">
-                <h4 className="text-2xl font-bold text-turquoise-neon mb-6 flex items-center">
+                <h4 className="text-2xl font-bold text-turquoise-neon mb-2 flex items-center">
                   <span className="w-8 h-8 rounded-full bg-turquoise-neon/20 flex items-center justify-center mr-3 text-sm">{idx + 1}</span>
                   {dia?.dia}
                 </h4>
+                {dia?.tiemposEstimados && <p className="text-gray-400 text-sm mb-6 ml-11">Tiempos Estimados: {dia.tiemposEstimados}</p>}
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="space-y-4">
@@ -284,7 +303,15 @@ export default function PlannerPage() {
                     </div>
                     <div className="bg-white/5 rounded-xl p-5 border-l-2 border-turquoise-neon">
                       <p className="text-xs font-bold text-turquoise-neon uppercase tracking-wider mb-2">Desarrollo</p>
-                      <p className="text-sm text-gray-300">{dia?.desarrollo}</p>
+                      {dia?.desarrollo && typeof dia.desarrollo === 'object' ? (
+                        <ul className="text-sm text-gray-300 list-disc pl-4 space-y-2">
+                          {dia.desarrollo.visual && <li><strong>Visual:</strong> {dia.desarrollo.visual}</li>}
+                          {dia.desarrollo.auditiva && <li><strong>Auditiva:</strong> {dia.desarrollo.auditiva}</li>}
+                          {dia.desarrollo.kinestesica && <li><strong>Kinestésica:</strong> {dia.desarrollo.kinestesica}</li>}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-300">{dia?.desarrollo as React.ReactNode}</p>
+                      )}
                     </div>
                     <div className="bg-white/5 rounded-xl p-5 border-l-2 border-white/30">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Cierre</p>
@@ -298,12 +325,12 @@ export default function PlannerPage() {
                       <h5 className="font-semibold text-white mb-4">Materiales Recomendados</h5>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs text-gray-500 mb-1">Estándar</p>
-                          <p className="text-sm text-gray-300">{dia?.material_estandar}</p>
+                          <p className="text-xs text-gray-500 mb-1">Principal</p>
+                          <p className="text-sm text-gray-300">{dia?.materiales?.principal || dia?.material_estandar}</p>
                         </div>
                         <div>
                           <p className="text-xs text-turquoise-neon mb-1">Alternativa Sustentable (&lt;$50 MXN)</p>
-                          <p className="text-sm text-white">{dia?.material_eco_ally}</p>
+                          <p className="text-sm text-white">{dia?.materiales?.sustentable || dia?.material_eco_ally}</p>
                         </div>
                       </div>
                     </div>
@@ -324,6 +351,13 @@ export default function PlannerPage() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {object?.anexoMateriales && (
+        <section className="space-y-4 pt-8 border-t border-white/10">
+          <h3 className="text-xl font-semibold text-white">Anexo de Materiales y Actividades</h3>
+          <p className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5 whitespace-pre-wrap">{object.anexoMateriales}</p>
         </section>
       )}
     </div>

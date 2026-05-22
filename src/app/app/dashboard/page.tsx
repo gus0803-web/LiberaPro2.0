@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [selectedPlaneacionId, setSelectedPlaneacionId] = useState<string>('');
   const [materialMessage, setMaterialMessage] = useState('');
   const [isGeneratingMaterial, setIsGeneratingMaterial] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   const isEs = language === 'es';
   const pinnedPlanDates = [
@@ -247,7 +248,7 @@ export default function DashboardPage() {
   };
 
   const handlePreviewToggle = (id: string) => {
-    setSelectedPlaneacionId(id);
+    setPreviewId(prev => prev === id ? null : id);
   };
 
   const handleDeleteItem = (id: string) => {
@@ -273,33 +274,117 @@ export default function DashboardPage() {
         
         {/* LEFT COLUMN: Time Boxes */}
         <div className="lg:col-span-1 h-full">
-          <div className="space-y-3 h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{isEs ? 'Horario' : 'Schedule'}</h3>
-              <span className="text-xs uppercase tracking-[0.24em] text-slate-500">{selectedDate}</span>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col h-full">
+            <div className="flex items-center gap-3 mb-6 shrink-0">
+              <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-600">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{isEs ? 'Resumen del Día' : 'Daily Summary'}</p>
+                <h3 className="text-xl font-semibold text-slate-900">{selectedDate || t.date}</h3>
+              </div>
             </div>
-            {selectedDayItems.length > 0 ? (
-              <div className="space-y-4">
-                {selectedDayItems.map((item) => (
-                  <div key={item.id} className={`rounded-3xl border p-4 shadow-sm ${getAgendaItemColor(item.type)}`}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{typeLabel(item.type, isEs)}</p>
-                        <h4 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h4>
-                        <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
+
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+              {selectedDayItems.length > 0 ? (
+                <div className="space-y-4">
+                  {selectedDayItems.map((item) => (
+                    <article key={item.id} className={`rounded-3xl border p-5 shadow-sm ${getAgendaItemColor(item.type)}`}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.24em] font-bold text-slate-500">{typeLabel(item.type, isEs)}</p>
+                          <h4 className="mt-1 text-lg font-bold text-slate-900">{item.title}</h4>
+                          <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 text-slate-700 shrink-0">
+                          <button type="button" onClick={() => handlePreviewToggle(item.id)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white transition-colors">
+                            <Eye className="w-4 h-4" />
+                            {isEs ? 'Vista' : 'Preview'}
+                          </button>
+                          <div className="flex items-center gap-2 mt-2">
+                            <button type="button" onClick={() => downloadAgendaItem(item)} className="rounded-full border border-slate-200 bg-white/50 p-2 text-slate-700 hover:bg-white transition-colors">
+                              <Download className="w-4 h-4" />
+                            </button>
+                            <button type="button" onClick={() => printAgendaItem(item)} className="rounded-full border border-slate-200 bg-white/50 p-2 text-slate-700 hover:bg-white transition-colors">
+                              <Printer className="w-4 h-4" />
+                            </button>
+                            <button type="button" onClick={() => handleDeleteItem(item.id)} className="rounded-full border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100 transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-xs text-slate-600">{new Date(item.createdAt).toLocaleTimeString(isEs ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-                {isEs
-                  ? 'No hay actividades ancladas para este día. Añade items en el calendario.'
-                  : 'No pinned activities for this day. Add items in the calendar.'}
-              </div>
-            )}
+
+                      {previewId === item.id ? (
+                        <div className="mt-5 rounded-3xl border border-white/40 bg-white/60 p-4 text-sm text-slate-800">
+                          <p className="font-bold text-slate-900 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
+                          {item.metadata?.object?.diaADia ? (
+                            <div className="space-y-4">
+                              {item.metadata.object.retoComunitario && (
+                                <div className="mb-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                  <h4 className="font-bold text-blue-800 mb-2">Reto Comunitario General</h4>
+                                  <p className="text-sm text-slate-700">{item.metadata.object.retoComunitario}</p>
+                                </div>
+                              )}
+                              {(Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia]).map((dia: any, i: number) => (
+                                <div key={i} className="border-l-4 border-blue-500 pl-4 py-1">
+                                  <h5 className="font-bold text-blue-700">{dia.dia || `Día ${i + 1}`}</h5>
+                                  {dia.tiemposEstimados && <p className="mt-1 text-xs text-slate-500 font-medium">Tiempos Estimados: {dia.tiemposEstimados}</p>}
+                                  {dia.inicio && <p className="mt-2 text-xs"><strong>Inicio:</strong> {dia.inicio}</p>}
+                                  {dia.desarrollo && typeof dia.desarrollo === 'object' ? (
+                                    <div className="mt-2 text-xs">
+                                      <strong>Desarrollo:</strong>
+                                      <ul className="list-disc pl-4 mt-1">
+                                        {dia.desarrollo.visual && <li><strong>Visual:</strong> {dia.desarrollo.visual}</li>}
+                                        {dia.desarrollo.auditiva && <li><strong>Auditiva:</strong> {dia.desarrollo.auditiva}</li>}
+                                        {dia.desarrollo.kinestesica && <li><strong>Kinestésica:</strong> {dia.desarrollo.kinestesica}</li>}
+                                      </ul>
+                                    </div>
+                                  ) : dia.desarrollo && (
+                                    <p className="mt-2 text-xs"><strong>Desarrollo:</strong> {dia.desarrollo}</p>
+                                  )}
+                                  {dia.cierre && <p className="mt-2 text-xs"><strong>Cierre:</strong> {dia.cierre}</p>}
+                                  {dia.materiales && typeof dia.materiales === 'object' ? (
+                                    <div className="mt-2 text-xs">
+                                      <strong>Materiales:</strong>
+                                      <ul className="list-disc pl-4 mt-1">
+                                        {dia.materiales.principal && <li><strong>Principal:</strong> {dia.materiales.principal}</li>}
+                                        {dia.materiales.sustentable && <li><strong>Eco-Ally:</strong> {dia.materiales.sustentable}</li>}
+                                      </ul>
+                                    </div>
+                                  ) : dia.material_estandar && (
+                                    <p className="mt-2 text-xs"><strong>Materiales:</strong> {dia.material_estandar}</p>
+                                  )}
+                                  {dia.conaliteg_cita && <p className="mt-2 text-xs"><strong>Libro:</strong> {dia.conaliteg_cita}</p>}
+                                </div>
+                              ))}
+                              {item.metadata.object.anexoMateriales && (
+                                <div className="mt-4 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                                  <h4 className="font-bold text-emerald-800 mb-2">Anexo de Materiales y Actividades</h4>
+                                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.metadata.object.anexoMateriales}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : item.metadata?.materialContent ? (
+                            <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
+                              {item.metadata.materialContent}
+                            </div>
+                          ) : (
+                            <pre className="whitespace-pre-wrap text-sm leading-6 overflow-x-auto">{item.description}</pre>
+                          )}
+                        </div>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 text-center h-full flex items-center justify-center">
+                  {isEs
+                    ? 'No hay actividades para este día. Añade items en el calendario.'
+                    : 'No activities for this day. Add a new entry from the calendar.'}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
