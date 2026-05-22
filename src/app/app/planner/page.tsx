@@ -75,7 +75,7 @@ export default function PlannerPage() {
   }, [selectedDate]);
 
   useEffect(() => {
-    if (object && selectedDate && !hasSavedPlan) {
+    if (object && !isLoading && selectedDate && !hasSavedPlan) {
       let daysCount = 5;
       if (duracion === 'Quincenal') daysCount = 10;
       if (duracion === 'Mensual') daysCount = 20;
@@ -108,7 +108,7 @@ export default function PlannerPage() {
       setHasSavedPlan(true);
       window.setTimeout(() => setSaveMessage(''), 5000);
     }
-  }, [object, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio, duracion]);
+  }, [object, isLoading, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio, duracion]);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
