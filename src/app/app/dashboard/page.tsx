@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [isGeneratingMaterial, setIsGeneratingMaterial] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [currentDateString, setCurrentDateString] = useState<string>('');
+  const [isMounted, setIsMounted] = useState(false);
 
   const isEs = language === 'es';
   const pinnedPlanDates = [
@@ -56,6 +57,7 @@ export default function DashboardPage() {
     const storedDate = loadSelectedPlanDate();
     const defaultDate = storedDate || loadedAgenda[0]?.date || pinnedPlanDates[0].date;
     setSelectedDate(defaultDate);
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -413,7 +415,7 @@ export default function DashboardPage() {
                     const dateObj = new Date(`${date}T00:00:00`);
                     return (
                       <option key={date} value={date}>
-                        {dateObj.toLocaleDateString(isEs ? 'es-ES' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                        {isMounted ? dateObj.toLocaleDateString(isEs ? 'es-ES' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : date}
                       </option>
                     );
                   })}
