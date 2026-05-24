@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [currentDateString, setCurrentDateString] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   const isEs = language === 'es';
   const pinnedPlanDates = [
@@ -103,7 +104,33 @@ export default function DashboardPage() {
     };
 
     loadUser();
+
+    // PWA Service Worker Registration & Install Prompt
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .catch((err) => console.error('Service Worker registration failed', err));
+    }
+
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    }
   }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        setDeferredPrompt(null);
+      });
+    }
+  };
 
   const greeting = isEs
     ? `¡Buenos días, ${userName ?? 'Profesor(a)'}!`
@@ -268,11 +295,22 @@ export default function DashboardPage() {
   return (
     <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header with Greeting */}
-      <div className="space-y-2">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: fontColor }}>
-          {greeting}
-        </h1>
-        <p className="text-sm font-semibold text-slate-500">{t.date}</p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between space-y-4 md:space-y-0">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: fontColor }}>
+            {greeting}
+          </h1>
+          <p className="text-sm font-semibold text-slate-500">{t.date}</p>
+        </div>
+        {deferredPrompt && (
+          <button 
+            onClick={handleInstallClick}
+            className="flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/30"
+          >
+            <Download className="w-4 h-4" />
+            {isEs ? 'Instalar App' : 'Install App'}
+          </button>
+        )}
       </div>
 
       {/* Main Layout: Left | Center | Right (1:2:1) */}
