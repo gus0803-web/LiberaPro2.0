@@ -106,7 +106,7 @@ export default function DashboardPage() {
     loadUser();
 
     // PWA Service Worker Registration & Install Prompt
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .catch((err) => console.error('Service Worker registration failed', err));
@@ -117,10 +117,8 @@ export default function DashboardPage() {
       setDeferredPrompt(e);
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
   const handleInstallClick = () => {
