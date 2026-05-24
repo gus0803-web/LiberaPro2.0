@@ -244,12 +244,10 @@ export default function DashboardPage() {
   const handleCreateMaterial = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedPlaneacionId) {
-      setMaterialMessage(isEs ? 'Selecciona una planeación anclada para crear material.' : 'Choose a pinned plan to create material.');
-      return;
-    }
+    const selectedPlan = selectedPlaneacionId 
+      ? planeacionItems.find((item) => item.id === selectedPlaneacionId) 
+      : selectedPlaneacion;
 
-    const selectedPlan = planeacionItems.find((item) => item.id === selectedPlaneacionId) ?? planeacionItems[0];
     if (!selectedPlan) {
       setMaterialMessage(isEs ? 'No hay una planeación válida seleccionada.' : 'No valid plan selected.');
       return;
