@@ -164,11 +164,137 @@ export function buildAgendaItemText(item: AgendaItem) {
 
 export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
-  const text = buildAgendaItemText(item);
-  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+
+  // Render content nicely
+  const renderValue = (val: any) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (val.visual || val.auditiva || val.kinestesica) {
+      return `
+        <ul style="margin-top: 0; padding-left: 20px;">
+          ${val.visual ? `<li><strong>Visual:</strong> ${val.visual}</li>` : ''}
+          ${val.auditiva ? `<li><strong>Auditiva:</strong> ${val.auditiva}</li>` : ''}
+          ${val.kinestesica ? `<li><strong>Kinestésica:</strong> ${val.kinestesica}</li>` : ''}
+        </ul>
+      `;
+    }
+    if (val.principal || val.sustentable) {
+      return `
+        <ul style="margin-top: 0; padding-left: 20px;">
+          ${val.principal ? `<li><strong>Principal:</strong> ${val.principal}</li>` : ''}
+          ${val.sustentable ? `<li><strong>Eco-Ally:</strong> ${val.sustentable}</li>` : ''}
+        </ul>
+      `;
+    }
+    return JSON.stringify(val);
+  };
+
+  let contentHtml = '';
+  if (item.metadata?.object?.diaADia) {
+    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
+    
+    // Header for Official Plan
+    contentHtml = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="font-size: 18pt; font-family: 'Arial', sans-serif; color: #1e293b; margin: 0;">PLANEACIÓN DIDÁCTICA DUA</h1>
+        <p style="font-size: 11pt; font-family: 'Arial', sans-serif; color: #475569; margin: 5px 0;"><strong>Fecha:</strong> ${item.date} | <strong>Tipo:</strong> ${item.type}</p>
+      </div>
+      <div style="margin-bottom: 20px; font-family: 'Arial', sans-serif; font-size: 11pt;">
+        <p><strong>Tema Central:</strong> ${item.title}</p>
+        <p><strong>Descripción:</strong> ${item.description || ''}</p>
+        ${item.metadata.object.retoComunitario ? `<p><strong>Reto Comunitario:</strong> ${item.metadata.object.retoComunitario}</p>` : ''}
+      </div>
+    `;
+
+    contentHtml += dias.map((dia: any, idx: number) => `
+      <div style="margin-bottom: 24px; padding: 15px; border: 1px solid #ccc; font-family: 'Arial', sans-serif;">
+        <h3 style="margin-top: 0; font-size: 14pt; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
+          Día ${idx + 1} - ${renderValue(dia.dia) || ''}
+        </h3>
+        ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 10pt;"><strong>Tiempos Estimados:</strong> ${renderValue(dia.tiemposEstimados)}</p>` : ''}
+        
+        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt;">
+          <tr>
+            <td width="20%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Inicio</td>
+            <td width="80%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.inicio)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Desarrollo</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.desarrollo)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Cierre</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.cierre)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Materiales</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.materiales || dia.material_estandar)}</td>
+          </tr>
+          ${dia.conaliteg_cita ? `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Libro SEP</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.conaliteg_cita)}</td>
+          </tr>
+          ` : ''}
+        </table>
+      </div>
+    `).join('');
+
+    if (item.metadata.object.anexoMateriales) {
+      contentHtml += `
+        <div style="margin-top: 20px; font-family: 'Arial', sans-serif;">
+          <h3 style="font-size: 14pt; color: #059669;">Anexo de Materiales y Actividades</h3>
+          <p style="font-size: 11pt;">${renderValue(item.metadata.object.anexoMateriales)}</p>
+        </div>
+      `;
+    }
+
+  } else if (item.metadata?.materialContent) {
+    contentHtml = `
+      <div style="font-family: 'Arial', sans-serif;">
+        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
+        <pre style="white-space: pre-wrap; font-family: 'Arial', sans-serif; font-size: 11pt;">${item.metadata.materialContent}</pre>
+      </div>
+    `;
+  } else {
+    contentHtml = `
+      <div style="font-family: 'Arial', sans-serif;">
+        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
+        <p style="font-size: 11pt;"><strong>Fecha:</strong> ${item.date}</p>
+        <pre style="white-space: pre-wrap; font-family: 'Arial', sans-serif; font-size: 11pt;">${item.description || ''}</pre>
+      </div>
+    `;
+  }
+
+  // Create the Word document HTML structure
+  const wordDocument = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <title>${item.title}</title>
+      <style>
+        @page WordSection1 {
+          size: 8.5in 11.0in;
+          margin: 1.0in 1.0in 1.0in 1.0in;
+        }
+        div.WordSection1 {
+          page: WordSection1;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="WordSection1">
+        ${contentHtml}
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Download as .docx
+  const blob = new Blob(['\ufeff', wordDocument], { type: 'application/msword' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `${safeFilename(item.title)}-${item.date}.txt`;
+  link.download = `${safeFilename(item.title)}-${item.date}.doc`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
