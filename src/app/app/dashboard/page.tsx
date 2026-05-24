@@ -112,19 +112,19 @@ export default function DashboardPage() {
         .catch((err) => console.error('Service Worker registration failed', err));
     }
 
-    const handleBeforeInstallPrompt = (e: any) => {
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('beforeinstallprompt' as any, handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt' as any, handleBeforeInstallPrompt);
   }, []);
 
   const handleInstallClick = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
+      deferredPrompt.userChoice.then(() => {
         setDeferredPrompt(null);
       });
     }
