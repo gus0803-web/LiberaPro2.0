@@ -53,6 +53,32 @@ function getBusinessDays(startDateStr: string, count: number) {
 }
 
 export default function PlannerPage() {
+  const renderContent = (content: any) => {
+    if (!content) return null;
+    if (typeof content === 'string') return content;
+    if (typeof content === 'object') {
+      if (content.visual || content.auditiva || content.kinestesica) {
+        return (
+          <ul className="list-disc pl-4 mt-1 font-normal">
+            {content.visual && <li><strong>Visual:</strong> {typeof content.visual === 'string' ? content.visual : JSON.stringify(content.visual)}</li>}
+            {content.auditiva && <li><strong>Auditiva:</strong> {typeof content.auditiva === 'string' ? content.auditiva : JSON.stringify(content.auditiva)}</li>}
+            {content.kinestesica && <li><strong>Kinestésica:</strong> {typeof content.kinestesica === 'string' ? content.kinestesica : JSON.stringify(content.kinestesica)}</li>}
+          </ul>
+        );
+      }
+      if (content.principal || content.sustentable) {
+        return (
+          <ul className="list-disc pl-4 mt-1 font-normal">
+            {content.principal && <li><strong>Principal:</strong> {typeof content.principal === 'string' ? content.principal : JSON.stringify(content.principal)}</li>}
+            {content.sustentable && <li><strong>Eco-Ally:</strong> {typeof content.sustentable === 'string' ? content.sustentable : JSON.stringify(content.sustentable)}</li>}
+          </ul>
+        );
+      }
+      return <pre className="whitespace-pre-wrap text-xs mt-1 font-normal">{JSON.stringify(content, null, 2)}</pre>;
+    }
+    return String(content);
+  };
+
   const [fase, setFase] = useState('Fase 4: Primaria (3º y 4º)');
   const [duracion, setDuracion] = useState('Semanal');
   const [proyecto, setProyecto] = useState('');
@@ -299,23 +325,15 @@ export default function PlannerPage() {
                   <div className="space-y-4">
                     <div className="bg-white/5 rounded-xl p-5 border-l-2 border-gold-pale">
                       <p className="text-xs font-bold text-gold-pale uppercase tracking-wider mb-2">Inicio</p>
-                      <p className="text-sm text-gray-300">{dia?.inicio}</p>
+                      <div className="text-sm text-gray-300">{renderContent(dia?.inicio)}</div>
                     </div>
                     <div className="bg-white/5 rounded-xl p-5 border-l-2 border-turquoise-neon">
                       <p className="text-xs font-bold text-turquoise-neon uppercase tracking-wider mb-2">Desarrollo</p>
-                      {dia?.desarrollo && typeof dia.desarrollo === 'object' ? (
-                        <ul className="text-sm text-gray-300 list-disc pl-4 space-y-2">
-                          {dia.desarrollo.visual && <li><strong>Visual:</strong> {dia.desarrollo.visual}</li>}
-                          {dia.desarrollo.auditiva && <li><strong>Auditiva:</strong> {dia.desarrollo.auditiva}</li>}
-                          {dia.desarrollo.kinestesica && <li><strong>Kinestésica:</strong> {dia.desarrollo.kinestesica}</li>}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-300">{dia?.desarrollo as React.ReactNode}</p>
-                      )}
+                      <div className="text-sm text-gray-300">{renderContent(dia?.desarrollo)}</div>
                     </div>
                     <div className="bg-white/5 rounded-xl p-5 border-l-2 border-white/30">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Cierre</p>
-                      <p className="text-sm text-gray-300">{dia?.cierre}</p>
+                      <div className="text-sm text-gray-300">{renderContent(dia?.cierre)}</div>
                     </div>
                   </div>
 
