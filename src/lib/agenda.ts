@@ -265,12 +265,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     `;
   }
 
-  // Create temporary container
-  const element = document.createElement('div');
-  element.innerHTML = `<div style="padding: 20px; background: white;">${contentHtml}</div>`;
-  element.style.position = 'absolute';
-  element.style.left = '-9999px';
-  document.body.appendChild(element);
+  const finalHtml = `<div style="padding: 20px; background: white; color: #111;">${contentHtml}</div>`;
 
   const generatePDF = () => {
     (window as any).html2pdf().set({
@@ -279,9 +274,7 @@ export function downloadAgendaItem(item: AgendaItem) {
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-    }).from(element).save().then(() => {
-      document.body.removeChild(element);
-    });
+    }).from(finalHtml).save();
   };
 
   if (!(window as any).html2pdf) {
