@@ -274,7 +274,7 @@ export default function CalendarPage() {
                         const colorClass = typeColors[item.type] || 'bg-slate-100 text-slate-800';
                         return (
                           <div key={item.id} className={`text-[10px] truncate w-full px-2 py-1 rounded font-bold text-left ${colorClass}`}>
-                             {item.title}
+                             {renderContent(item.title)}
                           </div>
                         );
                       })}
@@ -356,8 +356,8 @@ export default function CalendarPage() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="text-xs uppercase tracking-[0.24em] font-bold text-slate-500">{typeLabel(item.type, isEs)}</p>
-                          <h4 className="mt-1 text-lg font-bold text-slate-900">{item.title}</h4>
-                          {item.description && <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>}
+                          <h4 className="mt-1 text-lg font-bold text-slate-900">{renderContent(item.title)}</h4>
+                          {item.description && <div className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{renderContent(item.description)}</div>}
                         </div>
                         <div className="flex flex-col items-end gap-2 text-slate-700 shrink-0">
                           <button type="button" onClick={() => handlePreviewToggle(item.id)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white transition-colors">
@@ -386,7 +386,7 @@ export default function CalendarPage() {
                               {item.metadata.object.retoComunitario && (
                                 <div className="mb-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
                                   <h4 className="font-bold text-blue-800 mb-2">Reto Comunitario General</h4>
-                                  <p className="text-sm text-slate-700">{item.metadata.object.retoComunitario}</p>
+                                  <div className="text-sm text-slate-700">{renderContent(item.metadata.object.retoComunitario)}</div>
                                 </div>
                               )}
                               {(Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia]).map((dia: any, i: number) => (
@@ -403,16 +403,16 @@ export default function CalendarPage() {
                               {item.metadata.object.anexoMateriales && (
                                 <div className="mt-4 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
                                   <h4 className="font-bold text-emerald-800 mb-2">Anexo de Materiales y Actividades</h4>
-                                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.metadata.object.anexoMateriales}</p>
+                                  <div className="text-sm text-slate-700 whitespace-pre-wrap">{renderContent(item.metadata.object.anexoMateriales)}</div>
                                 </div>
                               )}
                             </div>
                           ) : item.metadata?.materialContent ? (
                             <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
-                              {item.metadata.materialContent}
+                              {renderContent(item.metadata.materialContent)}
                             </div>
                           ) : (
-                            <pre className="whitespace-pre-wrap text-sm leading-6 overflow-x-auto">{item.description}</pre>
+                            <pre className="whitespace-pre-wrap text-sm leading-6 overflow-x-auto">{renderContent(item.description)}</pre>
                           )}
                         </div>
                       ) : null}

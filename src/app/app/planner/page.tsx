@@ -293,7 +293,7 @@ export default function PlannerPage() {
               <div key={idx} className="bg-volcanic-800/80 p-5 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-turquoise-neon/50 transition-colors">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-turquoise-neon to-gold-pale"></div>
                 <p className="text-sm font-bold text-gray-400 mb-2">{dia?.dia}</p>
-                <p className="text-lg font-bold text-white leading-tight mb-4">{dia?.tema_central}</p>
+                <div className="text-lg font-bold text-white leading-tight mb-4">{renderContent(dia?.tema_central)}</div>
                 <p className="text-xs text-turquoise-neon mb-1">{dia?.recurso_sep_clave}</p>
                 <p className="text-xs text-gray-500">{dia?.competencia_nem}</p>
               </div>
@@ -305,7 +305,7 @@ export default function PlannerPage() {
       {object?.retoComunitario && (
         <section className="space-y-4 pt-8 border-t border-white/10">
           <h3 className="text-xl font-semibold text-white">Reto Comunitario General</h3>
-          <p className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5">{object.retoComunitario}</p>
+          <div className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5">{renderContent(object.retoComunitario)}</div>
         </section>
       )}
 
@@ -375,7 +375,7 @@ export default function PlannerPage() {
       {object?.anexoMateriales && (
         <section className="space-y-4 pt-8 border-t border-white/10">
           <h3 className="text-xl font-semibold text-white">Anexo de Materiales y Actividades</h3>
-          <p className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5 whitespace-pre-wrap">{object.anexoMateriales}</p>
+          <div className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5 whitespace-pre-wrap">{renderContent(object.anexoMateriales)}</div>
         </section>
       )}
     </div>
