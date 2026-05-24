@@ -2,6 +2,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { streamObject, embed } from 'ai';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { FULL_AI_BRAIN } from '@/lib/nem-brain';
 
 export const maxDuration = 60; // Allow up to 60 seconds for completion
 
@@ -91,7 +92,12 @@ export async function POST(req: Request) {
       Eres un Maestro Experto con 20 años de experiencia en la educación pública mexicana. 
       Estás planeando para un maestro que necesita practicidad absoluta.
       
-      Utiliza el siguiente contexto RAG extraído del currículo de la NEM para alinear tu respuesta a la Nueva Escuela Mexicana:
+      Aquí tienes tu CEREBRO PEDAGÓGICO INYECTADO (Aplica siempre estas reglas):
+      <cerebro_nem>
+      ${FULL_AI_BRAIN}
+      </cerebro_nem>
+
+      Utiliza el siguiente contexto RAG extraído del currículo de la NEM para alinearlo con los libros:
       <contexto>
       ${contextText}
       </contexto>

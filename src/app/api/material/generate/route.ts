@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { FULL_AI_BRAIN } from '@/lib/nem-brain';
 
 export const maxDuration = 60; // Permite que la función se ejecute por más tiempo (Vercel Hobby = 10s o 60s en Pro)
 
@@ -22,6 +23,11 @@ export async function POST(req: Request) {
 Eres un asistente educativo experto del sistema NEM (Nueva Escuela Mexicana).
 Basado en la siguiente planeación, crea un "Material de Apoyo Académico" EXCEPCIONAL y COMPLETO para el alumno.
 No me des un resumen de la clase. Necesito el material LISTO PARA IMPRIMIR que el alumno va a resolver o leer.
+
+Aquí tienes tu CEREBRO PEDAGÓGICO INYECTADO (Aplica siempre estas reglas y usa el estilo PNCE de la SEP):
+<cerebro_nem>
+${FULL_AI_BRAIN}
+</cerebro_nem>
 
 Si la clase es teórica, genera: Una guía de lectura detallada con 5 preguntas de comprensión.
 Si la clase es práctica, genera: Una hoja de trabajo (worksheet) con ejercicios, espacios para responder, o instrucciones de laboratorio paso a paso.
