@@ -288,6 +288,32 @@ export default function DashboardPage() {
     setAgendaItems(updated);
   };
 
+  const renderContent = (content: any) => {
+    if (!content) return null;
+    if (typeof content === 'string') return content;
+    if (typeof content === 'object') {
+      if (content.visual || content.auditiva || content.kinestesica) {
+        return (
+          <ul className="list-disc pl-4 mt-1 font-normal">
+            {content.visual && <li><strong>Visual:</strong> {typeof content.visual === 'string' ? content.visual : JSON.stringify(content.visual)}</li>}
+            {content.auditiva && <li><strong>Auditiva:</strong> {typeof content.auditiva === 'string' ? content.auditiva : JSON.stringify(content.auditiva)}</li>}
+            {content.kinestesica && <li><strong>Kinestésica:</strong> {typeof content.kinestesica === 'string' ? content.kinestesica : JSON.stringify(content.kinestesica)}</li>}
+          </ul>
+        );
+      }
+      if (content.principal || content.sustentable) {
+        return (
+          <ul className="list-disc pl-4 mt-1 font-normal">
+            {content.principal && <li><strong>Principal:</strong> {typeof content.principal === 'string' ? content.principal : JSON.stringify(content.principal)}</li>}
+            {content.sustentable && <li><strong>Eco-Ally:</strong> {typeof content.sustentable === 'string' ? content.sustentable : JSON.stringify(content.sustentable)}</li>}
+          </ul>
+        );
+      }
+      return <pre className="whitespace-pre-wrap text-xs mt-1 font-normal">{JSON.stringify(content, null, 2)}</pre>;
+    }
+    return String(content);
+  };
+
   const taskList = planTasks;
 
   return (
@@ -372,32 +398,11 @@ export default function DashboardPage() {
                                 <div key={i} className="border-l-4 border-blue-500 pl-4 py-1">
                                   <h5 className="font-bold text-blue-700">{dia.dia || `Día ${i + 1}`}</h5>
                                   {dia.tiemposEstimados && <p className="mt-1 text-xs text-slate-500 font-medium">Tiempos Estimados: {dia.tiemposEstimados}</p>}
-                                  {dia.inicio && <p className="mt-2 text-xs"><strong>Inicio:</strong> {dia.inicio}</p>}
-                                  {dia.desarrollo && typeof dia.desarrollo === 'object' ? (
-                                    <div className="mt-2 text-xs">
-                                      <strong>Desarrollo:</strong>
-                                      <ul className="list-disc pl-4 mt-1">
-                                        {dia.desarrollo.visual && <li><strong>Visual:</strong> {dia.desarrollo.visual}</li>}
-                                        {dia.desarrollo.auditiva && <li><strong>Auditiva:</strong> {dia.desarrollo.auditiva}</li>}
-                                        {dia.desarrollo.kinestesica && <li><strong>Kinestésica:</strong> {dia.desarrollo.kinestesica}</li>}
-                                      </ul>
-                                    </div>
-                                  ) : dia.desarrollo && (
-                                    <p className="mt-2 text-xs"><strong>Desarrollo:</strong> {dia.desarrollo}</p>
-                                  )}
-                                  {dia.cierre && <p className="mt-2 text-xs"><strong>Cierre:</strong> {dia.cierre}</p>}
-                                  {dia.materiales && typeof dia.materiales === 'object' ? (
-                                    <div className="mt-2 text-xs">
-                                      <strong>Materiales:</strong>
-                                      <ul className="list-disc pl-4 mt-1">
-                                        {dia.materiales.principal && <li><strong>Principal:</strong> {dia.materiales.principal}</li>}
-                                        {dia.materiales.sustentable && <li><strong>Eco-Ally:</strong> {dia.materiales.sustentable}</li>}
-                                      </ul>
-                                    </div>
-                                  ) : dia.material_estandar && (
-                                    <p className="mt-2 text-xs"><strong>Materiales:</strong> {dia.material_estandar}</p>
-                                  )}
-                                  {dia.conaliteg_cita && <p className="mt-2 text-xs"><strong>Libro:</strong> {dia.conaliteg_cita}</p>}
+                                  {dia.inicio && <div className="mt-2 text-xs"><strong>Inicio:</strong> {renderContent(dia.inicio)}</div>}
+                                  {dia.desarrollo && <div className="mt-2 text-xs"><strong>Desarrollo:</strong> {renderContent(dia.desarrollo)}</div>}
+                                  {dia.cierre && <div className="mt-2 text-xs"><strong>Cierre:</strong> {renderContent(dia.cierre)}</div>}
+                                  {(dia.materiales || dia.material_estandar) && <div className="mt-2 text-xs"><strong>Materiales:</strong> {renderContent(dia.materiales || dia.material_estandar)}</div>}
+                                  {dia.conaliteg_cita && <p className="mt-2 text-xs"><strong>Libro:</strong> {renderContent(dia.conaliteg_cita)}</p>}
                                 </div>
                               ))}
                               {item.metadata.object.anexoMateriales && (
