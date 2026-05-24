@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
-import { AgendaItem, addAgendaItem, loadSelectedPlanDate } from '@/lib/agenda';
+import { AgendaItem, addAgendaItem, loadSelectedPlanDate, downloadAgendaItem } from '@/lib/agenda';
+import { Download } from 'lucide-react';
 
 const planningSchema = z.object({
   retoComunitario: z.string().optional(),
@@ -377,6 +378,30 @@ export default function PlannerPage() {
           <h3 className="text-xl font-semibold text-white">Anexo de Materiales y Actividades</h3>
           <div className="text-gray-300 bg-volcanic-800/50 p-6 rounded-2xl border border-white/5 whitespace-pre-wrap">{renderContent(object.anexoMateriales)}</div>
         </section>
+      )}
+
+      {object && (
+        <div className="pt-12 pb-6 flex justify-end">
+          <button 
+            type="button"
+            onClick={() => {
+              const masterItem: AgendaItem = {
+                id: `master-download-${Date.now()}`,
+                date: selectedDate || new Date().toISOString().slice(0, 10),
+                type: 'planeacion',
+                title: tema || proyecto || 'Planeación Completa',
+                description: `Documento Maestro: ${fase}. ${campoFormativo} - ${metodologia}`,
+                metadata: { object: object },
+                createdAt: new Date().toISOString()
+              };
+              downloadAgendaItem(masterItem);
+            }} 
+            className="bg-turquoise-neon text-volcanic-900 font-bold px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-white transition-all shadow-lg hover:shadow-turquoise-neon/20"
+          >
+            <Download className="w-5 h-5" />
+            Descargar Planeación Completa (PDF)
+          </button>
+        </div>
       )}
     </div>
   );
