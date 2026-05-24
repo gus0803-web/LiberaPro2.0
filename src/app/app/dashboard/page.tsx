@@ -585,7 +585,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mb-6 pb-6 border-b border-slate-200">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t.todaysPlan}</p>
-                  <p className="text-lg font-bold text-slate-900">{selectedPlaneacion?.title || (isEs ? 'Planeación del día' : "Today's Pinned Plan")}</p>
+                  <p className="text-lg font-bold text-slate-900">{renderContent(selectedPlaneacion?.title) || (isEs ? 'Planeación del día' : "Today's Pinned Plan")}</p>
                   <p className="text-xs text-slate-500 mt-1">{selectedDate ? `${isEs ? 'Fecha seleccionada:' : 'Selected date:'} ${selectedDate}` : ''}</p>
                 </div>
                 <div className="space-y-3">
