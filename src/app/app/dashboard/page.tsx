@@ -219,10 +219,25 @@ export default function DashboardPage() {
   };
 
   const planTasks = useMemo(() => {
-    const tasksFromPlan = selectedPlaneacion?.metadata?.object?.diaADia
-      ? (selectedPlaneacion.metadata.object.diaADia as any[]).flatMap((day: any) => [day.inicio, day.desarrollo, day.cierre])
-      : [];
-    const tasks = tasksFromPlan.filter(Boolean) as string[];
+    let tasksFromPlan: any[] = [];
+    if (selectedPlaneacion?.metadata?.object?.diaADia) {
+      const dias = Array.isArray(selectedPlaneacion.metadata.object.diaADia) 
+        ? selectedPlaneacion.metadata.object.diaADia 
+        : [selectedPlaneacion.metadata.object.diaADia];
+      
+      tasksFromPlan = dias.flatMap((day: any) => {
+        const parts = [day.inicio, day.cierre];
+        if (day.desarrollo) {
+          if (typeof day.desarrollo === 'object') {
+            parts.push(day.desarrollo.visual, day.desarrollo.auditiva, day.desarrollo.kinestesica);
+          } else {
+            parts.push(day.desarrollo);
+          }
+        }
+        return parts;
+      });
+    }
+    const tasks = tasksFromPlan.filter(item => Boolean(item) && typeof item === 'string') as string[];
     return tasks.length > 0 ? (Array.from(new Set(tasks)) as string[]) : planChecklist;
   }, [selectedPlaneacion, planChecklist]);
 
