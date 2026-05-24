@@ -33,11 +33,13 @@ Si la clase es teórica, genera: Una guía de lectura detallada con 5 preguntas 
 Si la clase es práctica, genera: Una hoja de trabajo (worksheet) con ejercicios, espacios para responder, o instrucciones de laboratorio paso a paso.
 Si la clase es de evaluación, genera: Un cuestionario tipo examen o una rúbrica de autoevaluación.
 
-Formatea todo usando Markdown estricto y profesional:
-- Usa encabezados (##) para el título de la escuela, nombre del alumno, fecha y tema.
-- Usa listas con viñetas para instrucciones.
+Formatea todo usando HTML básico limpio:
+- Usa <h2> y <h3> para títulos y subtítulos.
+- Usa <ul> y <li> para listas e instrucciones.
+- Usa <p> para párrafos y <br> para saltos de línea.
+- Usa <strong> para resaltar.
 - Usa líneas (_____) para que el alumno escriba sus respuestas.
-- Incluye una sección de "Reto extra" o "Pensamiento crítico" al final.
+- NO uses Markdown (como #, **, *). Solo devuelve el código HTML directo sin envolver en etiquetas de código markdown (no uses \`\`\`html).
 
 TÍTULO DE LA PLANEACIÓN: ${planTitle}
 DESCRIPCIÓN DE LA CLASE: ${planDescription}

@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
   const [selectedPlaneacionId, setSelectedPlaneacionId] = useState<string>('');
   const [materialMessage, setMaterialMessage] = useState('');
+  const [newlyCreatedMaterialId, setNewlyCreatedMaterialId] = useState<string | null>(null);
   const [isGeneratingMaterial, setIsGeneratingMaterial] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [currentDateString, setCurrentDateString] = useState<string>('');
@@ -282,6 +283,8 @@ export default function DashboardPage() {
 
       const updated = addAgendaItem(newMaterial);
       setAgendaItems(updated);
+      setNewlyCreatedMaterialId(newMaterial.id);
+      setPreviewId(newMaterial.id); // Auto-open preview!
       setMaterialMessage(isEs ? '¡Material generado y guardado en calendario!' : 'Material generated and saved!');
     } catch (error) {
       setMaterialMessage(isEs ? 'Error al generar material.' : 'Error generating material.');
@@ -426,8 +429,8 @@ export default function DashboardPage() {
                               )}
                             </div>
                           ) : item.metadata?.materialContent ? (
-                            <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap flex flex-col">
-                              {renderContent(item.metadata.materialContent)}
+                            <div className="prose prose-sm max-w-none text-slate-700 flex flex-col">
+                              <div dangerouslySetInnerHTML={{ __html: item.metadata.materialContent }} />
                               <button onClick={() => downloadAgendaItem(item)} className="mt-6 bg-emerald-600 text-white rounded-xl px-5 py-3 font-bold w-fit flex items-center gap-2 hover:bg-emerald-700 transition-colors">
                                 <Download className="w-5 h-5" />
                                 {isEs ? 'Descargar PDF del Material' : 'Download Material PDF'}
@@ -513,8 +516,14 @@ export default function DashboardPage() {
               </button>
 
               {materialMessage ? (
-                <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-4 text-sm text-emerald-800">
-                  {materialMessage}
+                <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-4 flex items-center justify-between gap-4">
+                  <span className="text-sm text-emerald-800">{materialMessage}</span>
+                  {newlyCreatedMaterialId && (
+                    <button onClick={() => setPreviewId(newlyCreatedMaterialId)} className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-emerald-300 text-emerald-700 hover:bg-emerald-50 transition-colors font-bold text-xs whitespace-nowrap shadow-sm">
+                      <Eye className="w-4 h-4" />
+                      {isEs ? 'Ver Documento' : 'Preview Document'}
+                    </button>
+                  )}
                 </div>
               ) : null}
             </div>

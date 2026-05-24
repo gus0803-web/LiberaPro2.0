@@ -252,7 +252,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     contentHtml = `
       <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
         <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <div style="white-space: pre-wrap; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.metadata.materialContent}</div>
+        <div style="font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.metadata.materialContent}</div>
       </div>
     `;
   } else {

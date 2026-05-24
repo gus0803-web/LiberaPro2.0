@@ -408,8 +408,8 @@ export default function CalendarPage() {
                               )}
                             </div>
                           ) : item.metadata?.materialContent ? (
-                            <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap flex flex-col">
-                              {renderContent(item.metadata.materialContent)}
+                            <div className="prose prose-sm max-w-none text-slate-700 flex flex-col">
+                              <div dangerouslySetInnerHTML={{ __html: item.metadata.materialContent }} />
                               <button onClick={() => downloadAgendaItem(item)} className="mt-6 bg-emerald-600 text-white rounded-xl px-5 py-3 font-bold w-fit flex items-center gap-2 hover:bg-emerald-700 transition-colors">
                                 <Download className="w-5 h-5" />
                                 {isEs ? 'Descargar PDF del Material' : 'Download Material PDF'}
