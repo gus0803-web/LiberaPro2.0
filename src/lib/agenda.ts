@@ -275,7 +275,7 @@ export function downloadAgendaItem(item: AgendaItem) {
   const generatePDF = () => {
     (window as any).html2pdf().set({
       margin: 15,
-      filename: \`\${safeFilename(item.title)}-\${item.date}.pdf\`,
+      filename: `${safeFilename(item.title)}-${item.date}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
