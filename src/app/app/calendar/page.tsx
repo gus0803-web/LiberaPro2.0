@@ -391,13 +391,13 @@ export default function CalendarPage() {
                               )}
                               {(Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia]).map((dia: any, i: number) => (
                                 <div key={i} className="border-l-4 border-blue-500 pl-4 py-1">
-                                  <h5 className="font-bold text-blue-700">{dia.dia || `Día ${i + 1}`}</h5>
-                                  {dia.tiemposEstimados && <p className="mt-1 text-xs text-slate-500 font-medium">Tiempos Estimados: {dia.tiemposEstimados}</p>}
+                                  <h5 className="font-bold text-blue-700">{renderContent(dia.dia) || `Día ${i + 1}`}</h5>
+                                  {dia.tiemposEstimados && <div className="mt-1 text-xs text-slate-500 font-medium">Tiempos Estimados: {renderContent(dia.tiemposEstimados)}</div>}
                                   {dia.inicio && <div className="mt-2 text-xs"><strong>Inicio:</strong> {renderContent(dia.inicio)}</div>}
                                   {dia.desarrollo && <div className="mt-2 text-xs"><strong>Desarrollo:</strong> {renderContent(dia.desarrollo)}</div>}
                                   {dia.cierre && <div className="mt-2 text-xs"><strong>Cierre:</strong> {renderContent(dia.cierre)}</div>}
                                   {(dia.materiales || dia.material_estandar) && <div className="mt-2 text-xs"><strong>Materiales:</strong> {renderContent(dia.materiales || dia.material_estandar)}</div>}
-                                  {dia.conaliteg_cita && <p className="mt-2 text-xs"><strong>Libro:</strong> {renderContent(dia.conaliteg_cita)}</p>}
+                                  {dia.conaliteg_cita && <div className="mt-2 text-xs"><strong>Libro:</strong> {renderContent(dia.conaliteg_cita)}</div>}
                                 </div>
                               ))}
                               {item.metadata.object.anexoMateriales && (

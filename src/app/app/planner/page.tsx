@@ -317,9 +317,9 @@ export default function PlannerPage() {
               <div key={idx} className="bg-volcanic-800/50 rounded-3xl p-8 border border-white/5">
                 <h4 className="text-2xl font-bold text-turquoise-neon mb-2 flex items-center">
                   <span className="w-8 h-8 rounded-full bg-turquoise-neon/20 flex items-center justify-center mr-3 text-sm">{idx + 1}</span>
-                  {dia?.dia}
+                  <div className="inline-block">{renderContent(dia?.dia)}</div>
                 </h4>
-                {dia?.tiemposEstimados && <p className="text-gray-400 text-sm mb-6 ml-11">Tiempos Estimados: {dia.tiemposEstimados}</p>}
+                {dia?.tiemposEstimados && <div className="text-gray-400 text-sm mb-6 ml-11">Tiempos Estimados: {renderContent(dia.tiemposEstimados)}</div>}
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div className="space-y-4">
@@ -344,11 +344,11 @@ export default function PlannerPage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Principal</p>
-                          <p className="text-sm text-gray-300">{dia?.materiales?.principal || dia?.material_estandar}</p>
+                          <div className="text-sm text-gray-300">{renderContent(dia?.materiales?.principal || dia?.material_estandar)}</div>
                         </div>
                         <div>
                           <p className="text-xs text-turquoise-neon mb-1">Alternativa Sustentable (&lt;$50 MXN)</p>
-                          <p className="text-sm text-white">{dia?.materiales?.sustentable || dia?.material_eco_ally}</p>
+                          <div className="text-sm text-white">{renderContent(dia?.materiales?.sustentable || dia?.material_eco_ally)}</div>
                         </div>
                       </div>
                     </div>
