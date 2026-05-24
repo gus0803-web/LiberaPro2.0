@@ -40,10 +40,10 @@ La planeación debe estructurarse estrictamente de la siguiente manera por día:
 5. REFERENCIA SEP: Cita a los libros de CONALITEG correspondientes al tema y fase.
 `;
 
-export const FULL_AI_BRAIN = \`
-\${NEM_PRINCIPLES}
+export const FULL_AI_BRAIN = `
+${NEM_PRINCIPLES}
 
-\${OFFICIAL_FORMAT_GUIDELINES}
+${OFFICIAL_FORMAT_GUIDELINES}
 
-\${PNCE_MATERIAL_GUIDELINES}
-\`;
+${PNCE_MATERIAL_GUIDELINES}
+`;
