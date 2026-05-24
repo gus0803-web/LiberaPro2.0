@@ -193,13 +193,12 @@ export function downloadAgendaItem(item: AgendaItem) {
   if (item.metadata?.object?.diaADia) {
     const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
     
-    // Header for Official Plan
     contentHtml = `
       <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="font-size: 18pt; font-family: 'Arial', sans-serif; color: #1e293b; margin: 0;">PLANEACIÓN DIDÁCTICA DUA</h1>
-        <p style="font-size: 11pt; font-family: 'Arial', sans-serif; color: #475569; margin: 5px 0;"><strong>Fecha:</strong> ${item.date} | <strong>Tipo:</strong> ${item.type}</p>
+        <h1 style="font-size: 18pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; margin: 0;">PLANEACIÓN DIDÁCTICA DUA</h1>
+        <p style="font-size: 11pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #475569; margin: 5px 0;"><strong>Fecha:</strong> ${item.date} | <strong>Tipo:</strong> ${item.type}</p>
       </div>
-      <div style="margin-bottom: 20px; font-family: 'Arial', sans-serif; font-size: 11pt;">
+      <div style="margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333;">
         <p><strong>Tema Central:</strong> ${item.title}</p>
         <p><strong>Descripción:</strong> ${item.description || ''}</p>
         ${item.metadata.object.retoComunitario ? `<p><strong>Reto Comunitario:</strong> ${item.metadata.object.retoComunitario}</p>` : ''}
@@ -207,7 +206,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     `;
 
     contentHtml += dias.map((dia: any, idx: number) => `
-      <div style="margin-bottom: 24px; padding: 15px; border: 1px solid #ccc; font-family: 'Arial', sans-serif;">
+      <div style="margin-bottom: 24px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
         <h3 style="margin-top: 0; font-size: 14pt; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
           Día ${idx + 1} - ${renderValue(dia.dia) || ''}
         </h3>
@@ -216,24 +215,24 @@ export function downloadAgendaItem(item: AgendaItem) {
         <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt;">
           <tr>
             <td width="20%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Inicio</td>
-            <td width="80%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.inicio)}</td>
+            <td width="80%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.inicio)}</td>
           </tr>
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Desarrollo</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.desarrollo)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.desarrollo)}</td>
           </tr>
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Cierre</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.cierre)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.cierre)}</td>
           </tr>
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Materiales</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.materiales || dia.material_estandar)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.materiales || dia.material_estandar)}</td>
           </tr>
           ${dia.conaliteg_cita ? `
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Libro SEP</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${renderValue(dia.conaliteg_cita)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.conaliteg_cita)}</td>
           </tr>
           ` : ''}
         </table>
@@ -242,61 +241,57 @@ export function downloadAgendaItem(item: AgendaItem) {
 
     if (item.metadata.object.anexoMateriales) {
       contentHtml += `
-        <div style="margin-top: 20px; font-family: 'Arial', sans-serif;">
+        <div style="margin-top: 20px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
           <h3 style="font-size: 14pt; color: #059669;">Anexo de Materiales y Actividades</h3>
-          <p style="font-size: 11pt;">${renderValue(item.metadata.object.anexoMateriales)}</p>
+          <p style="font-size: 11pt; color: #333; line-height: 1.5;">${renderValue(item.metadata.object.anexoMateriales)}</p>
         </div>
       `;
     }
 
   } else if (item.metadata?.materialContent) {
     contentHtml = `
-      <div style="font-family: 'Arial', sans-serif;">
+      <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
         <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <pre style="white-space: pre-wrap; font-family: 'Arial', sans-serif; font-size: 11pt;">${item.metadata.materialContent}</pre>
+        <div style="white-space: pre-wrap; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.metadata.materialContent}</div>
       </div>
     `;
   } else {
     contentHtml = `
-      <div style="font-family: 'Arial', sans-serif;">
+      <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
         <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <p style="font-size: 11pt;"><strong>Fecha:</strong> ${item.date}</p>
-        <pre style="white-space: pre-wrap; font-family: 'Arial', sans-serif; font-size: 11pt;">${item.description || ''}</pre>
+        <p style="font-size: 11pt; color: #475569;"><strong>Fecha:</strong> ${item.date}</p>
+        <div style="white-space: pre-wrap; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.description || ''}</div>
       </div>
     `;
   }
 
-  // Create the Word document HTML structure
-  const wordDocument = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-    <head>
-      <meta charset='utf-8'>
-      <title>${item.title}</title>
-      <style>
-        @page WordSection1 {
-          size: 8.5in 11.0in;
-          margin: 1.0in 1.0in 1.0in 1.0in;
-        }
-        div.WordSection1 {
-          page: WordSection1;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="WordSection1">
-        ${contentHtml}
-      </div>
-    </body>
-    </html>
-  `;
+  // Create temporary container
+  const element = document.createElement('div');
+  element.innerHTML = `<div style="padding: 20px; background: white;">${contentHtml}</div>`;
+  element.style.position = 'absolute';
+  element.style.left = '-9999px';
+  document.body.appendChild(element);
 
-  // Download as .docx
-  const blob = new Blob(['\ufeff', wordDocument], { type: 'application/msword' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `${safeFilename(item.title)}-${item.date}.doc`;
-  link.click();
-  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  const generatePDF = () => {
+    (window as any).html2pdf().set({
+      margin: 15,
+      filename: \`\${safeFilename(item.title)}-\${item.date}.pdf\`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    }).from(element).save().then(() => {
+      document.body.removeChild(element);
+    });
+  };
+
+  if (!(window as any).html2pdf) {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    script.onload = generatePDF;
+    document.body.appendChild(script);
+  } else {
+    generatePDF();
+  }
 }
 
 export function printAgendaItem(item: AgendaItem) {
