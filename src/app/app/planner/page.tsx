@@ -120,31 +120,40 @@ export default function PlannerPage() {
 
       const datesToCover = getBusinessDays(selectedDate, daysCount);
 
-      datesToCover.forEach((dateStr, index) => {
-        const diaData = object.diaADia?.[index] || null;
-        const newPlan: AgendaItem = {
-          id: `${Date.now()}-${dateStr}-${index}`,
-          date: dateStr,
-          type: 'planeacion',
-          title: tema || proyecto || 'Planeación Generada',
-          description: `Día ${index + 1}: Fase: ${fase}. ${campoFormativo} - ${metodologia}`,
-          metadata: {
-            fase,
-            proyecto,
-            campoFormativo,
-            metodologia,
-            tema,
-            principio,
-            object: diaData ? { diaADia: [diaData] } : object, // Only store the specific day's data if possible
-          },
-          createdAt: new Date().toISOString(),
-        };
-        addAgendaItem(newPlan);
-      });
+      const savePlans = async () => {
+        const promises = datesToCover.map((dateStr, index) => {
+          const diaData = object.diaADia?.[index] || null;
+          const newPlan: AgendaItem = {
+            id: `${Date.now()}-${dateStr}-${index}`,
+            date: dateStr,
+            type: 'planeacion',
+            title: tema || proyecto || 'Planeación Generada',
+            description: `Día ${index + 1}: Fase: ${fase}. ${campoFormativo} - ${metodologia}`,
+            metadata: {
+              fase,
+              proyecto,
+              campoFormativo,
+              metodologia,
+              tema,
+              principio,
+              object: diaData ? { diaADia: [diaData] } : object, // Only store the specific day's data if possible
+            },
+            createdAt: new Date().toISOString(),
+          };
+          return addAgendaItem(newPlan);
+        });
 
-      setSaveMessage('Planeación distribuida en el calendario.');
-      setHasSavedPlan(true);
-      window.setTimeout(() => setSaveMessage(''), 5000);
+        setSaveMessage('Guardando planeación en la nube...');
+        const results = await Promise.all(promises);
+        if (results.every(r => r)) {
+          setSaveMessage('Planeación distribuida y guardada en el calendario.');
+        } else {
+          setSaveMessage('Error parcial al guardar en la nube.');
+        }
+        setHasSavedPlan(true);
+        window.setTimeout(() => setSaveMessage(''), 5000);
+      };
+      savePlans();
     }
   }, [object, isLoading, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio, duracion]);
 

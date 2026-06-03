@@ -53,13 +53,16 @@ export default function DashboardPage() {
   ];
 
   useEffect(() => {
-    const loadedAgenda = loadAgendaItems();
-    setAgendaItems(loadedAgenda);
+    async function fetchAgenda() {
+      const loadedAgenda = await loadAgendaItems();
+      setAgendaItems(loadedAgenda);
 
-    const storedDate = loadSelectedPlanDate();
-    const defaultDate = storedDate || loadedAgenda[0]?.date || pinnedPlanDates[0].date;
-    setSelectedDate(defaultDate);
-    setIsMounted(true);
+      const storedDate = loadSelectedPlanDate();
+      const defaultDate = storedDate || loadedAgenda[0]?.date || pinnedPlanDates[0].date;
+      setSelectedDate(defaultDate);
+      setIsMounted(true);
+    }
+    fetchAgenda();
   }, []);
 
   useEffect(() => {
@@ -281,11 +284,15 @@ export default function DashboardPage() {
         createdAt: new Date().toISOString(),
       };
 
-      const updated = addAgendaItem(newMaterial);
-      setAgendaItems(updated);
-      setNewlyCreatedMaterialId(newMaterial.id);
-      setPreviewId(newMaterial.id); // Auto-open preview!
-      setMaterialMessage(isEs ? '¡Material generado y guardado en calendario!' : 'Material generated and saved!');
+      const success = await addAgendaItem(newMaterial);
+      if (success) {
+        setAgendaItems(prev => [...prev, newMaterial]);
+        setNewlyCreatedMaterialId(newMaterial.id);
+        setPreviewId(newMaterial.id); // Auto-open preview!
+        setMaterialMessage(isEs ? '¡Material generado y guardado en calendario!' : 'Material generated and saved!');
+      } else {
+        setMaterialMessage(isEs ? 'Error al guardar el material en la nube.' : 'Error saving material to cloud.');
+      }
     } catch (error) {
       setMaterialMessage(isEs ? 'Error al generar material.' : 'Error generating material.');
     } finally {
@@ -298,10 +305,13 @@ export default function DashboardPage() {
     setPreviewId(prev => prev === id ? null : id);
   };
 
-  const handleDeleteItem = (id: string) => {
-    const updated = loadAgendaItems().filter((item) => item.id !== id);
-    saveAgendaItems(updated);
-    setAgendaItems(updated);
+  const handleDeleteItem = async (id: string) => {
+    if (confirm(isEs ? '¿Seguro que deseas borrar este item?' : 'Are you sure you want to delete this item?')) {
+      const success = await deleteAgendaItem(id);
+      if (success) {
+        setAgendaItems(prev => prev.filter(item => item.id !== id));
+      }
+    }
   };
 
   const renderContent = (content: any) => {

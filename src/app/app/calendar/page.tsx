@@ -77,17 +77,20 @@ export default function CalendarPage() {
   const isEs = language === 'es';
 
   useEffect(() => {
-    const storedItems = loadAgendaItems();
-    setAgendaItems(storedItems);
+    async function fetchAgenda() {
+      const storedItems = await loadAgendaItems();
+      setAgendaItems(storedItems);
 
-    const storedDate = loadSelectedPlanDate();
-    if (storedDate) {
-      setSelectedDate(storedDate);
-    } else if (storedItems.length > 0) {
-      setSelectedDate(storedItems[0].date);
-    } else {
-      setSelectedDate(getTodayDate());
+      const storedDate = loadSelectedPlanDate();
+      if (storedDate) {
+        setSelectedDate(storedDate);
+      } else if (storedItems.length > 0) {
+        setSelectedDate(storedItems[0].date);
+      } else {
+        setSelectedDate(getTodayDate());
+      }
     }
+    fetchAgenda();
   }, []);
 
   useEffect(() => {
@@ -146,7 +149,7 @@ export default function CalendarPage() {
   };
 
 
-  const handleAddItem = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddItem = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!formDate) return;
 
@@ -162,17 +165,27 @@ export default function CalendarPage() {
       createdAt: new Date().toISOString(),
     };
 
-    const updated = addAgendaItem(item);
-    setAgendaItems(updated);
-    setFormMessage(isEs ? 'Item agregado a tu agenda.' : 'Item added to your agenda.');
-    window.setTimeout(() => setFormMessage(''), 3000);
+    setFormMessage(isEs ? 'Guardando en la nube...' : 'Saving to cloud...');
+    const success = await addAgendaItem(item);
+    if (success) {
+      setAgendaItems(prev => [...prev, item]);
+      setFormMessage(isEs ? 'Item agregado a tu agenda.' : 'Item added to your agenda.');
+      window.setTimeout(() => setFormMessage(''), 3000);
+    } else {
+      setFormMessage(isEs ? 'Error al guardar. Intenta de nuevo.' : 'Error saving. Try again.');
+      window.setTimeout(() => setFormMessage(''), 3000);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    const updated = deleteAgendaItem(id);
-    setAgendaItems(updated);
-    if (previewId === id) {
-      setPreviewId(null);
+  const handleDelete = async (id: string) => {
+    if (confirm(isEs ? '¿Estás seguro de eliminar este elemento?' : 'Are you sure you want to delete this item?')) {
+      const success = await deleteAgendaItem(id);
+      if (success) {
+        setAgendaItems(prev => prev.filter(item => item.id !== id));
+        if (previewId === id) {
+          setPreviewId(null);
+        }
+      }
     }
   };
 
