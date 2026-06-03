@@ -122,10 +122,11 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
+    // TEMPORARILY DISABLED: Allow all authenticated users to access planner during beta/testing
     if (request.nextUrl.pathname.startsWith('/app/planner') || request.nextUrl.pathname.startsWith('/app/exams')) {
-      if (!profile || profile.subscription_status !== 'active') {
+      if (!profile) {
         const url = request.nextUrl.clone()
-        url.pathname = '/app/billing' // Redirigir al muro de pago
+        url.pathname = '/login'
         return NextResponse.redirect(url)
       }
     }
