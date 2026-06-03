@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import { Settings, Bell, Search, LogOut } from 'lucide-react';
+import { Settings, Bell, LogOut } from 'lucide-react';
 import Image from 'next/image';
 
 import { TopNav } from '@/components/TopNav';
@@ -38,10 +38,6 @@ export default function AppLayout({
 
             {/* Right Side Icons & Profile */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="hidden lg:flex relative">
-                <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input type="text" placeholder="Search..." className="bg-white/50 border border-white/60 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 w-48 transition-all" />
-              </div>
               <button className="hidden sm:flex w-10 h-10 rounded-full bg-white/50 items-center justify-center border border-white/60 hover:bg-white/80 transition-colors">
                 <Bell className="w-5 h-5 text-slate-700" />
               </button>
