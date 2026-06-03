@@ -290,3 +290,49 @@ export function downloadAgendaItem(item: AgendaItem) {
     generatePDF();
   }
 }
+
+export function printAgendaItem(item: AgendaItem) {
+  if (typeof window === 'undefined') return;
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) return;
+
+  let contentHtml = '';
+  if (item.metadata?.object?.diaADia) {
+    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
+    contentHtml = dias.map((dia: any, idx: number) => `
+      <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
+        <h3 style="margin-top:0; color:#2563eb;">Día ${idx + 1} - ${dia.dia || ''}</h3>
+        ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 1rem;"><strong>Tiempos Estimados:</strong> ${dia.tiemposEstimados}</p>` : ''}
+        <p><strong>Inicio:</strong><br/>${dia.inicio}</p>
+        <p><strong>Desarrollo:</strong><br/>
+          ${dia.desarrollo && typeof dia.desarrollo === 'object' ? `
+            <ul>
+              ${dia.desarrollo.visual ? `<li><strong>Visual:</strong> ${dia.desarrollo.visual}</li>` : ''}
+              ${dia.desarrollo.auditiva ? `<li><strong>Auditiva:</strong> ${dia.desarrollo.auditiva}</li>` : ''}
+              ${dia.desarrollo.kinestesica ? `<li><strong>Kinestésica:</strong> ${dia.desarrollo.kinestesica}</li>` : ''}
+            </ul>
+          ` : dia.desarrollo || ''}
+        </p>
+        <p><strong>Cierre:</strong><br/>${dia.cierre}</p>
+        <p><strong>Materiales:</strong><br/>
+          ${dia.materiales && typeof dia.materiales === 'object' ? `
+            <ul>
+              ${dia.materiales.principal ? `<li><strong>Principal:</strong> ${dia.materiales.principal}</li>` : ''}
+              ${dia.materiales.sustentable ? `<li><strong>Sustentable:</strong> ${dia.materiales.sustentable}</li>` : ''}
+            </ul>
+          ` : dia.material_estandar || ''}
+        </p>
+        <p><strong>Libro (Conaliteg):</strong><br/>${dia.conaliteg_cita || ''}</p>
+      </div>
+    `).join('');
+  } else if (item.metadata?.materialContent) {
+    contentHtml = `<pre style="white-space:pre-wrap; font-family:Arial;">${item.metadata.materialContent}</pre>`;
+  } else {
+    contentHtml = `<pre style="white-space:pre-wrap; font-family:Arial;">${item.description || ''}</pre>`;
+  }
+
+  printWindow.document.write(`<!doctype html><html><head><title>${item.title}</title><style>@page{size:letter;margin:1in;}body{font-family:Arial, sans-serif;padding:24px;color:#111;}h1{font-size:24px;margin-bottom:0.5rem;color:#1e293b;}p{margin:0.5rem 0; line-height: 1.5;}</style></head><body><h1>${item.title}</h1><p><strong>Fecha:</strong> ${item.date}</p><p><strong>Tipo:</strong> ${item.type}</p><hr/>${contentHtml}</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}

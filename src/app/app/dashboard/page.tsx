@@ -12,7 +12,6 @@ import {
   loadAgendaItems,
   loadSelectedPlanDate,
   printAgendaItem,
-  saveAgendaItems,
   saveSelectedPlanDate,
   typeLabel,
 } from '@/lib/agenda';
