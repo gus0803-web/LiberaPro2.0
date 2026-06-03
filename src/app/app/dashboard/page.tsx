@@ -7,6 +7,7 @@ import {
   AgendaItem,
   AgendaItemType,
   addAgendaItem,
+  deleteAgendaItem,
   downloadAgendaItem,
   getAgendaItemColor,
   loadAgendaItems,
