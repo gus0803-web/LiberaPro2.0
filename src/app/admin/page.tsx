@@ -19,8 +19,13 @@ async function getAdminStatus() {
   }
 }
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string }
+}) {
   const { status, user, supabase } = await getAdminStatus();
+  const activeTab = searchParams.tab || 'users';
 
   if (status !== 'authorized') {
     return (
@@ -87,14 +92,14 @@ export default async function AdminDashboardPage() {
               <LayoutDashboard className="w-5 h-5" />
               <span className="font-medium text-sm">Return to App</span>
             </Link>
-            <a href="#" className="flex items-center space-x-4 px-4 py-3 mt-2 bg-[#1a1814] border border-[#d4af37]/20 text-[#d4af37] rounded-lg relative overflow-hidden shadow-[inset_4px_0_0_0_#d4af37]">
+            <Link href="/admin?tab=users" className={`flex items-center space-x-4 px-4 py-3 mt-2 rounded-lg relative overflow-hidden transition-colors ${activeTab === 'users' ? 'bg-[#1a1814] border border-[#d4af37]/20 text-[#d4af37] shadow-[inset_4px_0_0_0_#d4af37]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
               <Users className="w-5 h-5" />
-              <span className="font-bold text-sm">User Insights</span>
-            </a>
-            <a href="#" className="flex items-center space-x-4 px-4 py-3 mt-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <span className="font-bold text-sm">Users</span>
+            </Link>
+            <Link href="/admin?tab=billing" className={`flex items-center space-x-4 px-4 py-3 mt-2 rounded-lg relative overflow-hidden transition-colors ${activeTab === 'billing' ? 'bg-[#1a1814] border border-[#d4af37]/20 text-[#d4af37] shadow-[inset_4px_0_0_0_#d4af37]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
               <Database className="w-5 h-5" />
-              <span className="font-medium text-sm">Data Streams</span>
-            </a>
+              <span className="font-bold text-sm">Billing</span>
+            </Link>
           </div>
         </nav>
 
@@ -111,7 +116,9 @@ export default async function AdminDashboardPage() {
         {/* Header */}
         <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0c]">
           <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-medium text-gray-300 tracking-wide uppercase">HQ Users Dashboard</h2>
+            <h2 className="text-xl font-medium text-gray-300 tracking-wide uppercase">
+              {activeTab === 'users' ? 'HQ Users Dashboard' : 'HQ Billing Dashboard'}
+            </h2>
           </div>
           
           <div className="flex items-center space-x-6">
@@ -134,86 +141,119 @@ export default async function AdminDashboardPage() {
         {/* Dashboard Content */}
         <div className="p-8 space-y-6 overflow-y-auto">
           
-          {/* Top Metric Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
-              <p className="text-gray-400 text-sm mb-1 font-medium">Total Users</p>
-              <h3 className="text-3xl font-bold text-white">{profiles.length.toLocaleString()}</h3>
-            </div>
-            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
-              <p className="text-gray-400 text-sm mb-1 font-medium">Active Subs</p>
-              <h3 className="text-3xl font-bold text-[#d4af37]">{activeUsersCount.toLocaleString()}</h3>
-            </div>
-            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
-              <p className="text-gray-400 text-sm mb-1 font-medium">Beta Testers</p>
-              <h3 className="text-3xl font-bold text-blue-400">{betaUsersCount.toLocaleString()}</h3>
-            </div>
-            <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
-              <p className="text-gray-400 text-sm mb-1 font-medium">New (7 days)</p>
-              <h3 className="text-3xl font-bold text-green-500">+{newSignups.toLocaleString()}</h3>
-            </div>
-          </div>
+          {activeTab === 'users' && (
+            <>
+              {/* Top Metric Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">Total Users</p>
+                  <h3 className="text-3xl font-bold text-white">{profiles.length.toLocaleString()}</h3>
+                </div>
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">Active Subs</p>
+                  <h3 className="text-3xl font-bold text-[#d4af37]">{activeUsersCount.toLocaleString()}</h3>
+                </div>
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">Beta Testers</p>
+                  <h3 className="text-3xl font-bold text-blue-400">{betaUsersCount.toLocaleString()}</h3>
+                </div>
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">New (7 days)</p>
+                  <h3 className="text-3xl font-bold text-green-500">+{newSignups.toLocaleString()}</h3>
+                </div>
+              </div>
 
-          {/* User Table */}
-          <div className="bg-[#111113] border border-white/5 rounded-xl shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">Registered Users Directory</h3>
-              <div className="text-sm text-gray-500">Sorted by newest</div>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-gray-400">
-                <thead className="text-xs uppercase bg-[#1a1814] text-[#d4af37]">
-                  <tr>
-                    <th scope="col" className="px-6 py-4">Name</th>
-                    <th scope="col" className="px-6 py-4">Status</th>
-                    <th scope="col" className="px-6 py-4">Beta</th>
-                    <th scope="col" className="px-6 py-4">State</th>
-                    <th scope="col" className="px-6 py-4">Joined Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {profiles.length > 0 ? (
-                    profiles.map((p) => (
-                      <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-medium text-white flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-gray-300">
-                            {p.full_name ? p.full_name.charAt(0).toUpperCase() : 'U'}
-                          </div>
-                          <span>{p.full_name || 'Anonymous User'}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            p.subscription_status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 
-                            'bg-gray-500/10 text-gray-400 border border-gray-500/20'
-                          }`}>
-                            {p.subscription_status || 'inactive'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {p.beta_tester ? (
-                            <span className="text-blue-400 font-bold">Yes</span>
-                          ) : (
-                            <span className="text-gray-600">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">{p.state || 'N/A'}</td>
-                        <td className="px-6 py-4 text-gray-500">
-                          {new Date(p.created_at).toLocaleDateString()}
-                        </td>
+              {/* User Table */}
+              <div className="bg-[#111113] border border-white/5 rounded-xl shadow-xl overflow-hidden">
+                <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-white">Registered Users Directory</h3>
+                  <div className="text-sm text-gray-500">Sorted by newest</div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-gray-400">
+                    <thead className="text-xs uppercase bg-[#1a1814] text-[#d4af37]">
+                      <tr>
+                        <th scope="col" className="px-6 py-4">Name</th>
+                        <th scope="col" className="px-6 py-4">Email</th>
+                        <th scope="col" className="px-6 py-4">School</th>
+                        <th scope="col" className="px-6 py-4">Status</th>
+                        <th scope="col" className="px-6 py-4">Payments</th>
+                        <th scope="col" className="px-6 py-4">Joined Date</th>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                        No users found in the database.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {profiles.length > 0 ? (
+                        profiles.map((p) => (
+                          <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="px-6 py-4 font-medium text-white flex items-center space-x-3">
+                              <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-gray-300">
+                                {p.full_name ? p.full_name.charAt(0).toUpperCase() : 'U'}
+                              </div>
+                              <span>{p.full_name || 'Anonymous User'}</span>
+                            </td>
+                            <td className="px-6 py-4 text-gray-300">
+                              {p.email || <span className="text-gray-600 italic">N/A</span>}
+                            </td>
+                            <td className="px-6 py-4 text-gray-300">
+                              {p.school || <span className="text-gray-600 italic">N/A</span>}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                p.subscription_status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 
+                                'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                              }`}>
+                                {p.subscription_status || 'inactive'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="font-semibold text-white">{p.payments_count || 0}</span>
+                            </td>
+                            <td className="px-6 py-4 text-gray-500">
+                              {new Date(p.created_at).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                            No users found in the database.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'billing' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">Monthly Recurring Revenue (MRR)</p>
+                  <h3 className="text-3xl font-bold text-[#d4af37]">$0.00 <span className="text-sm text-gray-500 font-normal">MXN</span></h3>
+                </div>
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">Active Subscriptions</p>
+                  <h3 className="text-3xl font-bold text-white">{activeUsersCount}</h3>
+                </div>
+                <div className="bg-[#111113] border border-white/5 rounded-xl p-6 shadow-xl relative overflow-hidden">
+                  <p className="text-gray-400 text-sm mb-1 font-medium">Total Transactions</p>
+                  <h3 className="text-3xl font-bold text-white">0</h3>
+                </div>
+              </div>
+
+              <div className="bg-[#111113] border border-white/5 rounded-xl shadow-xl overflow-hidden p-8 text-center">
+                <Database className="w-12 h-12 text-[#d4af37] mx-auto mb-4 opacity-50" />
+                <h3 className="text-xl font-bold text-white mb-2">Billing System Not Connected</h3>
+                <p className="text-gray-400 max-w-md mx-auto">
+                  Stripe integration is currently pending. Once configured, actual transactions and subscriptions will appear here.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </main>
