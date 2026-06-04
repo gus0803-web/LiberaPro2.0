@@ -1,18 +1,25 @@
 import React from 'react';
 import Link from 'next/link';
 import { ThemeProvider } from '@/components/ThemeProvider';
-import { Settings, Bell, LogOut } from 'lucide-react';
+import { Settings, Bell, LogOut, Shield } from 'lucide-react';
 import Image from 'next/image';
 
 import { TopNav } from '@/components/TopNav';
 import { AppFooter } from '@/components/AppFooter';
 import { FeedbackTab } from '@/components/FeedbackTab';
+import { createClient } from '@/lib/supabase/server';
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const userEmail = user?.email || '';
+  const initial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
+  const isAdmin = userEmail === 'gus0803@gmail.com';
+
   return (
     <ThemeProvider>
       <div className="flex min-h-screen text-slate-800 font-[family-name:var(--font-geist-sans)] p-4 md:p-8 overflow-hidden items-center justify-center">
@@ -38,6 +45,11 @@ export default function AppLayout({
 
             {/* Right Side Icons & Profile */}
             <div className="flex items-center space-x-2 sm:space-x-4">
+              {isAdmin && (
+                <Link href="/admin" title="Admin HQ" className="hidden sm:flex w-10 h-10 rounded-full bg-slate-900 items-center justify-center border border-slate-700 hover:bg-slate-800 transition-colors shadow-md">
+                  <Shield className="w-5 h-5 text-gold-pale" />
+                </Link>
+              )}
               <button className="hidden sm:flex w-10 h-10 rounded-full bg-white/50 items-center justify-center border border-white/60 hover:bg-white/80 transition-colors">
                 <Bell className="w-5 h-5 text-slate-700" />
               </button>
@@ -48,7 +60,7 @@ export default function AppLayout({
                 <LogOut className="w-5 h-5 text-slate-700" />
               </Link>
               <div className="hidden sm:flex w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white shadow-sm overflow-hidden items-center justify-center">
-                <span className="text-white font-bold text-sm">MD</span>
+                <span className="text-white font-bold text-sm">{initial}</span>
               </div>
             </div>
           </header>
