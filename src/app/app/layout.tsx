@@ -22,7 +22,7 @@ export default async function AppLayout({
 
   return (
     <ThemeProvider>
-      <div className="flex min-h-screen text-slate-800 font-[family-name:var(--font-geist-sans)] p-4 md:p-8 overflow-hidden items-center justify-center">
+      <div className="flex min-h-screen text-[var(--app-font-color)] font-[family-name:var(--font-geist-sans)] p-4 md:p-8 overflow-hidden items-center justify-center">
         
         {/* Main Glass Panel */}
         <main className="w-full max-w-7xl h-[90vh] bg-white/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden relative">

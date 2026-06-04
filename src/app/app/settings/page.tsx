@@ -57,7 +57,7 @@ export default function SettingsPage() {
   return (
     <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center space-x-4 mb-8">
-        <Settings className="w-10 h-10 text-slate-800" />
+        <Settings className="w-10 h-10 text-[var(--app-font-color)]" />
         <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
           {t.title}
         </h1>
@@ -69,7 +69,7 @@ export default function SettingsPage() {
         <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-6">
             <Globe className="w-6 h-6 text-blue-500" />
-            <h2 className="text-xl font-bold text-slate-800">{t.language}</h2>
+            <h2 className="text-xl font-bold text-[var(--app-font-color)]">{t.language}</h2>
           </div>
           <div className="flex flex-col space-y-4">
             <button 
@@ -91,7 +91,7 @@ export default function SettingsPage() {
         <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-6">
             <Palette className="w-6 h-6 text-pink-500" />
-            <h2 className="text-xl font-bold text-slate-800">{t.appearance}</h2>
+            <h2 className="text-xl font-bold text-[var(--app-font-color)]">{t.appearance}</h2>
           </div>
           <div className="flex flex-col space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {themeOptions.map((option) => (
@@ -111,7 +111,7 @@ export default function SettingsPage() {
         <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-6">
             <Type className="w-6 h-6 text-green-500" />
-            <h2 className="text-xl font-bold text-slate-800">{t.fontSettings}</h2>
+            <h2 className="text-xl font-bold text-[var(--app-font-color)]">{t.fontSettings}</h2>
           </div>
           <div className="flex flex-col space-y-4">
             <p className="text-sm text-slate-600 font-medium">{t.fontColorDesc}</p>

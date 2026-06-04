@@ -22,10 +22,11 @@ async function getAdminStatus() {
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: { tab?: string }
+  searchParams: Promise<{ tab?: string }>
 }) {
   const { status, user, supabase } = await getAdminStatus();
-  const activeTab = searchParams.tab || 'users';
+  const params = await searchParams;
+  const activeTab = params.tab || 'users';
 
   if (status !== 'authorized') {
     return (

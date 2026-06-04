@@ -410,7 +410,7 @@ export default function DashboardPage() {
                       </div>
 
                       {previewId === item.id ? (
-                        <div className="mt-5 rounded-3xl border border-white/40 bg-white/60 p-4 text-sm text-slate-800">
+                        <div className="mt-5 rounded-3xl border border-white/40 bg-white/60 p-4 text-sm text-[var(--app-font-color)]">
                           <p className="font-bold text-slate-900 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
                           {item.metadata?.object?.diaADia ? (
                             <div className="space-y-4">
@@ -545,7 +545,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6">
-              <h3 className="text-sm font-semibold text-slate-800 mb-4">{isEs ? 'Materiales del día' : 'Today’s materials'}</h3>
+              <h3 className="text-sm font-semibold text-[var(--app-font-color)] mb-4">{isEs ? 'Materiales del día' : 'Today’s materials'}</h3>
               {materialItems.length > 0 ? (
                 <div className="space-y-4">
                   {materialItems.map((item) => (
@@ -580,7 +580,7 @@ export default function DashboardPage() {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-slate-800 text-lg flex items-center space-x-2">
+                  <h3 className="font-bold text-[var(--app-font-color)] text-lg flex items-center space-x-2">
                     <Bell className="w-5 h-5 text-amber-500" />
                     <span>{t.reminders}</span>
                   </h3>
@@ -613,7 +613,7 @@ export default function DashboardPage() {
 
               <div className="pt-6 border-t border-slate-200">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-slate-800 text-lg flex items-center space-x-2">
+                  <h3 className="font-bold text-[var(--app-font-color)] text-lg flex items-center space-x-2">
                     <Calendar className="w-5 h-5 text-blue-500" />
                     <span>{t.lessonPlanChecklist}</span>
                   </h3>
