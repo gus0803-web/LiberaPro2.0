@@ -80,18 +80,20 @@ export default function LoginPage() {
     >
       {/* Animated golden background patterns (Desktop Only) */}
       <div className="absolute inset-0 pointer-events-none -z-10 hidden md:block">
-        <div className={"absolute top-16 left-10 w-28 h-28 rounded-full bg-amber-400/20 blur-2xl " + (isLoading ? 'pattern-dark-1' : 'opacity-60')} />
-        <div className={"absolute top-24 right-16 w-20 h-20 rounded-full bg-amber-300/20 blur-2xl " + (isLoading ? 'pattern-dark-2' : 'opacity-50')} />
-        <div className={"absolute bottom-24 left-20 w-24 h-24 rounded-full bg-amber-500/15 blur-3xl " + (isLoading ? 'pattern-dark-3' : 'opacity-50')} />
-        <div className={"absolute bottom-16 right-12 w-16 h-16 rounded-full bg-amber-400/20 blur-2xl " + (isLoading ? 'pattern-dark-4' : 'opacity-50')} />
+        <div className={"absolute top-16 left-10 w-28 h-28 rounded-full bg-amber-400/10 blur-2xl " + (isLoading ? 'pattern-dark-1' : 'opacity-40')} />
+        <div className={"absolute top-24 right-16 w-20 h-20 rounded-full bg-amber-300/10 blur-2xl " + (isLoading ? 'pattern-dark-2' : 'opacity-30')} />
+        <div className={"absolute bottom-24 left-20 w-24 h-24 rounded-full bg-amber-500/10 blur-3xl " + (isLoading ? 'pattern-dark-3' : 'opacity-30')} />
+        <div className={"absolute bottom-16 right-12 w-16 h-16 rounded-full bg-amber-400/10 blur-2xl " + (isLoading ? 'pattern-dark-4' : 'opacity-30')} />
       </div>
-      <div className="absolute top-0 left-0 w-full h-full bg-slate-900/40 md:bg-slate-900/30 -z-10 pointer-events-none"></div>
+      
+      {/* Darken & Desaturate Overlay for Mobile to lower golden tones, keep Desktop normal */}
+      <div className="absolute top-0 left-0 w-full h-full bg-slate-950/70 backdrop-saturate-[0.3] md:backdrop-saturate-100 md:bg-slate-900/40 -z-10 pointer-events-none"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="group w-full flex flex-col items-center md:bg-slate-900/70 md:backdrop-blur-2xl md:rounded-[2.5rem] md:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] md:border md:border-slate-700/60 md:p-10 md:opacity-80 md:transition-opacity md:duration-300 md:ease-out hover:opacity-100 focus-within:opacity-100">
           
           {/* LiberaPro Logo */}
-          <div className="mb-6 relative w-48 h-48 md:w-32 md:h-32 md:rounded-[2rem] md:border-2 md:border-[#d4af37]/60 md:bg-[#0A1612] md:shadow-[inset_0_4px_18px_rgba(255,255,255,0.05),0_30px_90px_-40px_rgba(0,0,0,0.9)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
+          <div className="mb-6 relative w-48 h-48 md:w-32 md:h-32 md:rounded-[2rem] md:border-2 md:border-[#d4af37]/60 md:bg-[#123120] md:shadow-[inset_0_4px_18px_rgba(255,255,255,0.05),0_30px_90px_-40px_rgba(0,0,0,0.9)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
             {/* Transparent Logo used for both mobile (large) and desktop (contained in green box) */}
             <Image src="/logo-pluma-transparente.png" alt="LiberaPro Logo" fill sizes="(max-width: 768px) 12rem, 8rem" className="object-contain object-center md:scale-[1.15]" />
           </div>
