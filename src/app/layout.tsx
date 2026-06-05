@@ -16,6 +16,15 @@ export const metadata: Metadata = {
   title: "LiberaPro Education",
   description: "Plataforma educativa para docentes",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: '/favicon.png', sizes: '64x64', type: 'image/png' },
+      { url: '/logo-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({
