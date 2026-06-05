@@ -17,14 +17,18 @@ export async function createClient() {
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value, ...options })
+            const opt = { ...options }
+            delete opt.maxAge
+            cookieStore.set({ name, value, ...opt })
           } catch (error) {
             // The `set` method was called from a Server Component.
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: '', ...options })
+            const opt = { ...options }
+            delete opt.maxAge
+            cookieStore.set({ name, value: '', ...opt })
           } catch (error) {
             // The `remove` method was called from a Server Component.
           }
