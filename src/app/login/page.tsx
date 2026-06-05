@@ -84,8 +84,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="bg-black/40 backdrop-blur-md rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-white/10 p-10 flex flex-col items-center">
           {/* LiberaPro Logo */}
-          <div className="mb-6 relative w-32 h-32 transform-gpu transition-transform duration-300 hover:-translate-y-1">
-            <Image src="/logo-pluma.png" alt="LiberaPro Logo" fill sizes="8rem" className="object-contain object-center" />
+          <div className="mb-6 relative w-24 h-24 transform-gpu transition-transform duration-300 hover:-translate-y-1">
+            <Image src="/logo-pluma.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-contain object-center" />
           </div>
 
           <h1 className="text-4xl font-bold text-white tracking-tight mb-2">LiberaPro</h1>
