@@ -76,7 +76,7 @@ export default function LoginPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat bg-[#0A1612] bg-[url('/login-bg-new.jpg')] md:bg-[url('/login-bg.png')]"
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat bg-[#111111] bg-[url('/login-bg.png')]"
     >
       {/* Animated golden background patterns (Desktop Only) */}
       <div className="absolute inset-0 pointer-events-none -z-10 hidden md:block">
@@ -92,7 +92,10 @@ export default function LoginPage() {
           
           {/* LiberaPro Logo */}
           <div className="mb-6 relative w-48 h-48 md:w-32 md:h-32 md:rounded-[2rem] md:border-2 md:border-[#d4af37]/80 md:bg-[#0f2119] md:shadow-[inset_0_4px_18px_rgba(255,255,255,0.05),0_30px_90px_-40px_rgba(0,0,0,0.9)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
-            <Image src="/logo-pluma.png" alt="LiberaPro Logo" fill sizes="(max-width: 768px) 12rem, 8rem" className="object-contain object-center md:object-cover md:object-[center_90%] md:scale-[1.05]" />
+            {/* Mobile Transparent Logo */}
+            <Image src="/logo-pluma-transparente.png" alt="LiberaPro Logo" fill sizes="12rem" className="object-contain object-center md:hidden" />
+            {/* Desktop Full Logo */}
+            <Image src="/logo-pluma.png" alt="LiberaPro Logo" fill sizes="8rem" className="hidden md:block object-cover object-[center_90%] scale-[1.05]" />
           </div>
 
           <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2 hidden md:block">LiberaPro</h1>
@@ -166,6 +169,14 @@ export default function LoginPage() {
               <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800/80 md:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/50 md:border-slate-700">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               </a>
+            </div>
+
+            {/* Mobile App Download Button */}
+            <div className="pt-8 pb-4 w-full flex md:hidden justify-center">
+              <Link href="#" className="w-full max-w-[240px] py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 text-center flex items-center justify-center space-x-3">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Baja la App</span>
+              </Link>
             </div>
           </div>
 
