@@ -93,9 +93,8 @@ export default function LoginPage() {
         <div className="group w-full flex flex-col items-center md:bg-slate-900/70 md:backdrop-blur-2xl md:rounded-[2.5rem] md:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] md:border md:border-slate-700/60 md:p-10 md:opacity-80 md:transition-opacity md:duration-300 md:ease-out hover:opacity-100 focus-within:opacity-100">
           
           {/* LiberaPro Logo */}
-          <div className="mb-6 relative w-48 h-48 md:w-32 md:h-32 md:rounded-[2rem] md:border-2 md:border-[#d4af37]/60 md:bg-[#123120] md:shadow-[inset_0_4px_18px_rgba(255,255,255,0.05),0_30px_90px_-40px_rgba(0,0,0,0.9)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
-            {/* Transparent Logo used for both mobile (large) and desktop (contained in green box) */}
-            <Image src="/logo-pluma-transparente.png" alt="LiberaPro Logo" fill sizes="(max-width: 768px) 12rem, 8rem" className="object-contain object-center md:scale-[1.15]" />
+          <div className="mb-6 relative w-32 h-32 rounded-[1.5rem] bg-[#123120] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
+            <Image src="/logo-pluma-transparente.png" alt="LiberaPro Logo" fill sizes="8rem" className="object-contain object-center scale-[1.15]" />
           </div>
 
           <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2 hidden md:block">LiberaPro</h1>
