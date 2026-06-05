@@ -76,7 +76,7 @@ export default function LoginPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat md:bg-[length:100vw_auto] md:bg-top bg-[#0A1612]"
       style={{ backgroundImage: "url('/login-bg-new.jpg')" }}
     >
       <div className="absolute top-0 left-0 w-full h-full bg-black/40 -z-10 pointer-events-none"></div>
