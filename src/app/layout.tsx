@@ -16,10 +16,6 @@ export const metadata: Metadata = {
   title: "LiberaPro Education",
   description: "Plataforma educativa para docentes",
   manifest: "/manifest.json",
-  icons: {
-    icon: '/logo-final.png',
-    apple: '/logo-final.png',
-  },
 };
 
 export default function RootLayout({
