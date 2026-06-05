@@ -2,7 +2,7 @@
   "name": "LiberaPro Education",
   "short_name": "LiberaPro",
   "description": "Plataforma educativa para docentes",
-  "start_url": "/app/dashboard",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1d4ed8",
