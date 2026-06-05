@@ -92,7 +92,7 @@ export default function LoginPage() {
         <div className="group bg-slate-900/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-slate-700/60 p-10 flex flex-col items-center opacity-80 transition-opacity duration-300 ease-out hover:opacity-100 focus-within:opacity-100">
           {/* LiberaPro Logo */}
           <div className="mb-6 relative w-32 h-32 rounded-[2rem] border-2 border-[#d4af37]/80 bg-[#0f2119] shadow-[inset_0_4px_18px_rgba(255,255,255,0.05),0_30px_90px_-40px_rgba(0,0,0,0.9)] overflow-hidden transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
-            <Image src="/logo-pluma.png" alt="LiberaPro Logo" fill sizes="8rem" className="object-cover object-[center_35%] scale-[1.15]" />
+            <Image src="/logo-pluma.png" alt="LiberaPro Logo" fill sizes="8rem" className="object-cover object-[center_70%] scale-[1.05]" />
           </div>
 
           <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">LiberaPro</h1>
