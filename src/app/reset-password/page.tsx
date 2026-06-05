@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="bg-slate-900/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-slate-700/80 p-10 flex flex-col items-center">
           <div className="mb-6 relative w-20 h-20 shadow-lg shadow-green-900/20 rounded-3xl overflow-hidden">
-            <img src="/logo-pluma.png" alt="LiberaPro Logo" className="object-cover object-center scale-[1.1] w-full h-full" />
+            <img src="/logo-pluma-transparente.png" alt="LiberaPro Logo" className="object-contain object-center scale-[1.1] w-full h-full" />
           </div>
 
           <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Reset Your Password</h1>
