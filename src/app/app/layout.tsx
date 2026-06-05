@@ -31,8 +31,8 @@ export default async function AppLayout({
           <header className="h-16 sm:h-24 px-4 sm:px-8 flex items-center justify-between border-b border-white/20 shrink-0">
             {/* Logo / Title Area */}
             <div className="flex items-center space-x-3 sm:space-x-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 relative rounded-2xl overflow-hidden shadow-lg shadow-slate-900/20">
-                <Image src="/logo-pluma-transparente.png" alt="LiberaPro Logo" fill sizes="3rem" className="object-contain object-center scale-[1.1]" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 relative flex items-center justify-center">
+                <Image src="/logo-final.png" alt="LiberaPro Logo" fill sizes="3rem" className="object-contain object-center scale-[1.15]" />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 leading-none">LiberaPro</span>
