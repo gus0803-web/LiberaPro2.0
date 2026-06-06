@@ -1,7 +1,12 @@
+import Link from 'next/link';
+
 export default function PrivacyPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4 md:p-8 overflow-hidden relative">
       <div className="max-w-4xl w-full bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 p-8 md:p-12 my-8">
+        <Link href="/login" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-8">
+          ← Volver al inicio
+        </Link>
         <h1 className="text-3xl font-bold text-slate-900 mb-8">Política de Privacidad / Privacy Policy</h1>
         
         <div className="prose prose-slate max-w-none space-y-6 text-sm leading-relaxed text-slate-700">
@@ -24,7 +29,7 @@ export default function PrivacyPage() {
           <p>
             Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos personales (derechos ARCO). 
             Para ejercer cualquiera de estos derechos, puede enviar una solicitud a través de nuestro formulario de contacto 
-            o al correo electrónico: <strong>TBD</strong>
+            o al correo electrónico: <strong>informacion@liberapro.mx</strong>
           </p>
           
           <h2 className="text-xl font-bold text-slate-900 mt-8">Datos Recopilados</h2>

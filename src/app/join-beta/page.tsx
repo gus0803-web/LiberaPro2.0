@@ -87,7 +87,7 @@ export default function JoinBetaPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="bg-slate-900/80 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-slate-700/80 p-10 flex flex-col items-center">
           <div className="mb-6 relative w-24 h-24 flex items-center justify-center">
-            <Image src="/logo-final.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-contain object-center scale-[1.15]" />
+            <Image src="/logo-512.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-contain object-center scale-[1.15]" />
           </div>
 
           <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Join the Beta Test</h1>

@@ -129,7 +129,7 @@ export default function LoginPage() {
           
           {/* LiberaPro Logo */}
           <div className="mb-6 relative w-32 h-32 transform-gpu transition-transform duration-300 hover:-translate-y-1 flex items-center justify-center">
-            <Image src="/logo-final.png" alt="LiberaPro Logo" fill sizes="8rem" className="object-contain object-center scale-[1.15]" />
+            <Image src="/logo-512.png" alt="LiberaPro Logo" fill sizes="8rem" className="object-contain object-center scale-[1.15]" />
           </div>
 
           <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2 hidden md:block">LiberaPro</h1>

@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
           
           {/* LiberaPro Logo */}
           <div className="mb-6 relative w-24 h-24 flex items-center justify-center">
-            <Image src="/logo-final.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-contain object-center scale-[1.15]" />
+            <Image src="/logo-512.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-contain object-center scale-[1.15]" />
           </div>
 
           <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Reset Password</h1>

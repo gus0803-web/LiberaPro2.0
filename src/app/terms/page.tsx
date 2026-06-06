@@ -1,7 +1,12 @@
+import Link from 'next/link';
+
 export default function TermsPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4 md:p-8 overflow-hidden relative">
       <div className="max-w-4xl w-full bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] border border-white/60 p-8 md:p-12 my-8">
+        <Link href="/login" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-8">
+          ← Volver al inicio
+        </Link>
         <h1 className="text-3xl font-bold text-slate-900 mb-8">Términos de Uso / Terms of Use</h1>
         
         <div className="prose prose-slate max-w-none space-y-6 text-sm leading-relaxed text-slate-700">
