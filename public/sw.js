@@ -7,11 +7,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // A simple pass-through fetch handler is enough to pass the PWA installability criteria
-  // For a full offline experience, you would use caches here.
-  event.respondWith(fetch(event.request).catch(() => {
-    return new Response('Offline content goes here', {
-      headers: { 'Content-Type': 'text/plain' }
-    });
-  }));
+  // Do nothing. Let the browser handle all network requests normally.
+  // This prevents the PWA from accidentally showing an offline fallback text
+  // when there is a tricky network or redirect situation.
 });
