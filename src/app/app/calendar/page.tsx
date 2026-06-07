@@ -425,7 +425,7 @@ export default function CalendarPage() {
                               <div dangerouslySetInnerHTML={{ __html: item.metadata.materialContent }} />
                               <button onClick={() => downloadAgendaItem(item)} className="mt-6 bg-emerald-600 text-white rounded-xl px-5 py-3 font-bold w-fit flex items-center gap-2 hover:bg-emerald-700 transition-colors">
                                 <Download className="w-5 h-5" />
-                                {isEs ? 'Descargar PDF del Material' : 'Download Material PDF'}
+                                {isEs ? 'Descargar Material (.docx)' : 'Download Material (.docx)'}
                               </button>
                             </div>
                           ) : (

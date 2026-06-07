@@ -17,13 +17,8 @@ const planningSchema = z.object({
   diaADia: z.array(z.object({
     dia: z.string(),
     tiemposEstimados: z.string().optional(),
-    inicio: z.string(),
-    desarrollo: z.object({
-      visual: z.string().optional(),
-      auditiva: z.string().optional(),
-      kinestesica: z.string().optional(),
-    }).or(z.string()).optional(),
-    cierre: z.string(),
+    actividades: z.string(),
+    actividadesTEA: z.string().optional(),
     materiales: z.object({
       principal: z.string().optional(),
       sustentable: z.string().optional(),
@@ -83,11 +78,13 @@ export default function PlannerPage() {
   const [fase, setFase] = useState('Fase 4: Primaria (3º y 4º)');
   const [duracion, setDuracion] = useState('Semanal');
   const [proyecto, setProyecto] = useState('');
-  const [campoFormativo, setCampoFormativo] = useState('Lenguajes');
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [principio, setPrincipio] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [hasTEA, setHasTEA] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState('');
+  const [availableSchools, setAvailableSchools] = useState<any[]>([]);
   const [saveMessage, setSaveMessage] = useState('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [hasSavedPlan, setHasSavedPlan] = useState(false);
@@ -104,6 +101,10 @@ export default function PlannerPage() {
     } else {
       setSelectedDate(new Date().toISOString().slice(0, 10));
     }
+    const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
+    const valid = schools.filter((s: any) => s.school || s.group);
+    setAvailableSchools(valid);
+    if (valid.length > 0) setSelectedSchool(`${valid[0].school} - ${valid[0].group}`);
   }, []);
 
   useEffect(() => {
@@ -128,14 +129,15 @@ export default function PlannerPage() {
             date: dateStr,
             type: 'planeacion',
             title: tema || proyecto || 'Planeación Generada',
-            description: `Día ${index + 1}: Fase: ${fase}. ${campoFormativo} - ${metodologia}`,
+            description: `Día ${index + 1}: Fase: ${fase}. NEM 4 Campos - ${metodologia}`,
             metadata: {
               fase,
               proyecto,
-              campoFormativo,
               metodologia,
               tema,
               principio,
+              hasTEA,
+              selectedSchool,
               object: diaData ? { diaADia: [diaData] } : object, // Only store the specific day's data if possible
             },
             createdAt: new Date().toISOString(),
@@ -165,7 +167,7 @@ export default function PlannerPage() {
       return;
     }
     setHasSavedPlan(false);
-    submit({ fase, duracion, proyecto, campoFormativo, metodologia, tema, principio });
+    submit({ fase, duracion, proyecto, metodologia, tema, principio, hasTEA, selectedSchool });
   };
 
   return (
@@ -209,6 +211,15 @@ export default function PlannerPage() {
           />
         </div>
         <div className="sm:col-span-2">
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela y Grupo (Perfil)</label>
+          <select value={selectedSchool} onChange={e => setSelectedSchool(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+            <option value="">Sin especificar (General)</option>
+            {availableSchools.map((s, idx) => (
+              <option key={idx} value={`${s.school} - ${s.group}`}>{s.school} - {s.group}</option>
+            ))}
+          </select>
+        </div>
+        <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Proyecto de la NEM</label>
           <select required value={proyecto} onChange={e => setProyecto(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
             <option value="" disabled>Selecciona un proyecto general...</option>
@@ -223,15 +234,6 @@ export default function PlannerPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campo Formativo</label>
-          <select value={campoFormativo} onChange={e => setCampoFormativo(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option>Lenguajes</option>
-            <option>Saberes y Pensamiento Científico</option>
-            <option>Ética, Naturaleza y Sociedades</option>
-            <option>De lo Humano y lo Comunitario</option>
-          </select>
-        </div>
-        <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Metodología Sociocrítica</label>
           <select value={metodologia} onChange={e => setMetodologia(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
             <option>Aprendizaje Basado en Proyectos Comunitarios</option>
@@ -240,13 +242,28 @@ export default function PlannerPage() {
             <option>Aprendizaje de Servicio (AS)</option>
           </select>
         </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema Específico / Contenido</label>
-          <input required type="text" value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. Los estados de la materia, Fracciones, Revolución Mexicana..." className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors placeholder:text-slate-400" />
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Eje Articulador (Opcional)</label>
+          <select value={principio} onChange={e => setPrincipio(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+            <option value="">Selecciona un eje articulador...</option>
+            <option>Inclusión</option>
+            <option>Pensamiento Crítico</option>
+            <option>Interculturalidad crítica</option>
+            <option>Igualdad de género</option>
+            <option>Vida saludable</option>
+            <option>Apropiación de las culturas a través de la lectura y la escritura</option>
+            <option>Artes y experiencias estéticas</option>
+          </select>
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Eje Articulador (Opcional)</label>
-          <input type="text" value={principio} onChange={e => setPrincipio(e.target.value)} placeholder="Ej. Inclusión, Pensamiento Crítico, Interculturalidad crítica..." className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors placeholder:text-slate-400" />
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Situación específica del aula (Opcional)</label>
+          <input type="text" value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. Los estados de la materia, Fracciones, Revolución Mexicana..." className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors placeholder:text-slate-400" />
+        </div>
+        <div className="sm:col-span-2 flex items-center gap-3 bg-blue-50 border border-blue-100 p-4 rounded-xl">
+          <input type="checkbox" id="tea-checkbox" checked={hasTEA} onChange={e => setHasTEA(e.target.checked)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
+          <label htmlFor="tea-checkbox" className="text-sm font-semibold text-blue-900 cursor-pointer">
+            Incluir adaptaciones para alumnos con TEA (Trastorno del Espectro Autista)
+          </label>
         </div>
         <div className="sm:col-span-2 pt-2 flex flex-col gap-3 items-end">
           <button disabled={isLoading || !selectedDate} type="submit" className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
@@ -258,8 +275,12 @@ export default function PlannerPage() {
         </div>
       </form>
       {saveMessage ? (
-        <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-6 text-sm text-emerald-800">
-          {saveMessage}
+        <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-6 text-sm text-emerald-800 space-y-2">
+          <p className="font-bold">¡Planeación Generada Exitosamente!</p>
+          <p>{saveMessage}</p>
+          {saveMessage.includes('distribuida') && (
+            <p className="font-medium text-emerald-900 mt-2">La planeación fue generada tomando en cuenta los cuatro campos formativos de la NEM.</p>
+          )}
         </div>
       ) : null}
 
@@ -329,18 +350,17 @@ export default function PlannerPage() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
                   <div className="space-y-3">
-                    <div className="bg-amber-50/80 rounded-xl p-4 border-l-2 border-amber-400">
-                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">Inicio</p>
-                      <div className="text-xs text-slate-700">{renderContent(dia?.inicio)}</div>
+                    <div className="bg-slate-50/80 rounded-xl p-4 border-l-4 border-blue-500">
+                      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Actividades de Aprendizaje</p>
+                      <div className="text-xs text-slate-700 whitespace-pre-wrap">{renderContent(dia?.actividades)}</div>
                     </div>
-                    <div className="bg-blue-50/80 rounded-xl p-4 border-l-2 border-blue-500">
-                      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Desarrollo</p>
-                      <div className="text-xs text-slate-700">{renderContent(dia?.desarrollo)}</div>
-                    </div>
-                    <div className="bg-slate-50/80 rounded-xl p-4 border-l-2 border-slate-400">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Cierre</p>
-                      <div className="text-xs text-slate-700">{renderContent(dia?.cierre)}</div>
-                    </div>
+                    {dia?.actividadesTEA && (
+                      <div className="bg-amber-50/80 rounded-xl p-4 border-l-4 border-amber-500 relative">
+                        <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg rounded-tr-xl">Inclusión</div>
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Actividades TEA</p>
+                        <div className="text-xs text-amber-900 whitespace-pre-wrap">{renderContent(dia?.actividadesTEA)}</div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="sm:col-span-2 space-y-3">
@@ -395,8 +415,8 @@ export default function PlannerPage() {
                 date: selectedDate || new Date().toISOString().slice(0, 10),
                 type: 'planeacion',
                 title: tema || proyecto || 'Planeación Completa',
-                description: `Documento Maestro: ${fase}. ${campoFormativo} - ${metodologia}`,
-                metadata: { object: object },
+                description: `Documento Maestro: ${fase}. NEM 4 Campos - ${metodologia}`,
+                metadata: { object: object, hasTEA, selectedSchool, selectedDate, duracion },
                 createdAt: new Date().toISOString()
               };
               downloadAgendaItem(masterItem);
@@ -404,7 +424,7 @@ export default function PlannerPage() {
             className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-lg"
           >
             <Download className="w-5 h-5" />
-            Descargar Planeación Completa (PDF)
+            Descargar Planeación Completa (.docx)
           </button>
         </div>
       )}

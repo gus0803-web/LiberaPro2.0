@@ -37,6 +37,8 @@ export default function DashboardPage() {
   const [currentDateString, setCurrentDateString] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [tipoMaterial, setTipoMaterial] = useState('Material de Apoyo (Clase)');
+  const [adaptacionTEA, setAdaptacionTEA] = useState(false);
 
   const isEs = language === 'es';
   const pinnedPlanDates = [
@@ -134,9 +136,27 @@ export default function DashboardPage() {
     }
   };
 
-  const greeting = isEs
-    ? `¡Buenos días, ${userName ?? 'Profesor(a)'}!`
-    : `Good morning, ${userName ?? 'Teacher'}!`;
+  const [greetingTime, setGreetingTime] = useState<'morning' | 'afternoon' | 'evening'>('morning');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) setGreetingTime('morning');
+    else if (hour >= 12 && hour < 18) setGreetingTime('afternoon');
+    else setGreetingTime('evening');
+  }, []);
+
+  const getGreeting = () => {
+    if (isEs) {
+      if (greetingTime === 'morning') return `¡Buenos días, ${userName ?? 'Profesor(a)'}!`;
+      if (greetingTime === 'afternoon') return `¡Buenas tardes, ${userName ?? 'Profesor(a)'}!`;
+      return `¡Buenas noches, ${userName ?? 'Profesor(a)'}!`;
+    } else {
+      if (greetingTime === 'morning') return `Good morning, ${userName ?? 'Teacher'}!`;
+      if (greetingTime === 'afternoon') return `Good afternoon, ${userName ?? 'Teacher'}!`;
+      return `Good evening, ${userName ?? 'Teacher'}!`;
+    }
+  };
+  const greeting = getGreeting();
 
   const t = {
     newPlan: isEs ? 'Nueva Planeación' : 'New Plan',
@@ -267,7 +287,9 @@ export default function DashboardPage() {
         body: JSON.stringify({
           planTitle: selectedPlan.title,
           planDescription: selectedPlan.description,
-          planData: selectedPlan.metadata?.object || {}
+          planData: selectedPlan.metadata?.object || {},
+          tipoMaterial,
+          adaptacionTEA
         })
       });
 
@@ -278,8 +300,8 @@ export default function DashboardPage() {
         id: `${Date.now()}-${selectedDate}-material`,
         date: selectedDate,
         type: 'material',
-        title: `LiberaPro-${selectedDate}-Leccion`,
-        description: `Material de apoyo para la planeación: ${selectedPlan.title}`,
+        title: `${tipoMaterial} - ${selectedDate}`,
+        description: `${tipoMaterial} para la planeación: ${selectedPlan.title}`,
         metadata: { linkedPlanId: selectedPlan.id, materialContent: data.content },
         createdAt: new Date().toISOString(),
       };
@@ -443,7 +465,7 @@ export default function DashboardPage() {
                               <div dangerouslySetInnerHTML={{ __html: item.metadata.materialContent }} />
                               <button onClick={() => downloadAgendaItem(item)} className="mt-6 bg-emerald-600 text-white rounded-xl px-5 py-3 font-bold w-fit flex items-center gap-2 hover:bg-emerald-700 transition-colors">
                                 <Download className="w-5 h-5" />
-                                {isEs ? 'Descargar PDF del Material' : 'Download Material PDF'}
+                                {isEs ? 'Descargar Material (.docx)' : 'Download Material (.docx)'}
                               </button>
                             </div>
                           ) : (
@@ -508,7 +530,22 @@ export default function DashboardPage() {
                 </select>
               </div>
 
-              {/* Inputs eliminados por solicitud del usuario. Solo se usa fecha y planeación. */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">{isEs ? 'Tipo de Material' : 'Material Type'}</label>
+                <select value={tipoMaterial} onChange={(e) => setTipoMaterial(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                  <option value="Material de Apoyo (Clase)">{isEs ? 'Material de Apoyo (Clase)' : 'Support Material (Class)'}</option>
+                  <option value="Rúbrica de Evaluación">{isEs ? 'Rúbrica de Evaluación' : 'Evaluation Rubric'}</option>
+                  <option value="Cuestionario / Examen">{isEs ? 'Cuestionario / Examen' : 'Questionnaire / Exam'}</option>
+                  <option value="Lista de Cotejo">{isEs ? 'Lista de Cotejo' : 'Checklist'}</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 bg-amber-50/50 border border-amber-100 p-3 rounded-xl">
+                <input type="checkbox" id="tea-material-checkbox" checked={adaptacionTEA} onChange={e => setAdaptacionTEA(e.target.checked)} className="w-5 h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500" />
+                <label htmlFor="tea-material-checkbox" className="text-sm font-semibold text-amber-900 cursor-pointer leading-tight">
+                  {isEs ? 'Adaptar para alumnos con TEA' : 'Adapt for students with ASD'}
+                </label>
+              </div>
 
               <button
                 onClick={handleCreateMaterial}

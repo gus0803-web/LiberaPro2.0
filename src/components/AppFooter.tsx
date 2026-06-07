@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
+import { FeedbackModal } from './FeedbackTab';
 
 export function AppFooter() {
   const { language } = useTheme();
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const isEs = language === 'es';
 
   return (
@@ -26,6 +28,10 @@ export function AppFooter() {
             {isEs ? 'Términos de Uso' : 'Terms of Use'}
           </Link>
           <span className="text-slate-400">|</span>
+          <button onClick={() => setIsFeedbackOpen(true)} className="hover:text-black transition-colors underline-offset-2 hover:underline">
+            {isEs ? 'Sugerencias' : 'Feedback'}
+          </button>
+          <span className="text-slate-400">|</span>
           <Link href="/contact" className="hover:text-black transition-colors underline-offset-2 hover:underline">
             {isEs ? 'Contacto' : 'Contact'}
           </Link>
@@ -38,6 +44,8 @@ export function AppFooter() {
           ? 'LiberaPro cumple con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP). Sus datos personales son tratados de forma confidencial y no serán compartidos con terceros sin su consentimiento expreso. Para ejercer sus derechos ARCO (Acceso, Rectificación, Cancelación u Oposición), contáctenos a través de nuestro formulario de contacto.'
           : 'LiberaPro complies with Mexico\'s Federal Law on Protection of Personal Data Held by Private Parties (LFPDPPP). Your personal data is treated confidentially and will not be shared with third parties without your express consent. To exercise your ARCO rights (Access, Rectification, Cancellation or Opposition), contact us through our contact form.'}
       </p>
+
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </footer>
   );
 }

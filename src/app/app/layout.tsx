@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 import { TopNav } from '@/components/TopNav';
 import { AppFooter } from '@/components/AppFooter';
-import { FeedbackTab } from '@/components/FeedbackTab';
+// import { FeedbackTab } from '@/components/FeedbackTab';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function AppLayout({
@@ -75,8 +75,7 @@ export default async function AppLayout({
 
         </main>
 
-        {/* Feedback Tab */}
-        <FeedbackTab />
+        {/* Feedback Tab moved to AppFooter */}
       </div>
     </ThemeProvider>
   )

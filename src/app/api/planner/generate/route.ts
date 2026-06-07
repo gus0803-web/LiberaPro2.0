@@ -17,13 +17,8 @@ const planningSchema = z.object({
   diaADia: z.array(z.object({
     dia: z.string().describe("Título del día, ej: 'Día 1: ¿Quién vive aquí?'"),
     tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
-    inicio: z.string().describe("Activación y pregunta provocadora"),
-    desarrollo: z.object({
-      visual: z.string().describe("Actividad Visual DUA"),
-      auditiva: z.string().describe("Actividad Auditiva DUA"),
-      kinestesica: z.string().describe("Actividad Kinestésica DUA")
-    }).describe("Desarrollo (Triple Vía DUA)"),
-    cierre: z.string().describe("Socialización y reflexión final"),
+    actividades: z.string().describe("Desarrollo consolidado de las actividades de aprendizaje. NO dividas en inicio/desarrollo/cierre."),
+    actividadesTEA: z.string().optional().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, omítelo."),
     materiales: z.object({
       principal: z.string(),
       sustentable: z.string()
@@ -55,10 +50,10 @@ export async function POST(req: Request) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const { fase, proyecto, principio, duracion, campoFormativo, metodologia, tema } = await req.json();
+    const { fase, proyecto, principio, duracion, metodologia, tema, hasTEA, selectedSchool } = await req.json();
 
     // 1. Generar Embedding para la consulta RAG
-    const query = `Fase: ${fase}. Campo Formativo: ${campoFormativo}. Tema: ${tema}. Proyecto: ${proyecto}. Principio: ${principio}.`;
+    const query = `Fase: ${fase}. Tema: ${tema}. Proyecto: ${proyecto}. Principio: ${principio}.`;
     
     // Note: requires NEXT_PUBLIC_OPENAI_API_KEY in env to work automatically with @ai-sdk/openai
     const { embedding } = await embed({
@@ -103,10 +98,12 @@ export async function POST(req: Request) {
       </contexto>
       
       Parámetros estrictos de la planeación:
-      - Campo Formativo: ${campoFormativo}
+      - Escuela y Grupo: ${selectedSchool || 'General'}
+      - Campos Formativos: DEBES articular e integrar los 4 campos formativos de la NEM (Lenguajes, Saberes y Pensamiento Científico, Ética, Naturaleza y Sociedades, De lo Humano y lo Comunitario) en las actividades diarias.
       - Metodología Sociocrítica: ${metodologia}
-      - Eje Articulador principal: ${principio}
+      - Eje Articulador principal: ${principio || 'Selección libre según el contexto'}
       - Duración: ${duracion}
+      - Inclusión TEA: ${hasTEA ? 'SÍ. DEBES incluir adaptaciones curriculares y actividades específicas para alumnos con Trastorno del Espectro Autista (TEA) en el campo "actividadesTEA" de cada día. Etiquétalas claramente.' : 'NO.'}
       
       IMPORTANTE:
       - Si la Duración es "Semanal", DEBES generar EXACTAMENTE 5 días (elementos en diaADia y vistaRapida).

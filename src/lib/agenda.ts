@@ -149,9 +149,8 @@ export function buildAgendaItemText(item: AgendaItem) {
     const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
     dias.forEach((dia: any, index: number) => {
       lines.push(`\nDía ${index + 1}: ${dia.dia || ''}`);
-      if (dia.inicio) lines.push(`INICIO:\n${dia.inicio}`);
-      if (dia.desarrollo) lines.push(`DESARROLLO:\n${dia.desarrollo}`);
-      if (dia.cierre) lines.push(`CIERRE:\n${dia.cierre}`);
+      if (dia.actividades) lines.push(`ACTIVIDADES DE APRENDIZAJE:\n${dia.actividades}`);
+      if (dia.actividadesTEA) lines.push(`ACTIVIDADES TEA (Inclusión):\n${dia.actividadesTEA}`);
       if (dia.material_estandar) lines.push(`MATERIALES:\n${dia.material_estandar}`);
       if (dia.material_eco_ally) lines.push(`MATERIALES ECO:\n${dia.material_eco_ally}`);
       if (dia.conaliteg_cita) lines.push(`LIBRO DE TEXTO (CONALITEG):\n${dia.conaliteg_cita}`);
@@ -218,17 +217,15 @@ export function downloadAgendaItem(item: AgendaItem) {
         
         <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt;">
           <tr>
-            <td width="20%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Inicio</td>
-            <td width="80%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.inicio)}</td>
+            <td width="20%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Actividades de Aprendizaje</td>
+            <td width="80%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">${renderValue(dia.actividades)}</td>
           </tr>
+          ${dia.actividadesTEA ? `
           <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Desarrollo</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.desarrollo)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fffbeb; font-weight: bold; color: #b45309; vertical-align: top;">Inclusión TEA</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #78350f; white-space: pre-wrap;">${renderValue(dia.actividadesTEA)}</td>
           </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Cierre</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.cierre)}</td>
-          </tr>
+          ` : ''}
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Materiales</td>
             <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.materiales || dia.material_estandar)}</td>
@@ -271,24 +268,21 @@ export function downloadAgendaItem(item: AgendaItem) {
 
   const finalHtml = `<div style="padding: 20px; background: white; color: #111;">${contentHtml}</div>`;
 
-  const generatePDF = () => {
-    (window as any).html2pdf().set({
-      margin: 15,
-      filename: `${safeFilename(item.title)}-${item.date}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-    }).from(finalHtml).save();
-  };
+  const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word</title></head><body>";
+  const footer = "</body></html>";
+  const sourceHTML = header + finalHtml + footer;
 
-  if (!(window as any).html2pdf) {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    script.onload = generatePDF;
-    document.body.appendChild(script);
-  } else {
-    generatePDF();
-  }
+  const blob = new Blob(['\\ufeff', sourceHTML], {
+      type: 'application/msword'
+  });
+  const url = URL.createObjectURL(blob);
+  const fileDownload = document.createElement("a");
+  document.body.appendChild(fileDownload);
+  fileDownload.href = url;
+  fileDownload.download = `${safeFilename(item.title)}-${item.date}.doc`;
+  fileDownload.click();
+  document.body.removeChild(fileDownload);
+  URL.revokeObjectURL(url);
 }
 
 export function printAgendaItem(item: AgendaItem) {
@@ -303,17 +297,14 @@ export function printAgendaItem(item: AgendaItem) {
       <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
         <h3 style="margin-top:0; color:#2563eb;">Día ${idx + 1} - ${dia.dia || ''}</h3>
         ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 1rem;"><strong>Tiempos Estimados:</strong> ${dia.tiemposEstimados}</p>` : ''}
-        <p><strong>Inicio:</strong><br/>${dia.inicio}</p>
-        <p><strong>Desarrollo:</strong><br/>
-          ${dia.desarrollo && typeof dia.desarrollo === 'object' ? `
-            <ul>
-              ${dia.desarrollo.visual ? `<li><strong>Visual:</strong> ${dia.desarrollo.visual}</li>` : ''}
-              ${dia.desarrollo.auditiva ? `<li><strong>Auditiva:</strong> ${dia.desarrollo.auditiva}</li>` : ''}
-              ${dia.desarrollo.kinestesica ? `<li><strong>Kinestésica:</strong> ${dia.desarrollo.kinestesica}</li>` : ''}
-            </ul>
-          ` : dia.desarrollo || ''}
+        <p><strong>Actividades de Aprendizaje:</strong><br/>
+          <pre style="white-space:pre-wrap; font-family:inherit;">${dia.actividades || ''}</pre>
         </p>
-        <p><strong>Cierre:</strong><br/>${dia.cierre}</p>
+        ${dia.actividadesTEA ? `
+          <p style="color: #b45309; padding: 10px; background: #fffbeb; border-radius: 4px;"><strong>Inclusión TEA:</strong><br/>
+            <pre style="white-space:pre-wrap; font-family:inherit;">${dia.actividadesTEA}</pre>
+          </p>
+        ` : ''}
         <p><strong>Materiales:</strong><br/>
           ${dia.materiales && typeof dia.materiales === 'object' ? `
             <ul>

@@ -133,6 +133,58 @@ export default function SettingsPage() {
               ))}
             </div>
           </div>
+        {/* Teacher Profile Settings */}
+        <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm md:col-span-3">
+          <div className="flex items-center space-x-3 mb-6">
+            <Globe className="w-6 h-6 text-indigo-500" />
+            <h2 className="text-xl font-bold text-[var(--app-font-color)]">
+              {isEs ? 'Perfil del Docente (Escuelas y Grupos)' : 'Teacher Profile (Schools & Groups)'}
+            </h2>
+          </div>
+          <div className="flex flex-col space-y-4">
+            <p className="text-sm text-slate-600 font-medium">
+              {isEs ? 'Agrega hasta 4 escuelas y grupos donde impartes clases. Estos datos se usarán en el encabezado de tus planeaciones.' : 'Add up to 4 schools and groups where you teach. This data will be used in the header of your lesson plans.'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[0, 1, 2, 3].map((index) => {
+                const schoolGroup = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liberapro_schools') || '[]')[index] || { school: '', group: '' } : { school: '', group: '' };
+                return (
+                  <div key={index} className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? `Escuela ${index + 1}` : `School ${index + 1}`}</label>
+                      <input 
+                        type="text" 
+                        placeholder={isEs ? 'Nombre de la escuela...' : 'School name...'}
+                        defaultValue={schoolGroup.school}
+                        onBlur={(e) => {
+                          const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
+                          if (!schools[index]) schools[index] = { school: '', group: '' };
+                          schools[index].school = e.target.value;
+                          localStorage.setItem('liberapro_schools', JSON.stringify(schools));
+                        }}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? 'Grupo / Grado' : 'Group / Grade'}</label>
+                      <input 
+                        type="text" 
+                        placeholder={isEs ? 'Ej. 3°A' : 'e.g. 3rd Grade A'}
+                        defaultValue={schoolGroup.group}
+                        onBlur={(e) => {
+                          const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
+                          if (!schools[index]) schools[index] = { school: '', group: '' };
+                          schools[index].group = e.target.value;
+                          localStorage.setItem('liberapro_schools', JSON.stringify(schools));
+                        }}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
       </div>
