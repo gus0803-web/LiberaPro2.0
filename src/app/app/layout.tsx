@@ -16,6 +16,7 @@ export default async function AppLayout({
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const userEmail = user?.email || '';
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user?.id).single();
   const nameToUse = profile?.full_name || userEmail;
   const initial = nameToUse ? nameToUse.charAt(0).toUpperCase() : 'U';
