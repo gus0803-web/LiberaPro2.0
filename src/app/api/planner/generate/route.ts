@@ -4,8 +4,6 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { FULL_AI_BRAIN } from '@/lib/nem-brain';
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow up to 60 seconds for completion
 
 const planningSchema = z.object({
@@ -118,7 +116,6 @@ export async function POST(req: Request) {
 
     const result = await streamObject({
       model: openai('gpt-4o-mini'),
-      mode: 'json',
       schema: planningSchema,
       system: systemPrompt,
       prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
