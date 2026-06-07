@@ -133,6 +133,8 @@ export default function SettingsPage() {
               ))}
             </div>
           </div>
+        </div>
+
         {/* Teacher Profile Settings */}
         <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm md:col-span-3">
           <div className="flex items-center space-x-3 mb-6">
