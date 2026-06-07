@@ -122,7 +122,7 @@ export async function POST(req: Request) {
       system: systemPrompt,
       prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
       async onFinish({ object }) {
-        if (object) {
+        if (object && user) {
           try {
             await supabase.from('user_generations').insert({
               user_id: user.id,
