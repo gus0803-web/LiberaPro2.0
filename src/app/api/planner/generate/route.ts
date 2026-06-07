@@ -28,6 +28,9 @@ const planningSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  if (req.headers.get('x-debug-ping') === 'yes') {
+    return new Response('PONG', { status: 200 });
+  }
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
