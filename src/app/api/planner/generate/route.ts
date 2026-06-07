@@ -10,7 +10,7 @@ const planningSchema = z.object({
   retoComunitario: z.string().describe("Descripción general del Reto Comunitario"),
   vistaRapida: z.array(z.object({
     dia: z.string().describe("Día de la semana o número, ej. Día 1"),
-    tema_central: z.string().max(30).describe("Máximo 5 palabras"),
+    tema_central: z.string().describe("Máximo 5 palabras"),
     recurso_sep_clave: z.string(),
     competencia_nem: z.string(),
   })).describe("SECCIÓN 2: Vista rápida At-a-Glance del periodo"),
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
     // Comentar esto localmente si se está probando sin autenticación
     if (!user) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     const { fase, proyecto, principio, duracion, metodologia, tema, hasTEA, selectedSchool } = await req.json();
@@ -138,6 +138,9 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Error generating plan:', error);
-    return new Response(error.message || 'Internal Server Error', { status: 500 });
+    return new Response(JSON.stringify({ error: error.message || 'Internal Server Error', stack: error.stack }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

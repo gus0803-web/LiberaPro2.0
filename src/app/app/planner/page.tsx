@@ -89,9 +89,15 @@ export default function PlannerPage() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [hasSavedPlan, setHasSavedPlan] = useState(false);
 
+  const [debugError, setDebugError] = useState<string>('');
+
   const { object, submit, isLoading, error } = useObject({
     api: '/api/planner/generate',
     schema: planningSchema,
+    onError: (err) => {
+      console.error('useObject error:', err);
+      setDebugError(err.message || String(err));
+    }
   });
 
   useEffect(() => {
@@ -305,9 +311,15 @@ export default function PlannerPage() {
         </div>
       )}
 
-      {hasSubmitted && !isLoading && !object && !error && (
+      {hasSubmitted && !isLoading && !object && !error && !debugError && (
         <div className="rounded-3xl bg-amber-50 border border-amber-200 p-6 text-amber-700">
           No se generó ningún resultado aún. Revisa tu conexión o intenta de nuevo con otros datos.
+        </div>
+      )}
+
+      {debugError && (
+        <div className="rounded-3xl bg-red-100 border border-red-300 p-6 text-red-800">
+          <strong>Debug Error:</strong> {debugError}
         </div>
       )}
 
