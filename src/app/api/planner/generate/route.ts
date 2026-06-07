@@ -117,7 +117,7 @@ export async function POST(req: Request) {
     `;
 
     const result = await streamObject({
-      model: openai('gpt-4o'),
+      model: openai('gpt-4o-mini'),
       schema: planningSchema,
       system: systemPrompt,
       prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
