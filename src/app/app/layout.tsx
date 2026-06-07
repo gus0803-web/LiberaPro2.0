@@ -16,8 +16,9 @@ export default async function AppLayout({
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const userEmail = user?.email || '';
-  const initial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
+  const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user?.id).single();
+  const nameToUse = profile?.full_name || userEmail;
+  const initial = nameToUse ? nameToUse.charAt(0).toUpperCase() : 'U';
   const isAdmin = userEmail === 'gus0803@gmail.com';
 
   return (
@@ -59,7 +60,10 @@ export default async function AppLayout({
               <Link href="/login" title="Logout" className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center border border-white/60 hover:bg-white/80 transition-colors">
                 <LogOut className="w-5 h-5 text-slate-700" />
               </Link>
-              <div className="hidden sm:flex w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 border-2 border-white shadow-sm overflow-hidden items-center justify-center">
+              <div 
+                className="hidden sm:flex w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden items-center justify-center transition-colors"
+                style={{ backgroundColor: 'var(--app-font-color)' }}
+              >
                 <span className="text-white font-bold text-sm">{initial}</span>
               </div>
             </div>

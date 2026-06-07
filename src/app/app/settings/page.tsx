@@ -2,14 +2,35 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 import { Settings, Globe, Palette, Type } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export default function SettingsPage() {
   const { theme, setTheme, language, setLanguage, fontColor, setFontColor } = useTheme();
   const [isClient, setIsClient] = useState(false);
 
+  const [teacherName, setTeacherName] = useState('');
+
   useEffect(() => {
     setIsClient(true);
+    const savedName = localStorage.getItem('liberapro_teacher_name');
+    if (savedName) setTeacherName(savedName);
   }, []);
+
+  const handleNameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setTeacherName(newName);
+    localStorage.setItem('liberapro_teacher_name', newName);
+    
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('profiles').update({ full_name: newName }).eq('id', user.id);
+      }
+    } catch (err) {
+      console.error('Failed to update name in DB', err);
+    }
+  };
 
   const colorOptions = [
     { label: 'Azul', value: '#1d4ed8' as const },
@@ -145,8 +166,19 @@ export default function SettingsPage() {
           </div>
           <div className="flex flex-col space-y-4">
             <p className="text-sm text-slate-600 font-medium">
-              {isEs ? 'Agrega hasta 4 escuelas y grupos donde impartes clases. Estos datos se usarán en el encabezado de tus planeaciones.' : 'Add up to 4 schools and groups where you teach. This data will be used in the header of your lesson plans.'}
+              {isEs ? 'Agrega tu nombre y hasta 4 escuelas donde impartes clases. Estos datos se usarán en el encabezado de tus planeaciones.' : 'Add your name and up to 4 schools where you teach. This data will be used in the header of your lesson plans.'}
             </p>
+            <div className="mb-2 bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? 'Nombre del Docente' : 'Teacher Name'}</label>
+              <input 
+                type="text" 
+                placeholder={isEs ? 'Ej. Prof. Juan Pérez' : 'e.g. Mr. John Doe'}
+                value={teacherName}
+                onChange={(e) => setTeacherName(e.target.value)}
+                onBlur={handleNameBlur}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[0, 1, 2, 3].map((index) => {
                 const schoolGroup = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liberapro_schools') || '[]')[index] || { school: '', group: '' } : { school: '', group: '' };

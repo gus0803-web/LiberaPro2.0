@@ -169,6 +169,25 @@ export function buildAgendaItemText(item: AgendaItem) {
 export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
 
+  const teacherName = localStorage.getItem('liberapro_teacher_name') || 'Docente';
+  const schoolGroup = item.metadata?.selectedSchool || 'No especificada';
+  const duracion = item.metadata?.duracion || 'Semanal';
+  
+  let daysCount = 5;
+  if (duracion === 'Quincenal') daysCount = 10;
+  if (duracion === 'Mensual') daysCount = 20;
+
+  // Calculate end date
+  let endDate = new Date(item.date);
+  let addedDays = 0;
+  while (addedDays < daysCount - 1) {
+    endDate.setDate(endDate.getDate() + 1);
+    if (endDate.getDay() !== 0 && endDate.getDay() !== 6) {
+      addedDays++;
+    }
+  }
+  const endDateStr = endDate.toISOString().slice(0, 10);
+
   const renderValue = (val: any) => {
     if (!val) return '';
     if (typeof val === 'string') return val;
@@ -198,14 +217,29 @@ export function downloadAgendaItem(item: AgendaItem) {
     
     contentHtml = `
       <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="font-size: 18pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; margin: 0;">PLANEACIÓN DIDÁCTICA DUA</h1>
-        <p style="font-size: 11pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #475569; margin: 5px 0;"><strong>Fecha:</strong> ${item.date} | <strong>Tipo:</strong> ${item.type}</p>
+        <h1 style="font-size: 18pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; margin: 0; text-transform: uppercase;">PLANEACIÓN DIDÁCTICA DUA</h1>
       </div>
-      <div style="margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333;">
-        <p><strong>Tema Central:</strong> ${item.title}</p>
-        <p><strong>Descripción:</strong> ${item.description || ''}</p>
-        ${item.metadata.object.retoComunitario ? `<p><strong>Reto Comunitario:</strong> ${item.metadata.object.retoComunitario}</p>` : ''}
-      </div>
+      
+      <table width="100%" style="border-collapse: collapse; margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333;">
+        <tr>
+          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Docente:</strong> ${teacherName}</td>
+          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Escuela / Grupo:</strong> ${schoolGroup}</td>
+        </tr>
+        <tr>
+          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Fecha de Inicio:</strong> ${item.date}</td>
+          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Fecha de Término:</strong> ${endDateStr}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Proyecto / Tema Central:</strong> ${item.title}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Descripción:</strong> ${item.description || ''}</td>
+        </tr>
+        ${item.metadata.object.retoComunitario ? `
+        <tr>
+          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Reto Comunitario:</strong> ${item.metadata.object.retoComunitario}</td>
+        </tr>` : ''}
+      </table>
     `;
 
     contentHtml += dias.map((dia: any, idx: number) => `

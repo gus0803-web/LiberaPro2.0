@@ -103,6 +103,7 @@ export default function DashboardPage() {
 
         if (name) {
           setUserName(name);
+          localStorage.setItem('liberapro_teacher_name', name);
         }
       } catch (err) {
         console.error('Unable to load user name', err);

@@ -17,7 +17,7 @@ const planningSchema = z.object({
   diaADia: z.array(z.object({
     dia: z.string().describe("Título del día, ej: 'Día 1: ¿Quién vive aquí?'"),
     tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
-    actividades: z.string().describe("Desarrollo consolidado de las actividades de aprendizaje. NO dividas en inicio/desarrollo/cierre."),
+    actividades: z.string().describe("Desarrollo EXTREMADAMENTE DETALLADO de las actividades. DEBES incluir Inicio, Desarrollo y Cierre de forma explícita, con instrucciones paso a paso, preguntas detonadoras, tiempos y ejemplos concretos. Escribe varios párrafos extensos y detallados."),
     actividadesTEA: z.string().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, devuelve un string vacío."),
     materiales: z.object({
       principal: z.string(),
@@ -114,6 +114,12 @@ export async function POST(req: Request) {
       - Si la Duración es "Mensual", DEBES generar EXACTAMENTE 20 días.
       No te desvíes de esta cantidad de días bajo ninguna circunstancia.
 
+      NIVEL DE DETALLE EXTREMO REQUERIDO:
+      - Evita descripciones cortas, sencillas o genéricas. El docente debe poder implementar tu plan sin adivinar nada.
+      - En la sección de 'actividades', DEBES redactar paso a paso qué hacer en el Inicio, Desarrollo y Cierre de cada día.
+      - Incluye dinámicas específicas, preguntas clave para guiar la reflexión de los alumnos, y sugerencias de cómo manejar posibles dudas.
+      - Tu lenguaje debe ser empático, práctico, pero sobre todo, pedagógicamente robusto y minucioso.
+      
       Prioriza la metodología indicada y asegúrate de que las opciones 'Eco-Ally' sean realistas para zonas con bajos recursos.
     `;
 
