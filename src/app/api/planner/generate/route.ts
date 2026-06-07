@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { FULL_AI_BRAIN } from '@/lib/nem-brain';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow up to 60 seconds for completion
 
 const planningSchema = z.object({

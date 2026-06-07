@@ -168,6 +168,7 @@ export default function PlannerPage() {
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
     setHasSubmitted(true);
+    setDebugError('');
     if (!selectedDate) {
       setSaveMessage('Selecciona la fecha de inicio para la planeación.');
       return;
