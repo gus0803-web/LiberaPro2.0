@@ -1,5 +1,5 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { generateObject, embed } from 'ai';
+import { streamObject, embed } from 'ai';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { FULL_AI_BRAIN } from '@/lib/nem-brain';
@@ -18,7 +18,7 @@ const planningSchema = z.object({
     dia: z.string().describe("Título del día, ej: 'Día 1: ¿Quién vive aquí?'"),
     tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
     actividades: z.string().describe("Desarrollo consolidado de las actividades de aprendizaje. NO dividas en inicio/desarrollo/cierre."),
-    actividadesTEA: z.string().optional().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, omítelo."),
+    actividadesTEA: z.string().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, devuelve un string vacío."),
     materiales: z.object({
       principal: z.string(),
       sustentable: z.string()
@@ -117,26 +117,27 @@ export async function POST(req: Request) {
       Prioriza la metodología indicada y asegúrate de que las opciones 'Eco-Ally' sean realistas para zonas con bajos recursos.
     `;
 
-    const { object: generatedObject } = await generateObject({
+    const result = await streamObject({
       model: openai('gpt-4o-mini'),
       schema: planningSchema,
       system: systemPrompt,
       prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
+      async onFinish({ object }) {
+        if (object && user) {
+          try {
+            await supabase.from('user_generations').insert({
+              user_id: user.id,
+              type: 'planeacion',
+              content: object
+            });
+          } catch (e) {
+            console.error('Error saving generation to db', e);
+          }
+        }
+      }
     });
 
-    if (generatedObject && user) {
-      try {
-        await supabase.from('user_generations').insert({
-          user_id: user.id,
-          type: 'planeacion',
-          content: generatedObject
-        });
-      } catch (e) {
-        console.error('Error saving generation to db', e);
-      }
-    }
-
-    return new Response(JSON.stringify(generatedObject), { headers: { 'Content-Type': 'application/json' } });
+    return result.toTextStreamResponse();
 
   } catch (error: any) {
     console.error('Error generating plan:', error);
