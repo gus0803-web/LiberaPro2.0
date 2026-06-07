@@ -157,7 +157,7 @@ export default function PlannerPage() {
       };
       savePlans();
     }
-  }, [object, isLoading, selectedDate, hasSavedPlan, fase, proyecto, campoFormativo, metodologia, tema, principio, duracion]);
+  }, [object, isLoading, selectedDate, hasSavedPlan, fase, proyecto, metodologia, tema, principio, duracion, hasTEA, selectedSchool]);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
