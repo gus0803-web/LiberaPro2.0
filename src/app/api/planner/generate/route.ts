@@ -1,5 +1,5 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamObject, embed } from 'ai';
+import { generateObject, embed } from 'ai';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { FULL_AI_BRAIN } from '@/lib/nem-brain';
@@ -114,27 +114,26 @@ export async function POST(req: Request) {
       Prioriza la metodología indicada y asegúrate de que las opciones 'Eco-Ally' sean realistas para zonas con bajos recursos.
     `;
 
-    const result = await streamObject({
+    const { object: generatedObject } = await generateObject({
       model: openai('gpt-4o-mini'),
       schema: planningSchema,
       system: systemPrompt,
       prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
-      async onFinish({ object }) {
-        if (object && user) {
-          try {
-            await supabase.from('user_generations').insert({
-              user_id: user.id,
-              type: 'planeacion',
-              content: object
-            });
-          } catch (e) {
-            console.error('Error saving generation to db', e);
-          }
-        }
-      }
     });
 
-    return result.toTextStreamResponse();
+    if (generatedObject && user) {
+      try {
+        await supabase.from('user_generations').insert({
+          user_id: user.id,
+          type: 'planeacion',
+          content: generatedObject
+        });
+      } catch (e) {
+        console.error('Error saving generation to db', e);
+      }
+    }
+
+    return new Response(JSON.stringify(generatedObject), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (error: any) {
     console.error('Error generating plan:', error);
