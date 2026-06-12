@@ -367,7 +367,7 @@ export default function DashboardPage() {
 
   const taskList = planTasks;
 
-  const hoursSaved = pinnedPlans.length * 2;
+  const hoursSaved = planeacionItems.length * 2;
 
   if (!isClient) return null;
 
