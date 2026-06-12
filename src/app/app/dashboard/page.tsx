@@ -411,6 +411,29 @@ export default function DashboardPage() {
           </div>
 
           <button onClick={() => router.push('/app/planner')} className="group rounded-3xl border border-emerald-200 bg-emerald-50 p-6 flex flex-col items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors"></div>
+            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 z-10 border border-emerald-100 group-hover:scale-110 transition-transform">
+              <Plus className="w-6 h-6 text-emerald-500" />
+            </div>
+            <span className="font-bold text-emerald-900 z-10 text-center">{t.newPlan}</span>
+          </button>
+
+          <button onClick={() => router.push('/app/calendar')} className="group rounded-3xl border border-blue-200 bg-blue-50 p-6 flex flex-col items-center justify-center hover:bg-blue-100 transition-colors shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
+            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 z-10 border border-blue-100 group-hover:scale-110 transition-transform">
+              <CalendarIcon className="w-6 h-6 text-blue-500" />
+            </div>
+            <span className="font-bold text-blue-900 z-10 text-center">{t.viewAgenda}</span>
+          </button>
+          
+          <button onClick={() => setIsCreateModalOpen(true)} className="group rounded-3xl border border-amber-200 bg-amber-50 p-6 flex flex-col items-center justify-center hover:bg-amber-100 transition-colors shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-colors"></div>
+            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 z-10 border border-amber-100 group-hover:scale-110 transition-transform">
+              <Clock className="w-6 h-6 text-amber-500" />
+            </div>
+            <span className="font-bold text-amber-900 z-10 text-center">{t.reminders}</span>
+          </button>
+        </div>
 
       {/* Main Layout: Left | Center | Right (1:2:1) */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr] gap-6 items-stretch flex-1">
