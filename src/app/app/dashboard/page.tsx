@@ -369,8 +369,6 @@ export default function DashboardPage() {
 
   const hoursSaved = planeacionItems.length * 2;
 
-  if (!isClient) return null;
-
   return (
     <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header with Greeting */}
