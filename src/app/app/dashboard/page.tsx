@@ -1,8 +1,9 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { createClient } from '@/lib/supabase/client';
-import { AlertCircle, Bell, CheckCircle2, Circle, Download, Eye, FileText, MoreHorizontal, Printer, Trash2, Calendar, Loader2 } from 'lucide-react';
+import { AlertCircle, Bell, CheckCircle2, Circle, Download, Eye, FileText, MoreHorizontal, Printer, Trash2, Calendar, Loader2, Plus, Clock } from 'lucide-react';
 import {
   AgendaItem,
   AgendaItemType,
@@ -24,6 +25,7 @@ function getUserDisplayName(user: any) {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { fontColor, language } = useTheme();
   const [userName, setUserName] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -419,7 +421,7 @@ export default function DashboardPage() {
           <button onClick={() => router.push('/app/calendar')} className="group rounded-3xl border border-blue-200 bg-blue-50 p-6 flex flex-col items-center justify-center hover:bg-blue-100 transition-colors shadow-sm relative overflow-hidden">
             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 z-10 border border-blue-100 group-hover:scale-110 transition-transform">
-              <CalendarIcon className="w-6 h-6 text-blue-500" />
+              <Calendar className="w-6 h-6 text-blue-500" />
             </div>
             <span className="font-bold text-blue-900 z-10 text-center">{t.viewAgenda}</span>
           </button>
