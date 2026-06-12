@@ -426,7 +426,7 @@ export default function DashboardPage() {
             <span className="font-bold text-blue-900 z-10 text-center">{t.viewAgenda}</span>
           </button>
           
-          <button onClick={() => setIsCreateModalOpen(true)} className="group rounded-3xl border border-amber-200 bg-amber-50 p-6 flex flex-col items-center justify-center hover:bg-amber-100 transition-colors shadow-sm relative overflow-hidden">
+          <button onClick={() => router.push('/app/calendar')} className="group rounded-3xl border border-amber-200 bg-amber-50 p-6 flex flex-col items-center justify-center hover:bg-amber-100 transition-colors shadow-sm relative overflow-hidden">
             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-colors"></div>
             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 z-10 border border-amber-100 group-hover:scale-110 transition-transform">
               <Clock className="w-6 h-6 text-amber-500" />
