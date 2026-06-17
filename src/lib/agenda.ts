@@ -135,6 +135,12 @@ function safeFilename(value: string) {
   return value.replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80);
 }
 
+function formatDayHeader(index: number, diaTitle: string | undefined): string {
+  const title = diaTitle || '';
+  if (/^D[ií]a\s/i.test(title)) return title;
+  return `Día ${index + 1} - ${title}`;
+}
+
 export function buildAgendaItemText(item: AgendaItem) {
   const lines = [
     `${item.title}`,
@@ -148,7 +154,7 @@ export function buildAgendaItemText(item: AgendaItem) {
     lines.push('', '--- DESGLOSE DEL DÍA ---');
     const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
     dias.forEach((dia: any, index: number) => {
-      lines.push(`\nDía ${index + 1}: ${dia.dia || ''}`);
+      lines.push(`\n${formatDayHeader(index, dia.dia)}`);
       if (dia.actividades) lines.push(`ACTIVIDADES DE APRENDIZAJE:\n${dia.actividades}`);
       if (dia.actividadesTEA) lines.push(`ACTIVIDADES TEA (Inclusión):\n${dia.actividadesTEA}`);
       if (dia.material_estandar) lines.push(`MATERIALES:\n${dia.material_estandar}`);
@@ -239,13 +245,29 @@ export function downloadAgendaItem(item: AgendaItem) {
         <tr>
           <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Reto Comunitario:</strong> ${item.metadata.object.retoComunitario}</td>
         </tr>` : ''}
+        ${item.metadata.object.contenidos && item.metadata.object.contenidos.length > 0 ? `
+        <tr>
+          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Contenidos:</strong>
+            <ul style="margin: 4px 0; padding-left: 20px;">
+              ${item.metadata.object.contenidos.map((c: string) => `<li>${c}</li>`).join('')}
+            </ul>
+          </td>
+        </tr>` : ''}
+        ${item.metadata.object.pda && item.metadata.object.pda.length > 0 ? `
+        <tr>
+          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Procesos de Desarrollo de Aprendizaje (PDA):</strong>
+            <ul style="margin: 4px 0; padding-left: 20px;">
+              ${item.metadata.object.pda.map((p: string) => `<li>${p}</li>`).join('')}
+            </ul>
+          </td>
+        </tr>` : ''}
       </table>
     `;
 
     contentHtml += dias.map((dia: any, idx: number) => `
       <div style="margin-bottom: 24px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
         <h3 style="margin-top: 0; font-size: 14pt; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
-          Día ${idx + 1} - ${renderValue(dia.dia) || ''}
+          ${formatDayHeader(idx, typeof dia.dia === 'string' ? dia.dia : renderValue(dia.dia))}
         </h3>
         ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 10pt;"><strong>Tiempos Estimados:</strong> ${renderValue(dia.tiemposEstimados)}</p>` : ''}
         
@@ -260,6 +282,16 @@ export function downloadAgendaItem(item: AgendaItem) {
             <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #78350f; white-space: pre-wrap;">${renderValue(dia.actividadesTEA)}</td>
           </tr>
           ` : ''}
+          ${dia.pasoMetodologia ? `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f0fdf4; font-weight: bold; vertical-align: top;">Paso Metodológico</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.pasoMetodologia)}</td>
+          </tr>` : ''}
+          ${dia.instrumentoEvaluacion ? `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fef3c7; font-weight: bold; vertical-align: top;">Instrumento de Evaluación</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.instrumentoEvaluacion)}</td>
+          </tr>` : ''}
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Materiales</td>
             <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.materiales || dia.material_estandar)}</td>
@@ -329,7 +361,7 @@ export function printAgendaItem(item: AgendaItem) {
     const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
     contentHtml = dias.map((dia: any, idx: number) => `
       <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
-        <h3 style="margin-top:0; color:#2563eb;">Día ${idx + 1} - ${dia.dia || ''}</h3>
+        <h3 style="margin-top:0; color:#2563eb;">${formatDayHeader(idx, dia.dia)}</h3>
         ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 1rem;"><strong>Tiempos Estimados:</strong> ${dia.tiemposEstimados}</p>` : ''}
         <p><strong>Actividades de Aprendizaje:</strong><br/>
           <pre style="white-space:pre-wrap; font-family:inherit;">${dia.actividades || ''}</pre>
@@ -339,6 +371,8 @@ export function printAgendaItem(item: AgendaItem) {
             <pre style="white-space:pre-wrap; font-family:inherit;">${dia.actividadesTEA}</pre>
           </p>
         ` : ''}
+        ${dia.pasoMetodologia ? `<p><strong>Paso Metodológico:</strong><br/>${dia.pasoMetodologia}</p>` : ''}
+        ${dia.instrumentoEvaluacion ? `<p><strong>Instrumento de Evaluación:</strong><br/>${dia.instrumentoEvaluacion}</p>` : ''}
         <p><strong>Materiales:</strong><br/>
           ${dia.materiales && typeof dia.materiales === 'object' ? `
             <ul>

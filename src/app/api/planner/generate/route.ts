@@ -8,22 +8,26 @@ export const maxDuration = 60; // Allow up to 60 seconds for completion
 
 const planningSchema = z.object({
   retoComunitario: z.string().describe("Descripción general del Reto Comunitario"),
+  contenidos: z.array(z.string()).describe("Lista de contenidos curriculares trabajados en esta planeación").optional(),
+  pda: z.array(z.string()).describe("Lista de Procesos de Desarrollo de Aprendizaje (PDA) abordados").optional(),
   vistaRapida: z.array(z.object({
     dia: z.string().describe("Día de la semana o número, ej. Día 1"),
     tema_central: z.string().describe("Máximo 5 palabras"),
     recurso_sep_clave: z.string(),
     competencia_nem: z.string(),
-  })).describe("SECCIÓN 2: Vista rápida At-a-Glance del periodo"),
+  })).describe("SECCIÓN 2: Vista rápida At-a-Glance del periodo. DEBE tener la misma cantidad de elementos que diaADia."),
   diaADia: z.array(z.object({
     dia: z.string().describe("Título del día, ej: 'Día 1: ¿Quién vive aquí?'"),
     tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
     actividades: z.string().describe("Desarrollo EXTREMADAMENTE DETALLADO de las actividades. DEBES incluir Inicio, Desarrollo y Cierre de forma explícita, con instrucciones paso a paso, preguntas detonadoras, tiempos y ejemplos concretos. Escribe varios párrafos extensos y detallados."),
     actividadesTEA: z.string().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, devuelve un string vacío."),
+    pasoMetodologia: z.string().describe("Paso de la metodología en el que se encuentra este día, ej: 'Paso 1: Identificación del problema comunitario'").optional(),
+    instrumentoEvaluacion: z.string().describe("Instrumento(s) de evaluación para este día. Seleccionar de: Rúbrica, Lista de Cotejo, Escala Estimativa, Portafolio de Evidencias, Registro Anecdótico, Autoevaluación, Coevaluación, Heteroevaluación.").optional(),
     materiales: z.object({
       principal: z.string(),
       sustentable: z.string()
     })
-  })).describe("SECCIÓN 3: DESARROLLO GRANULAR DÍA POR DÍA"),
+  })).describe("SECCIÓN 3: DESARROLLO GRANULAR DÍA POR DÍA. IMPORTANTE: El número de elementos en este array DEBE ser exactamente: 5 para Semanal, 10 para Quincenal, 20 para Mensual."),
   anexoMateriales: z.string().describe("SECCIÓN 4: ANEXO DE MATERIALES Y ACTIVIDADES. Resumen general y una Idea Práctica 'Eco-Ally'")
 });
 
@@ -53,7 +57,7 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const { fase, proyecto, principio, duracion, metodologia, tema, hasTEA, selectedSchool } = await req.json();
+    const { fase, proyecto, principio, duracion, metodologia, tema, hasTEA, selectedSchool, contenidosPersonalizados } = await req.json();
 
     // 1. Generar Embedding para la consulta RAG
     const query = `Fase: ${fase}. Tema: ${tema}. Proyecto: ${proyecto}. Principio: ${principio}.`;
@@ -108,11 +112,16 @@ export async function POST(req: Request) {
       - Duración: ${duracion}
       - Inclusión TEA: ${hasTEA ? 'SÍ. DEBES incluir adaptaciones curriculares y actividades específicas para alumnos con Trastorno del Espectro Autista (TEA) en el campo "actividadesTEA" de cada día. Etiquétalas claramente.' : 'NO.'}
       
-      IMPORTANTE:
-      - Si la Duración es "Semanal", DEBES generar EXACTAMENTE 5 días (elementos en diaADia y vistaRapida).
-      - Si la Duración es "Quincenal", DEBES generar EXACTAMENTE 10 días.
-      - Si la Duración es "Mensual", DEBES generar EXACTAMENTE 20 días.
-      No te desvíes de esta cantidad de días bajo ninguna circunstancia.
+      ⚠️ REGLA ABSOLUTA DE CANTIDAD DE DÍAS — ESTO ES OBLIGATORIO Y NO NEGOCIABLE:
+      - Si la Duración es "Semanal": GENERA EXACTAMENTE 5 elementos en diaADia y 5 en vistaRapida.
+      - Si la Duración es "Quincenal": GENERA EXACTAMENTE 10 elementos en diaADia y 10 en vistaRapida.
+      - Si la Duración es "Mensual": GENERA EXACTAMENTE 20 elementos en diaADia y 20 en vistaRapida.
+      NO generes menos ni más días de los indicados. La duración seleccionada es: ${duracion}.
+
+      - PASO METODOLÓGICO: Para cada día, indica en qué paso/fase de la metodología "${metodologia}" se encuentra. Usa el campo "pasoMetodologia". Consulta la sección PASOS CANÓNICOS POR METODOLOGÍA en tu cerebro pedagógico.
+      - INSTRUMENTO DE EVALUACIÓN: Para cada día, indica en el campo "instrumentoEvaluacion" qué instrumento(s) de evaluación se utilizarán. Selecciona de: Rúbrica, Lista de Cotejo, Escala Estimativa, Portafolio de Evidencias, Registro Anecdótico, Autoevaluación, Coevaluación, Heteroevaluación.
+      - CONTENIDOS Y PDA: Lista explícitamente en los campos globales "contenidos" (array) los contenidos curriculares y en "pda" (array) los Procesos de Desarrollo de Aprendizaje que se trabajarán.
+      ${contenidosPersonalizados && contenidosPersonalizados.length > 0 ? `El docente ha indicado los siguientes contenidos/PDAs personalizados que DEBES usar como base: ${contenidosPersonalizados.join(', ')}` : ''}
 
       NIVEL DE DETALLE EXTREMO REQUERIDO:
       - Evita descripciones cortas, sencillas o genéricas. El docente debe poder implementar tu plan sin adivinar nada.
@@ -129,15 +138,26 @@ export async function POST(req: Request) {
       system: systemPrompt,
       prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
       async onFinish({ object }) {
-        if (object && user) {
-          try {
-            await supabase.from('user_generations').insert({
-              user_id: user.id,
-              type: 'planeacion',
-              content: object
-            });
-          } catch (e) {
-            console.error('Error saving generation to db', e);
+        if (object) {
+          // Validate day count
+          let expectedDays = 5;
+          if (duracion === 'Quincenal') expectedDays = 10;
+          if (duracion === 'Mensual') expectedDays = 20;
+          const actualDays = object.diaADia?.length ?? 0;
+          if (actualDays !== expectedDays) {
+            console.warn(`⚠️ Day count mismatch: expected ${expectedDays} for ${duracion}, got ${actualDays}`);
+          }
+
+          if (user) {
+            try {
+              await supabase.from('user_generations').insert({
+                user_id: user.id,
+                type: 'planeacion',
+                content: object
+              });
+            } catch (e) {
+              console.error('Error saving generation to db', e);
+            }
           }
         }
       }

@@ -40,10 +40,44 @@ La planeación debe estructurarse estrictamente de la siguiente manera por día:
 5. REFERENCIA SEP: Cita a los libros de CONALITEG correspondientes al tema y fase.
 `;
 
+export const METHODOLOGY_STEPS = `
+PASOS CANÓNICOS POR METODOLOGÍA:
+
+1. Aprendizaje Basado en Proyectos Comunitarios (ABProC):
+   Paso 1: Identificación del problema comunitario
+   Paso 2: Investigación y diagnóstico
+   Paso 3: Diseño del proyecto
+   Paso 4: Ejecución
+   Paso 5: Evaluación y difusión
+
+2. Aprendizaje Basado en Indagación (STEAM):
+   Paso 1: Pregunta detonadora
+   Paso 2: Exploración e investigación
+   Paso 3: Experimentación
+   Paso 4: Análisis de resultados
+   Paso 5: Comunicación de hallazgos
+
+3. Aprendizaje Basado en Problemas (ABP):
+   Paso 1: Presentación del problema
+   Paso 2: Análisis y lluvia de ideas
+   Paso 3: Investigación individual/grupal
+   Paso 4: Propuesta de solución
+   Paso 5: Reflexión y evaluación
+
+4. Aprendizaje de Servicio (AS):
+   Paso 1: Diagnóstico comunitario
+   Paso 2: Planeación del servicio
+   Paso 3: Ejecución
+   Paso 4: Reflexión
+   Paso 5: Celebración y difusión
+`;
+
 export const FULL_AI_BRAIN = `
 ${NEM_PRINCIPLES}
 
 ${OFFICIAL_FORMAT_GUIDELINES}
 
 ${PNCE_MATERIAL_GUIDELINES}
+
+${METHODOLOGY_STEPS}
 `;
