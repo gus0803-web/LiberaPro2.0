@@ -147,7 +147,7 @@ export default function PlannerPage() {
     setHasSavedPlan(false);
     
     // El backend concatenará todo. Solo le pasamos lo estructurado.
-    const notasCompletas = \`Grado: \${grado}\\nCampo Formativo: \${campoFormativo}\\n\\nNotas adicionales:\\n\${notasMaestro}\`;
+    const notasCompletas = `Grado: ${grado}\nCampo Formativo: ${campoFormativo}\n\nNotas adicionales:\n${notasMaestro}`;
     
     submit({ fase, tema, notasMaestro: notasCompletas, metodologia });
   };
@@ -340,11 +340,11 @@ export default function PlannerPage() {
             type="button"
             onClick={() => {
               const masterItem: AgendaItem = {
-                id: \`master-download-\${Date.now()}\`,
+                id: `master-download-${Date.now()}`,
                 date: selectedDate || new Date().toISOString().slice(0, 10),
                 type: 'planeacion',
                 title: tema || 'Planeación Completa',
-                description: \`Documento Maestro: \${fase} - \${metodologia}\`,
+                description: `Documento Maestro: ${fase} - ${metodologia}`,
                 metadata: { object: object, selectedDate },
                 createdAt: new Date().toISOString()
               };
