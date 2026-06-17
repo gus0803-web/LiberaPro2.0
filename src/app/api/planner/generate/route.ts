@@ -6,29 +6,31 @@ import { FULL_AI_BRAIN } from '@/lib/nem-brain';
 
 export const maxDuration = 60; // Allow up to 60 seconds for completion
 
-const planningSchema = z.object({
-  retoComunitario: z.string().describe("Descripción general del Reto Comunitario"),
-  contenidos: z.array(z.string()).describe("Lista de contenidos curriculares trabajados en esta planeación. Si no aplica, devuelve un array vacío."),
-  pda: z.array(z.string()).describe("Lista de Procesos de Desarrollo de Aprendizaje (PDA) abordados. Si no aplica, devuelve un array vacío."),
-  vistaRapida: z.array(z.object({
-    dia: z.string().describe("Día de la semana o número, ej. Día 1"),
-    tema_central: z.string().describe("Máximo 5 palabras"),
-    recurso_sep_clave: z.string(),
-    competencia_nem: z.string(),
-  })).describe("SECCIÓN 2: Vista rápida At-a-Glance del periodo. DEBE tener la misma cantidad de elementos que diaADia."),
-  diaADia: z.array(z.object({
-    dia: z.string().describe("Título del día, ej: 'Día 1: ¿Quién vive aquí?'"),
-    tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
-    actividades: z.string().describe("Desarrollo EXTREMADAMENTE DETALLADO de las actividades. DEBES incluir Inicio, Desarrollo y Cierre de forma explícita, con instrucciones paso a paso, preguntas detonadoras, tiempos y ejemplos concretos. Escribe varios párrafos extensos y detallados."),
-    actividadesTEA: z.string().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, devuelve un string vacío."),
-    pasoMetodologia: z.string().describe("Paso de la metodología en el que se encuentra este día, ej: 'Paso 1: Identificación del problema comunitario'. Si no aplica, devuelve un string vacío."),
-    instrumentoEvaluacion: z.string().describe("Instrumento(s) de evaluación para este día. Seleccionar de: Rúbrica, Lista de Cotejo, Escala Estimativa, Portafolio de Evidencias, Registro Anecdótico, Autoevaluación, Coevaluación, Heteroevaluación. Si no aplica, devuelve un string vacío."),
-    materiales: z.object({
-      principal: z.string(),
-      sustentable: z.string()
-    })
-  })).describe("SECCIÓN 3: DESARROLLO GRANULAR DÍA POR DÍA. IMPORTANTE: El número de elementos en este array DEBE ser exactamente: 5 para Semanal, 10 para Quincenal, 20 para Mensual."),
-  anexoMateriales: z.string().describe("SECCIÓN 4: ANEXO DE MATERIALES Y ACTIVIDADES. Resumen general y una Idea Práctica 'Eco-Ally'")
+const nemPlanningSchema = z.object({
+  datosIdentificacion: z.object({
+    nombreDocente: z.string().describe("Extraer de las notas o dejar en blanco"),
+    gradoYGrupo: z.string().describe("Extraer de las notas o sugerir basado en el contenido"),
+    fase: z.string().describe("Asignar la fase de la NEM correspondiente al grado"),
+    periodoAplicacion: z.string().describe("Extraer de las notas o sugerir periodo")
+  }),
+  elementosCurriculares: z.object({
+    camposFormativos: z.string().describe("Ej: Lenguajes, Saberes y Pensamiento Científico, etc. Basado en el tema"),
+    metodologia: z.string().describe("Metodología seleccionada"),
+    problematica: z.string().describe("Redactar la problemática a resolver basándote en las notas del maestro")
+  }),
+  sesiones: z.array(z.object({
+    contenido: z.string().describe("El contenido del programa sintético aplicable"),
+    pda: z.string().describe("Procesos de Desarrollo de Aprendizaje esperados"),
+    librosYEscenario: z.string().describe("Escenario: Aula/Escolar/Comunitario y referencias a libros de texto pertinentes"),
+    ejesArticuladores: z.string().describe("Ej: Inclusión, Pensamiento Crítico, Vida Saludable, etc."),
+    secuenciaDidactica: z.object({
+      inicio: z.string().describe("Actividades de arranque basadas en las notas del maestro"),
+      desarrollo: z.string().describe("Actividades principales, estructuradas y secuenciadas"),
+      cierre: z.string().describe("Actividades de conclusión y reflexión")
+    }),
+    recursosYMateriales: z.string().describe("Lista de materiales mencionados por el maestro y sugerencias adicionales lógicas"),
+    evaluacionFormativa: z.string().describe("Cómo se evaluará, qué productos o evidencias se esperan")
+  }))
 });
 
 export async function POST(req: Request) {
@@ -57,10 +59,10 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const { fase, proyecto, principio, duracion, metodologia, tema, hasTEA, selectedSchool, contenidosPersonalizados } = await req.json();
+    const { fase, tema, notasMaestro, metodologia } = await req.json();
 
     // 1. Generar Embedding para la consulta RAG
-    const query = `Fase: ${fase}. Tema: ${tema}. Proyecto: ${proyecto}. Principio: ${principio}.`;
+    const query = `Fase: ${fase}. Tema: ${tema}. Metodología: ${metodologia}. Notas: ${notasMaestro}`;
     
     // Note: requires NEXT_PUBLIC_OPENAI_API_KEY in env to work automatically with @ai-sdk/openai
     const { embedding } = await embed({
@@ -91,63 +93,34 @@ export async function POST(req: Request) {
 
     // 3. Generación Estructurada con Vercel AI SDK
     const systemPrompt = `
-      Eres un Maestro Experto con 20 años de experiencia en la educación pública mexicana. 
-      Estás planeando para un maestro que necesita practicidad absoluta.
-      
-      Aquí tienes tu CEREBRO PEDAGÓGICO INYECTADO (Aplica siempre estas reglas):
-      <cerebro_nem>
-      ${FULL_AI_BRAIN}
-      </cerebro_nem>
+Eres un experto en pedagogía y diseño curricular especializado en el marco de la Nueva Escuela Mexicana (NEM). Tu objetivo es actuar como un estructurador académico: vas a tomar los apuntes, ideas y el contexto proporcionado por el maestro y los vas a transformar en una planeación didáctica formal y completa.
 
-      Utiliza el siguiente contexto RAG extraído del currículo de la NEM para alinearlo con los libros:
-      <contexto>
-      ${contextText}
-      </contexto>
-      
-      Parámetros estrictos de la planeación:
-      - Escuela y Grupo: ${selectedSchool || 'General'}
-      - Campos Formativos: DEBES articular e integrar los 4 campos formativos de la NEM (Lenguajes, Saberes y Pensamiento Científico, Ética, Naturaleza y Sociedades, De lo Humano y lo Comunitario) en las actividades diarias.
-      - Metodología Sociocrítica: ${metodologia}
-      - Eje Articulador principal: ${principio || 'Selección libre según el contexto'}
-      - Duración: ${duracion}
-      - Inclusión TEA: ${hasTEA ? 'SÍ. DEBES incluir adaptaciones curriculares y actividades específicas para alumnos con Trastorno del Espectro Autista (TEA) en el campo "actividadesTEA" de cada día. Etiquétalas claramente.' : 'NO.'}
-      
-      ⚠️ REGLA ABSOLUTA DE CANTIDAD DE DÍAS — ESTO ES OBLIGATORIO Y NO NEGOCIABLE:
-      - Si la Duración es "Semanal": GENERA EXACTAMENTE 5 elementos en diaADia y 5 en vistaRapida.
-      - Si la Duración es "Quincenal": GENERA EXACTAMENTE 10 elementos en diaADia y 10 en vistaRapida.
-      - Si la Duración es "Mensual": GENERA EXACTAMENTE 20 elementos en diaADia y 20 en vistaRapida.
-      NO generes menos ni más días de los indicados. La duración seleccionada es: ${duracion}.
+REGLA DE ORO: El maestro es el experto en su grupo. Debes respetar fielmente las ideas, problemáticas, actividades y temas que el maestro proporciona en sus "Notas". Tu trabajo no es inventar una clase desde cero, sino:
+1. Darle forma académica a las notas del maestro.
+2. Llenar los vacíos técnicos (por ejemplo, redactar correctamente los PDA - Procesos de Desarrollo de Aprendizaje, identificar los Ejes Articuladores correspondientes, o darle formato a la evaluación).
+3. Estructurar toda la información en el formato oficial de la NEM.
 
-      - PASO METODOLÓGICO: Para cada día, indica en qué paso/fase de la metodología "${metodologia}" se encuentra. Usa el campo "pasoMetodologia". Consulta la sección PASOS CANÓNICOS POR METODOLOGÍA en tu cerebro pedagógico.
-      - INSTRUMENTO DE EVALUACIÓN: Para cada día, indica en el campo "instrumentoEvaluacion" qué instrumento(s) de evaluación se utilizarán. Selecciona de: Rúbrica, Lista de Cotejo, Escala Estimativa, Portafolio de Evidencias, Registro Anecdótico, Autoevaluación, Coevaluación, Heteroevaluación.
-      - CONTENIDOS Y PDA: Lista explícitamente en los campos globales "contenidos" (array) los contenidos curriculares y en "pda" (array) los Procesos de Desarrollo de Aprendizaje que se trabajarán.
-      ${contenidosPersonalizados && contenidosPersonalizados.length > 0 ? `El docente ha indicado los siguientes contenidos/PDAs personalizados que DEBES usar como base: ${contenidosPersonalizados.join(', ')}` : ''}
+Contexto pedagógico NEM extraído de los libros de texto (RAG):
+<contexto>
+${contextText}
+</contexto>
+`;
 
-      NIVEL DE DETALLE EXTREMO REQUERIDO:
-      - Evita descripciones cortas, sencillas o genéricas. El docente debe poder implementar tu plan sin adivinar nada.
-      - En la sección de 'actividades', DEBES redactar paso a paso qué hacer en el Inicio, Desarrollo y Cierre de cada día.
-      - Incluye dinámicas específicas, preguntas clave para guiar la reflexión de los alumnos, y sugerencias de cómo manejar posibles dudas.
-      - Tu lenguaje debe ser empático, práctico, pero sobre todo, pedagógicamente robusto y minucioso.
-      
-      Prioriza la metodología indicada y asegúrate de que las opciones 'Eco-Ally' sean realistas para zonas con bajos recursos.
-    `;
+    const userPrompt = `
+ENTRADA DEL MAESTRO:
+Tema o Proyecto: ${tema}
+Fase NEM: ${fase}
+Metodología: ${metodologia}
+Notas, contexto e ideas del maestro: "${notasMaestro}"
+`;
 
     const result = await streamObject({
       model: openai('gpt-4o-mini'),
-      schema: planningSchema,
+      schema: nemPlanningSchema,
       system: systemPrompt,
-      prompt: `Genera la planeación estructurada para el tema/contenido: "${tema}" dentro del proyecto general: "${proyecto}". Aplica la metodología de ${metodologia}.`,
+      prompt: userPrompt,
       async onFinish({ object }) {
         if (object) {
-          // Validate day count
-          let expectedDays = 5;
-          if (duracion === 'Quincenal') expectedDays = 10;
-          if (duracion === 'Mensual') expectedDays = 20;
-          const actualDays = object.diaADia?.length ?? 0;
-          if (actualDays !== expectedDays) {
-            console.warn(`⚠️ Day count mismatch: expected ${expectedDays} for ${duracion}, got ${actualDays}`);
-          }
-
           if (user) {
             try {
               await supabase.from('user_generations').insert({

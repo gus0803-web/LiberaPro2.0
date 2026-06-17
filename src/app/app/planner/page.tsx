@@ -6,32 +6,31 @@ import { z } from 'zod';
 import { AgendaItem, addAgendaItem, loadSelectedPlanDate, downloadAgendaItem } from '@/lib/agenda';
 import { Download } from 'lucide-react';
 
-const planningSchema = z.object({
-  retoComunitario: z.string().optional(),
-  contenidos: z.array(z.string()),
-  pda: z.array(z.string()),
-  vistaRapida: z.array(z.object({
-    dia: z.string(),
-    tema_central: z.string(),
-    recurso_sep_clave: z.string(),
-    competencia_nem: z.string(),
-  })),
-  diaADia: z.array(z.object({
-    dia: z.string(),
-    tiemposEstimados: z.string().optional(),
-    actividades: z.string(),
-    actividadesTEA: z.string().optional(),
-    pasoMetodologia: z.string(),
-    instrumentoEvaluacion: z.string(),
-    materiales: z.object({
-      principal: z.string().optional(),
-      sustentable: z.string().optional(),
-    }).optional(),
-    material_estandar: z.string().optional(),
-    material_eco_ally: z.string().optional(),
-    conaliteg_cita: z.string().optional()
-  })),
-  anexoMateriales: z.string().optional()
+const nemPlanningSchema = z.object({
+  datosIdentificacion: z.object({
+    nombreDocente: z.string(),
+    gradoYGrupo: z.string(),
+    fase: z.string(),
+    periodoAplicacion: z.string()
+  }),
+  elementosCurriculares: z.object({
+    camposFormativos: z.string(),
+    metodologia: z.string(),
+    problematica: z.string()
+  }),
+  sesiones: z.array(z.object({
+    contenido: z.string(),
+    pda: z.string(),
+    librosYEscenario: z.string(),
+    ejesArticuladores: z.string(),
+    secuenciaDidactica: z.object({
+      inicio: z.string(),
+      desarrollo: z.string(),
+      cierre: z.string()
+    }),
+    recursosYMateriales: z.string(),
+    evaluacionFormativa: z.string()
+  }))
 });
 
 function getBusinessDays(startDateStr: string, count: number) {
@@ -56,50 +55,25 @@ export default function PlannerPage() {
   const renderContent = (content: any) => {
     if (!content) return null;
     if (typeof content === 'string') return content;
-    if (typeof content === 'object') {
-      if (content.visual || content.auditiva || content.kinestesica) {
-        return (
-          <ul className="list-disc pl-4 mt-1 font-normal">
-            {content.visual && <li><strong>Visual:</strong> {typeof content.visual === 'string' ? content.visual : JSON.stringify(content.visual)}</li>}
-            {content.auditiva && <li><strong>Auditiva:</strong> {typeof content.auditiva === 'string' ? content.auditiva : JSON.stringify(content.auditiva)}</li>}
-            {content.kinestesica && <li><strong>Kinestésica:</strong> {typeof content.kinestesica === 'string' ? content.kinestesica : JSON.stringify(content.kinestesica)}</li>}
-          </ul>
-        );
-      }
-      if (content.principal || content.sustentable) {
-        return (
-          <ul className="list-disc pl-4 mt-1 font-normal">
-            {content.principal && <li><strong>Principal:</strong> {typeof content.principal === 'string' ? content.principal : JSON.stringify(content.principal)}</li>}
-            {content.sustentable && <li><strong>Eco-Ally:</strong> {typeof content.sustentable === 'string' ? content.sustentable : JSON.stringify(content.sustentable)}</li>}
-          </ul>
-        );
-      }
-      return <pre className="whitespace-pre-wrap text-xs mt-1 font-normal">{JSON.stringify(content, null, 2)}</pre>;
-    }
-    return String(content);
+    return <pre className="whitespace-pre-wrap text-xs mt-1 font-normal">{JSON.stringify(content, null, 2)}</pre>;
   };
 
   const [fase, setFase] = useState('Fase 4: Primaria (3º y 4º)');
-  const [duracion, setDuracion] = useState('Semanal');
-  const [proyecto, setProyecto] = useState('');
+  const [grado, setGrado] = useState('3º');
+  const [campoFormativo, setCampoFormativo] = useState('Lenguajes');
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
-  const [principio, setPrincipio] = useState('');
+  const [notasMaestro, setNotasMaestro] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
-  const [hasTEA, setHasTEA] = useState(false);
-  const [selectedSchool, setSelectedSchool] = useState('');
-  const [availableSchools, setAvailableSchools] = useState<any[]>([]);
+  
   const [saveMessage, setSaveMessage] = useState('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [hasSavedPlan, setHasSavedPlan] = useState(false);
-  const [contenidosPersonalizados, setContenidosPersonalizados] = useState<string[]>([]);
-  const [contenidoInput, setContenidoInput] = useState('');
-
   const [debugError, setDebugError] = useState<string>('');
 
   const { object, submit, isLoading, error } = useObject({
     api: '/api/planner/generate',
-    schema: planningSchema,
+    schema: nemPlanningSchema,
     onError: (err) => {
       console.error('useObject error:', err);
       setDebugError(err.message || String(err));
@@ -113,10 +87,6 @@ export default function PlannerPage() {
     } else {
       setSelectedDate(new Date().toISOString().slice(0, 10));
     }
-    const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
-    const valid = schools.filter((s: any) => s.school || s.group);
-    setAvailableSchools(valid);
-    if (valid.length > 0) setSelectedSchool(`${valid[0].school} - ${valid[0].group}`);
   }, []);
 
   useEffect(() => {
@@ -126,31 +96,26 @@ export default function PlannerPage() {
   }, [selectedDate]);
 
   useEffect(() => {
-    if (object && !isLoading && selectedDate && !hasSavedPlan) {
-      let daysCount = 5;
-      if (duracion === 'Quincenal') daysCount = 10;
-      if (duracion === 'Mensual') daysCount = 20;
+    if (object?.sesiones && !isLoading && selectedDate && !hasSavedPlan) {
+      const daysCount = object.sesiones.length;
+      if (daysCount === 0) return;
 
       const datesToCover = getBusinessDays(selectedDate, daysCount);
 
       const savePlans = async () => {
         const promises = datesToCover.map((dateStr, index) => {
-          const diaData = object.diaADia?.[index] || null;
+          const sesionData = object.sesiones?.[index] || null;
           const newPlan: AgendaItem = {
             id: `${Date.now()}-${dateStr}-${index}`,
             date: dateStr,
             type: 'planeacion',
-            title: tema || proyecto || 'Planeación Generada',
-            description: `Día ${index + 1}: Fase: ${fase}. NEM 4 Campos - ${metodologia}`,
+            title: tema || 'Planeación NEM',
+            description: `Sesión ${index + 1}: Fase: ${fase} - ${metodologia}`,
             metadata: {
               fase,
-              proyecto,
-              metodologia,
               tema,
-              principio,
-              hasTEA,
-              selectedSchool,
-              object: diaData ? { diaADia: [diaData] } : object, // Only store the specific day's data if possible
+              metodologia,
+              object: sesionData ? { sesiones: [sesionData] } : object,
             },
             createdAt: new Date().toISOString(),
           };
@@ -169,26 +134,7 @@ export default function PlannerPage() {
       };
       savePlans();
     }
-  }, [object, isLoading, selectedDate, hasSavedPlan, fase, proyecto, metodologia, tema, principio, duracion, hasTEA, selectedSchool]);
-
-  const handleAddContenido = () => {
-    const trimmed = contenidoInput.trim();
-    if (trimmed && !contenidosPersonalizados.includes(trimmed)) {
-      setContenidosPersonalizados(prev => [...prev, trimmed]);
-      setContenidoInput('');
-    }
-  };
-
-  const handleRemoveContenido = (index: number) => {
-    setContenidosPersonalizados(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleContenidoKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddContenido();
-    }
-  };
+  }, [object, isLoading, selectedDate, hasSavedPlan, fase, tema, metodologia]);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,17 +145,21 @@ export default function PlannerPage() {
       return;
     }
     setHasSavedPlan(false);
-    submit({ fase, duracion, proyecto, metodologia, tema, principio, hasTEA, selectedSchool, contenidosPersonalizados });
+    
+    // El backend concatenará todo. Solo le pasamos lo estructurado.
+    const notasCompletas = \`Grado: \${grado}\\nCampo Formativo: \${campoFormativo}\\n\\nNotas adicionales:\\n\${notasMaestro}\`;
+    
+    submit({ fase, tema, notasMaestro: notasCompletas, metodologia });
   };
 
   return (
     <div className="space-y-8">
       <section className="space-y-2">
         <h2 className="text-2xl sm:text-4xl font-light text-slate-900 tracking-tight">
-          Nueva <span className="font-bold text-blue-600">Planeación</span>
+          Estructurador <span className="font-bold text-blue-600">Académico NEM</span>
         </h2>
         <p className="text-sm sm:text-base text-slate-500 font-light max-w-2xl">
-          Configura tu proyecto. La IA cruzará tus datos con la currícula de la NEM para entregarte una secuencia didáctica lista para aplicar.
+          Ingresa tus apuntes y contexto. El AI se encargará de darles la estructura oficial, rellenando los vacíos técnicos (PDAs, Ejes) y organizando las sesiones.
         </p>
       </section>
 
@@ -226,43 +176,16 @@ export default function PlannerPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Duración</label>
-          <select value={duracion} onChange={e => setDuracion(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option>Semanal</option>
-            <option>Quincenal</option>
-            <option>Mensual</option>
-          </select>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Grado</label>
+          <input type="text" value={grado} onChange={e => setGrado(e.target.value)} placeholder="Ej: 3º B" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de inicio</label>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={e => setSelectedDate(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela y Grupo (Perfil)</label>
-          <select value={selectedSchool} onChange={e => setSelectedSchool(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option value="">Sin especificar (General)</option>
-            {availableSchools.map((s, idx) => (
-              <option key={idx} value={`${s.school} - ${s.group}`}>{s.school} - {s.group}</option>
-            ))}
-          </select>
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Proyecto de la NEM</label>
-          <select required value={proyecto} onChange={e => setProyecto(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option value="" disabled>Selecciona un proyecto general...</option>
-            <option value="El ciclo del agua en nuestra comunidad">El ciclo del agua en nuestra comunidad</option>
-            <option value="Cuidado del medio ambiente y reciclaje">Cuidado del medio ambiente y reciclaje</option>
-            <option value="Salud, bienestar y alimentación sana">Salud, bienestar y alimentación sana</option>
-            <option value="Diversidad e inclusión en el aula">Diversidad e inclusión en el aula</option>
-            <option value="Cultura de paz y prevención de la violencia">Cultura de paz y prevención de la violencia</option>
-            <option value="Nuestras raíces: Historia y cultura local">Nuestras raíces: Historia y cultura local</option>
-            <option value="Pensamiento científico: Fenómenos naturales">Pensamiento científico: Fenómenos naturales</option>
-            <option value="Expresión artística y emociones">Expresión artística y emociones</option>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campo Formativo Principal</label>
+          <select value={campoFormativo} onChange={e => setCampoFormativo(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+            <option>Lenguajes</option>
+            <option>Saberes y Pensamiento Científico</option>
+            <option>Ética, Naturaleza y Sociedades</option>
+            <option>De lo Humano y lo Comunitario</option>
           </select>
         </div>
         <div>
@@ -275,83 +198,49 @@ export default function PlannerPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Eje Articulador (Opcional)</label>
-          <select value={principio} onChange={e => setPrincipio(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option value="">Selecciona un eje articulador...</option>
-            <option>Inclusión</option>
-            <option>Pensamiento Crítico</option>
-            <option>Interculturalidad crítica</option>
-            <option>Igualdad de género</option>
-            <option>Vida saludable</option>
-            <option>Apropiación de las culturas a través de la lectura y la escritura</option>
-            <option>Artes y experiencias estéticas</option>
-          </select>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de inicio</label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema o Proyecto</label>
+          <input type="text" required value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. El ciclo del agua en la comunidad" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Situación específica del aula (Opcional)</label>
-          <input type="text" value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. Los estados de la materia, Fracciones, Revolución Mexicana..." className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors placeholder:text-slate-400" />
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notas, contexto e ideas del maestro</label>
+          <textarea
+            required
+            rows={5}
+            value={notasMaestro}
+            onChange={e => setNotasMaestro(e.target.value)}
+            placeholder="Escribe aquí de qué trata la clase, problemáticas de tu grupo, actividades que ya tienes pensadas, o cualquier idea suelta..."
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors resize-y placeholder:text-slate-400"
+          />
         </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Contenidos / PDAs Personalizados (Opcional)</label>
-          <div className="bg-white border border-slate-200 rounded-xl p-3">
-            <div className="flex flex-wrap gap-2 mb-2">
-              {contenidosPersonalizados.map((tag, idx) => (
-                <span key={idx} className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-lg">
-                  {tag}
-                  <button type="button" onClick={() => handleRemoveContenido(idx)} className="text-blue-600 hover:text-blue-900 font-bold text-sm leading-none">×</button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={contenidoInput}
-                onChange={e => setContenidoInput(e.target.value)}
-                onKeyDown={handleContenidoKeyDown}
-                placeholder="Escribe un contenido o PDA y presiona Enter..."
-                className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors placeholder:text-slate-400"
-              />
-              <button type="button" onClick={handleAddContenido} className="bg-blue-100 text-blue-700 font-bold px-3 py-2 rounded-xl hover:bg-blue-200 transition-colors text-sm">+</button>
-            </div>
-          </div>
-        </div>
-        <div className="sm:col-span-2 flex items-center gap-3 bg-blue-50 border border-blue-100 p-4 rounded-xl">
-          <input type="checkbox" id="tea-checkbox" checked={hasTEA} onChange={e => setHasTEA(e.target.checked)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
-          <label htmlFor="tea-checkbox" className="text-sm font-semibold text-blue-900 cursor-pointer">
-            Incluir adaptaciones para alumnos con TEA (Trastorno del Espectro Autista)
-          </label>
-        </div>
+        
         <div className="sm:col-span-2 pt-2 flex flex-col gap-3 items-end">
-          <button disabled={isLoading || !selectedDate} type="submit" className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            {isLoading ? 'Generando Magia...' : 'Generar Planeación'}
+          <button disabled={isLoading || !selectedDate || !tema || !notasMaestro} type="submit" className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            {isLoading ? 'Estructurando...' : 'Generar Planeación Oficial'}
           </button>
-          {!selectedDate ? (
-            <p className="text-sm text-amber-600">Selecciona una fecha de inicio antes de generar.</p>
-          ) : null}
         </div>
       </form>
+
       {saveMessage ? (
         <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-6 text-sm text-emerald-800 space-y-2">
           <p className="font-bold">¡Planeación Generada Exitosamente!</p>
           <p>{saveMessage}</p>
-          {saveMessage.includes('distribuida') && (
-            <p className="font-medium text-emerald-900 mt-2">La planeación fue generada tomando en cuenta los cuatro campos formativos de la NEM.</p>
-          )}
         </div>
       ) : null}
 
       {/* Loading State / Skeleton */}
       {isLoading && !object && (
         <div className="space-y-6">
-          <h3 className="text-xl text-blue-600 font-semibold animate-pulse">Analizando currículum NEM y recuperando PDAs...</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-24 sm:h-32 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse flex flex-col justify-center items-center">
-                <div className="w-12 h-2 bg-blue-200 rounded mb-2"></div>
-                <div className="w-20 h-3 bg-slate-200 rounded"></div>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-xl text-blue-600 font-semibold animate-pulse">Traduciendo tus notas a formato NEM...</h3>
+          <div className="h-64 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse"></div>
         </div>
       )}
 
@@ -374,96 +263,74 @@ export default function PlannerPage() {
       )}
 
       {/* Results Rendering */}
-      {object?.vistaRapida && (
-        <section className="space-y-4">
-          <h3 className="text-xl sm:text-2xl font-semibold text-slate-900">Vista Rápida (At-a-Glance)</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {object.vistaRapida.map((dia, idx) => (
-              <div key={idx} className="bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 relative overflow-hidden hover:shadow-md transition-shadow">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-400"></div>
-                <p className="text-xs font-bold text-slate-400 mb-1">{dia?.dia}</p>
-                <div className="text-sm font-bold text-slate-900 leading-tight mb-2">{renderContent(dia?.tema_central)}</div>
-                <p className="text-[10px] text-blue-600 mb-0.5">{dia?.recurso_sep_clave}</p>
-                <p className="text-[10px] text-slate-400">{dia?.competencia_nem}</p>
-              </div>
-            ))}
+      {object?.datosIdentificacion && (
+        <section className="space-y-4 pt-4">
+          <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Datos de Identificación</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-slate-500 block text-xs uppercase">Docente</span><span className="font-semibold">{renderContent(object.datosIdentificacion.nombreDocente)}</span></div>
+              <div><span className="text-slate-500 block text-xs uppercase">Grado y Grupo</span><span className="font-semibold">{renderContent(object.datosIdentificacion.gradoYGrupo)}</span></div>
+              <div><span className="text-slate-500 block text-xs uppercase">Fase</span><span className="font-semibold">{renderContent(object.datosIdentificacion.fase)}</span></div>
+              <div><span className="text-slate-500 block text-xs uppercase">Periodo de Aplicación</span><span className="font-semibold">{renderContent(object.datosIdentificacion.periodoAplicacion)}</span></div>
+            </div>
           </div>
         </section>
       )}
 
-      {object?.retoComunitario && (
-        <section className="space-y-3 pt-6 border-t border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900">Reto Comunitario General</h3>
-          <div className="text-sm text-slate-700 bg-blue-50/50 p-5 rounded-2xl border border-blue-100">{renderContent(object.retoComunitario)}</div>
+      {object?.elementosCurriculares && (
+        <section className="space-y-4">
+          <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 shadow-sm">
+            <h3 className="text-xl font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2">Elementos Curriculares</h3>
+            <div className="space-y-3 text-sm">
+              <p><strong className="text-blue-800">Campos Formativos:</strong> {renderContent(object.elementosCurriculares.camposFormativos)}</p>
+              <p><strong className="text-blue-800">Metodología:</strong> {renderContent(object.elementosCurriculares.metodologia)}</p>
+              <div className="mt-2 bg-white p-3 rounded-xl border border-blue-100">
+                <strong className="text-blue-800 block mb-1">Problemática:</strong>
+                <span className="text-slate-700">{renderContent(object.elementosCurriculares.problematica)}</span>
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
-      {object?.diaADia && (
-        <section className="space-y-4 pt-6 border-t border-slate-200">
-          <h3 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-4">Desarrollo Día a Día</h3>
-          <div className="space-y-4">
-            {object.diaADia.map((dia, idx) => (
-              <div key={idx} className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm">
-                <h4 className="text-lg sm:text-xl font-bold text-blue-700 mb-1 flex items-center">
-                  <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mr-2 text-xs font-bold">{idx + 1}</span>
-                  <div className="inline-block">{renderContent(dia?.dia)}</div>
-                </h4>
-                {dia?.tiemposEstimados && <div className="text-slate-500 text-xs mb-4 ml-9">Tiempos Estimados: {renderContent(dia.tiemposEstimados)}</div>}
+      {object?.sesiones && object.sesiones.length > 0 && (
+        <section className="space-y-6 pt-6 border-t border-slate-200">
+          <h3 className="text-2xl font-bold text-slate-900 mb-4">Secuencias Didácticas (Sesiones)</h3>
+          <div className="space-y-8">
+            {object.sesiones.map((sesion, idx) => (
+              <div key={idx} className="bg-white/80 rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+                <h4 className="text-xl font-bold text-blue-700 mb-4 pl-2 border-b pb-2">Sesión {idx + 1}</h4>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
-                  <div className="space-y-3">
-                    <div className="bg-slate-50/80 rounded-xl p-4 border-l-4 border-blue-500">
-                      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Actividades de Aprendizaje</p>
-                      <div className="text-xs text-slate-700 whitespace-pre-wrap">{renderContent(dia?.actividades)}</div>
-                    </div>
-                    {dia?.actividadesTEA && (
-                      <div className="bg-amber-50/80 rounded-xl p-4 border-l-4 border-amber-500 relative">
-                        <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg rounded-tr-xl">Inclusión</div>
-                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Actividades TEA</p>
-                        <div className="text-xs text-amber-900 whitespace-pre-wrap">{renderContent(dia?.actividadesTEA)}</div>
-                      </div>
-                    )}
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pl-2 text-sm">
+                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Contenido:</span>{renderContent(sesion?.contenido)}</div>
+                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">PDA:</span>{renderContent(sesion?.pda)}</div>
+                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Libros y Escenario:</span>{renderContent(sesion?.librosYEscenario)}</div>
+                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Ejes Articuladores:</span>{renderContent(sesion?.ejesArticuladores)}</div>
+                </div>
 
-                  <div className="sm:col-span-2 space-y-3">
-                    <div className="bg-emerald-50/80 rounded-xl p-4 border border-emerald-200 relative">
-                      <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg rounded-tr-xl">Eco-Ally</div>
-                      <h5 className="font-semibold text-slate-800 text-sm mb-3">Materiales Recomendados</h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Principal</p>
-                          <div className="text-xs text-slate-700">{renderContent(dia?.materiales?.principal || dia?.material_estandar)}</div>
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-emerald-600 mb-0.5">Alternativa Sustentable (&lt;$50 MXN)</p>
-                          <div className="text-xs text-slate-800">{renderContent(dia?.materiales?.sustentable || dia?.material_eco_ally)}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-purple-50/80 rounded-xl p-4 border border-purple-100 flex items-start space-x-3">
-                      <div className="text-purple-500 pt-0.5">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-500 mb-0.5">Referencia CONALITEG Oficial</p>
-                        <p className="text-xs text-slate-700">{dia?.conaliteg_cita}</p>
-                      </div>
-                    </div>
+                <div className="pl-2 space-y-4">
+                  <div className="border-l-2 border-emerald-300 pl-4">
+                    <h5 className="font-bold text-emerald-700 uppercase text-xs mb-1">Inicio</h5>
+                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.secuenciaDidactica?.inicio)}</p>
                   </div>
+                  <div className="border-l-2 border-blue-300 pl-4">
+                    <h5 className="font-bold text-blue-700 uppercase text-xs mb-1">Desarrollo</h5>
+                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.secuenciaDidactica?.desarrollo)}</p>
+                  </div>
+                  <div className="border-l-2 border-amber-300 pl-4">
+                    <h5 className="font-bold text-amber-700 uppercase text-xs mb-1">Cierre</h5>
+                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.secuenciaDidactica?.cierre)}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pl-2 text-sm border-t pt-4">
+                  <div><span className="font-bold text-slate-700 block mb-1">Recursos y Materiales:</span><span className="text-slate-600">{renderContent(sesion?.recursosYMateriales)}</span></div>
+                  <div><span className="font-bold text-slate-700 block mb-1">Evaluación Formativa:</span><span className="text-slate-600">{renderContent(sesion?.evaluacionFormativa)}</span></div>
                 </div>
               </div>
             ))}
           </div>
-        </section>
-      )}
-
-      {object?.anexoMateriales && (
-        <section className="space-y-3 pt-6 border-t border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900">Anexo de Materiales y Actividades</h3>
-          <div className="text-sm text-slate-700 bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100 whitespace-pre-wrap">{renderContent(object.anexoMateriales)}</div>
         </section>
       )}
 
@@ -473,12 +340,12 @@ export default function PlannerPage() {
             type="button"
             onClick={() => {
               const masterItem: AgendaItem = {
-                id: `master-download-${Date.now()}`,
+                id: \`master-download-\${Date.now()}\`,
                 date: selectedDate || new Date().toISOString().slice(0, 10),
                 type: 'planeacion',
-                title: tema || proyecto || 'Planeación Completa',
-                description: `Documento Maestro: ${fase}. NEM 4 Campos - ${metodologia}`,
-                metadata: { object: object, hasTEA, selectedSchool, selectedDate, duracion },
+                title: tema || 'Planeación Completa',
+                description: \`Documento Maestro: \${fase} - \${metodologia}\`,
+                metadata: { object: object, selectedDate },
                 createdAt: new Date().toISOString()
               };
               downloadAgendaItem(masterItem);
@@ -486,7 +353,7 @@ export default function PlannerPage() {
             className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-lg"
           >
             <Download className="w-5 h-5" />
-            Descargar Planeación Completa (.docx)
+            Descargar Planeación Oficial (.docx)
           </button>
         </div>
       )}

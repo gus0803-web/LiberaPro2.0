@@ -132,34 +132,31 @@ export function typeLabel(type: AgendaItemType, isEs: boolean) {
 }
 
 function safeFilename(value: string) {
-  return value.replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80);
-}
-
-function formatDayHeader(index: number, diaTitle: string | undefined): string {
-  const title = diaTitle || '';
-  if (/^D[ií]a\s/i.test(title)) return title;
-  return `Día ${index + 1} - ${title}`;
+  return value.replace(/[\\/:*?"<>|\\s]+/g, '_').slice(0, 80);
 }
 
 export function buildAgendaItemText(item: AgendaItem) {
   const lines = [
-    `${item.title}`,
-    `Fecha: ${item.date}`,
-    `Tipo: ${item.type}`,
+    \`\${item.title}\`,
+    \`Fecha: \${item.date}\`,
+    \`Tipo: \${item.type}\`,
     '',
     item.description || '',
   ];
 
-  if (item.metadata?.object?.diaADia) {
-    lines.push('', '--- DESGLOSE DEL DÍA ---');
-    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
-    dias.forEach((dia: any, index: number) => {
-      lines.push(`\n${formatDayHeader(index, dia.dia)}`);
-      if (dia.actividades) lines.push(`ACTIVIDADES DE APRENDIZAJE:\n${dia.actividades}`);
-      if (dia.actividadesTEA) lines.push(`ACTIVIDADES TEA (Inclusión):\n${dia.actividadesTEA}`);
-      if (dia.material_estandar) lines.push(`MATERIALES:\n${dia.material_estandar}`);
-      if (dia.material_eco_ally) lines.push(`MATERIALES ECO:\n${dia.material_eco_ally}`);
-      if (dia.conaliteg_cita) lines.push(`LIBRO DE TEXTO (CONALITEG):\n${dia.conaliteg_cita}`);
+  if (item.metadata?.object?.sesiones) {
+    lines.push('', '--- SECUENCIAS DIDÁCTICAS ---');
+    const sesiones = item.metadata.object.sesiones;
+    sesiones.forEach((sesion: any, index: number) => {
+      lines.push(\`\\nSESIÓN \${index + 1}\`);
+      if (sesion.contenido) lines.push(\`CONTENIDO:\\n\${sesion.contenido}\`);
+      if (sesion.pda) lines.push(\`PDA:\\n\${sesion.pda}\`);
+      if (sesion.secuenciaDidactica) {
+        lines.push(\`INICIO:\\n\${sesion.secuenciaDidactica.inicio}\`);
+        lines.push(\`DESARROLLO:\\n\${sesion.secuenciaDidactica.desarrollo}\`);
+        lines.push(\`CIERRE:\\n\${sesion.secuenciaDidactica.cierre}\`);
+      }
+      if (sesion.evaluacionFormativa) lines.push(\`EVALUACIÓN:\\n\${sesion.evaluacionFormativa}\`);
     });
   } else if (item.metadata?.object) {
     lines.push('', 'Detalles adicionales:');
@@ -169,170 +166,135 @@ export function buildAgendaItemText(item: AgendaItem) {
     lines.push(item.metadata.materialContent);
   }
 
-  return lines.join('\n');
+  return lines.join('\\n');
 }
 
 export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
 
-  const teacherName = localStorage.getItem('liberapro_teacher_name') || 'Docente';
-  const schoolGroup = item.metadata?.selectedSchool || 'No especificada';
-  const duracion = item.metadata?.duracion || 'Semanal';
-  
-  let daysCount = 5;
-  if (duracion === 'Quincenal') daysCount = 10;
-  if (duracion === 'Mensual') daysCount = 20;
-
-  // Calculate end date
-  let endDate = new Date(item.date);
-  let addedDays = 0;
-  while (addedDays < daysCount - 1) {
-    endDate.setDate(endDate.getDate() + 1);
-    if (endDate.getDay() !== 0 && endDate.getDay() !== 6) {
-      addedDays++;
-    }
-  }
-  const endDateStr = endDate.toISOString().slice(0, 10);
-
   const renderValue = (val: any) => {
     if (!val) return '';
     if (typeof val === 'string') return val;
-    if (val.visual || val.auditiva || val.kinestesica) {
-      return `
-        <ul style="margin-top: 0; padding-left: 20px;">
-          ${val.visual ? `<li><strong>Visual:</strong> ${val.visual}</li>` : ''}
-          ${val.auditiva ? `<li><strong>Auditiva:</strong> ${val.auditiva}</li>` : ''}
-          ${val.kinestesica ? `<li><strong>Kinestésica:</strong> ${val.kinestesica}</li>` : ''}
-        </ul>
-      `;
-    }
-    if (val.principal || val.sustentable) {
-      return `
-        <ul style="margin-top: 0; padding-left: 20px;">
-          ${val.principal ? `<li><strong>Principal:</strong> ${val.principal}</li>` : ''}
-          ${val.sustentable ? `<li><strong>Eco-Ally:</strong> ${val.sustentable}</li>` : ''}
-        </ul>
-      `;
-    }
     return JSON.stringify(val);
   };
 
   let contentHtml = '';
-  if (item.metadata?.object?.diaADia) {
-    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
+  if (item.metadata?.object?.datosIdentificacion) {
+    const obj = item.metadata.object;
+    const datos = obj.datosIdentificacion;
+    const elems = obj.elementosCurriculares;
+    const sesiones = Array.isArray(obj.sesiones) ? obj.sesiones : [obj.sesiones];
     
-    contentHtml = `
+    contentHtml = \`
       <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="font-size: 18pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; margin: 0; text-transform: uppercase;">PLANEACIÓN DIDÁCTICA DUA</h1>
+        <h1 style="font-size: 18pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; margin: 0; text-transform: uppercase;">PLANEACIÓN DIDÁCTICA NEM</h1>
       </div>
       
-      <table width="100%" style="border-collapse: collapse; margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333;">
+      <table width="100%" style="border-collapse: collapse; margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; border: 1px solid #ccc;">
         <tr>
-          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Docente:</strong> ${teacherName}</td>
-          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Escuela / Grupo:</strong> ${schoolGroup}</td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Docente:</strong></td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(datos.nombreDocente)}</td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Fase:</strong></td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(datos.fase)}</td>
         </tr>
         <tr>
-          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Fecha de Inicio:</strong> ${item.date}</td>
-          <td width="50%" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Fecha de Término:</strong> ${endDateStr}</td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Grado y Grupo:</strong></td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(datos.gradoYGrupo)}</td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Periodo:</strong></td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(datos.periodoAplicacion)}</td>
         </tr>
-        <tr>
-          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Proyecto / Tema Central:</strong> ${item.title}</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Descripción:</strong> ${item.description || ''}</td>
-        </tr>
-        ${item.metadata.object.retoComunitario ? `
-        <tr>
-          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Reto Comunitario:</strong> ${item.metadata.object.retoComunitario}</td>
-        </tr>` : ''}
-        ${item.metadata.object.contenidos && item.metadata.object.contenidos.length > 0 ? `
-        <tr>
-          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Contenidos:</strong>
-            <ul style="margin: 4px 0; padding-left: 20px;">
-              ${item.metadata.object.contenidos.map((c: string) => `<li>${c}</li>`).join('')}
-            </ul>
-          </td>
-        </tr>` : ''}
-        ${item.metadata.object.pda && item.metadata.object.pda.length > 0 ? `
-        <tr>
-          <td colspan="2" style="padding: 5px; border-bottom: 1px solid #e2e8f0;"><strong>Procesos de Desarrollo de Aprendizaje (PDA):</strong>
-            <ul style="margin: 4px 0; padding-left: 20px;">
-              ${item.metadata.object.pda.map((p: string) => `<li>${p}</li>`).join('')}
-            </ul>
-          </td>
-        </tr>` : ''}
       </table>
-    `;
 
-    contentHtml += dias.map((dia: any, idx: number) => `
-      <div style="margin-bottom: 24px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
-        <h3 style="margin-top: 0; font-size: 14pt; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 5px;">
-          ${formatDayHeader(idx, typeof dia.dia === 'string' ? dia.dia : renderValue(dia.dia))}
+      <table width="100%" style="border-collapse: collapse; margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; border: 1px solid #ccc;">
+        <tr>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #e0f2fe;"><strong>Campo Formativo:</strong></td>
+          <td width="75%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(elems.camposFormativos)}</td>
+        </tr>
+        <tr>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #e0f2fe;"><strong>Metodología:</strong></td>
+          <td width="75%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(elems.metodologia)}</td>
+        </tr>
+        <tr>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #e0f2fe;"><strong>Problemática:</strong></td>
+          <td width="75%" style="padding: 8px; border: 1px solid #ccc;">\${renderValue(elems.problematica)}</td>
+        </tr>
+      </table>
+    \`;
+
+    contentHtml += sesiones.map((sesion: any, idx: number) => \`
+      <div style="margin-bottom: 24px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
+        <h3 style="margin-top: 0; font-size: 14pt; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px; text-transform: uppercase;">
+          Sesión \${idx + 1}
         </h3>
-        ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 10pt;"><strong>Tiempos Estimados:</strong> ${renderValue(dia.tiemposEstimados)}</p>` : ''}
         
-        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt;">
+        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
           <tr>
-            <td width="20%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Actividades de Aprendizaje</td>
-            <td width="80%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">${renderValue(dia.actividades)}</td>
+            <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Contenido</td>
+            <td width="75%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">\${renderValue(sesion.contenido)}</td>
           </tr>
-          ${dia.actividadesTEA ? `
           <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fffbeb; font-weight: bold; color: #b45309; vertical-align: top;">Inclusión TEA</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #78350f; white-space: pre-wrap;">${renderValue(dia.actividadesTEA)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">PDA</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">\${renderValue(sesion.pda)}</td>
           </tr>
-          ` : ''}
-          ${dia.pasoMetodologia ? `
           <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f0fdf4; font-weight: bold; vertical-align: top;">Paso Metodológico</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.pasoMetodologia)}</td>
-          </tr>` : ''}
-          ${dia.instrumentoEvaluacion ? `
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fef3c7; font-weight: bold; vertical-align: top;">Instrumento de Evaluación</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.instrumentoEvaluacion)}</td>
-          </tr>` : ''}
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Materiales</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.materiales || dia.material_estandar)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Ejes Articuladores</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">\${renderValue(sesion.ejesArticuladores)}</td>
           </tr>
-          ${dia.conaliteg_cita ? `
           <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc; font-weight: bold; vertical-align: top;">Libro SEP</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(dia.conaliteg_cita)}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Libros y Escenario</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">\${renderValue(sesion.librosYEscenario)}</td>
           </tr>
-          ` : ''}
+        </table>
+
+        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
+          <tr>
+            <td colspan="2" style="padding: 8px; border: 1px solid #ccc; background-color: #dbeafe; font-weight: bold; text-align: center; color: #1e3a8a;">SECUENCIA DIDÁCTICA</td>
+          </tr>
+          <tr>
+            <td width="15%" style="padding: 8px; border: 1px solid #ccc; background-color: #d1fae5; font-weight: bold; vertical-align: top; color: #065f46;">INICIO</td>
+            <td width="85%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">\${renderValue(sesion.secuenciaDidactica?.inicio)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #bfdbfe; font-weight: bold; vertical-align: top; color: #1e3a8a;">DESARROLLO</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">\${renderValue(sesion.secuenciaDidactica?.desarrollo)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fef3c7; font-weight: bold; vertical-align: top; color: #92400e;">CIERRE</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">\${renderValue(sesion.secuenciaDidactica?.cierre)}</td>
+          </tr>
+        </table>
+
+        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
+          <tr>
+            <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Recursos y Materiales</td>
+            <td width="75%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">\${renderValue(sesion.recursosYMateriales)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Evaluación Formativa</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">\${renderValue(sesion.evaluacionFormativa)}</td>
+          </tr>
         </table>
       </div>
-    `).join('');
-
-    if (item.metadata.object.anexoMateriales) {
-      contentHtml += `
-        <div style="margin-top: 20px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
-          <h3 style="font-size: 14pt; color: #059669;">Anexo de Materiales y Actividades</h3>
-          <p style="font-size: 11pt; color: #333; line-height: 1.5;">${renderValue(item.metadata.object.anexoMateriales)}</p>
-        </div>
-      `;
-    }
+    \`).join('');
 
   } else if (item.metadata?.materialContent) {
-    contentHtml = `
+    contentHtml = \`
       <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
-        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <div style="font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.metadata.materialContent}</div>
+        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">\${item.title}</h1>
+        <div style="font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">\${item.metadata.materialContent}</div>
       </div>
-    `;
+    \`;
   } else {
-    contentHtml = `
+    contentHtml = \`
       <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
-        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <p style="font-size: 11pt; color: #475569;"><strong>Fecha:</strong> ${item.date}</p>
-        <div style="white-space: pre-wrap; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.description || ''}</div>
+        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">\${item.title}</h1>
+        <p style="font-size: 11pt; color: #475569;"><strong>Fecha:</strong> \${item.date}</p>
+        <div style="white-space: pre-wrap; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">\${item.description || ''}</div>
       </div>
-    `;
+    \`;
   }
 
-  const finalHtml = `<div style="padding: 20px; background: white; color: #111;">${contentHtml}</div>`;
+  const finalHtml = \`<div style="padding: 20px; background: white; color: #111;">\${contentHtml}</div>\`;
 
   const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word</title></head><body>";
   const footer = "</body></html>";
@@ -345,7 +307,7 @@ export function downloadAgendaItem(item: AgendaItem) {
   const fileDownload = document.createElement("a");
   document.body.appendChild(fileDownload);
   fileDownload.href = url;
-  fileDownload.download = `${safeFilename(item.title)}-${item.date}.doc`;
+  fileDownload.download = \`\${safeFilename(item.title)}-\${item.date}.doc\`;
   fileDownload.click();
   document.body.removeChild(fileDownload);
   URL.revokeObjectURL(url);
@@ -356,41 +318,63 @@ export function printAgendaItem(item: AgendaItem) {
   const printWindow = window.open('', '_blank', 'width=900,height=700');
   if (!printWindow) return;
 
+  const renderValue = (val: any) => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    return JSON.stringify(val);
+  };
+
   let contentHtml = '';
-  if (item.metadata?.object?.diaADia) {
-    const dias = Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia];
-    contentHtml = dias.map((dia: any, idx: number) => `
-      <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
-        <h3 style="margin-top:0; color:#2563eb;">${formatDayHeader(idx, dia.dia)}</h3>
-        ${dia.tiemposEstimados ? `<p style="color: #64748b; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 1rem;"><strong>Tiempos Estimados:</strong> ${dia.tiemposEstimados}</p>` : ''}
-        <p><strong>Actividades de Aprendizaje:</strong><br/>
-          <pre style="white-space:pre-wrap; font-family:inherit;">${dia.actividades || ''}</pre>
-        </p>
-        ${dia.actividadesTEA ? `
-          <p style="color: #b45309; padding: 10px; background: #fffbeb; border-radius: 4px;"><strong>Inclusión TEA:</strong><br/>
-            <pre style="white-space:pre-wrap; font-family:inherit;">${dia.actividadesTEA}</pre>
-          </p>
-        ` : ''}
-        ${dia.pasoMetodologia ? `<p><strong>Paso Metodológico:</strong><br/>${dia.pasoMetodologia}</p>` : ''}
-        ${dia.instrumentoEvaluacion ? `<p><strong>Instrumento de Evaluación:</strong><br/>${dia.instrumentoEvaluacion}</p>` : ''}
-        <p><strong>Materiales:</strong><br/>
-          ${dia.materiales && typeof dia.materiales === 'object' ? `
-            <ul>
-              ${dia.materiales.principal ? `<li><strong>Principal:</strong> ${dia.materiales.principal}</li>` : ''}
-              ${dia.materiales.sustentable ? `<li><strong>Sustentable:</strong> ${dia.materiales.sustentable}</li>` : ''}
-            </ul>
-          ` : dia.material_estandar || ''}
-        </p>
-        <p><strong>Libro (Conaliteg):</strong><br/>${dia.conaliteg_cita || ''}</p>
+  if (item.metadata?.object?.datosIdentificacion) {
+    const obj = item.metadata.object;
+    const datos = obj.datosIdentificacion;
+    const elems = obj.elementosCurriculares;
+    const sesiones = Array.isArray(obj.sesiones) ? obj.sesiones : [obj.sesiones];
+    
+    contentHtml = \`
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; text-transform: uppercase;">PLANEACIÓN DIDÁCTICA NEM</h2>
       </div>
-    `).join('');
+      <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
+        <tr><td><strong>Docente:</strong></td><td>\${renderValue(datos.nombreDocente)}</td><td><strong>Fase:</strong></td><td>\${renderValue(datos.fase)}</td></tr>
+        <tr><td><strong>Grado y Grupo:</strong></td><td>\${renderValue(datos.gradoYGrupo)}</td><td><strong>Periodo:</strong></td><td>\${renderValue(datos.periodoAplicacion)}</td></tr>
+      </table>
+      <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
+        <tr><td width="25%"><strong>Campo Formativo:</strong></td><td>\${renderValue(elems.camposFormativos)}</td></tr>
+        <tr><td><strong>Metodología:</strong></td><td>\${renderValue(elems.metodologia)}</td></tr>
+        <tr><td><strong>Problemática:</strong></td><td>\${renderValue(elems.problematica)}</td></tr>
+      </table>
+    \`;
+
+    contentHtml += sesiones.map((sesion: any, idx: number) => \`
+      <div style="margin-bottom: 24px; page-break-inside: avoid;">
+        <h3 style="border-bottom: 2px solid #000;">SESIÓN \${idx + 1}</h3>
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 10px;">
+          <tr><td width="25%"><strong>Contenido</strong></td><td>\${renderValue(sesion.contenido)}</td></tr>
+          <tr><td><strong>PDA</strong></td><td>\${renderValue(sesion.pda)}</td></tr>
+          <tr><td><strong>Ejes Articuladores</strong></td><td>\${renderValue(sesion.ejesArticuladores)}</td></tr>
+          <tr><td><strong>Libros y Escenario</strong></td><td>\${renderValue(sesion.librosYEscenario)}</td></tr>
+        </table>
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 10px;">
+          <tr><td colspan="2" style="text-align:center;"><strong>SECUENCIA DIDÁCTICA</strong></td></tr>
+          <tr><td width="15%"><strong>INICIO</strong></td><td style="white-space: pre-wrap;">\${renderValue(sesion.secuenciaDidactica?.inicio)}</td></tr>
+          <tr><td><strong>DESARROLLO</strong></td><td style="white-space: pre-wrap;">\${renderValue(sesion.secuenciaDidactica?.desarrollo)}</td></tr>
+          <tr><td><strong>CIERRE</strong></td><td style="white-space: pre-wrap;">\${renderValue(sesion.secuenciaDidactica?.cierre)}</td></tr>
+        </table>
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 10px;">
+          <tr><td width="25%"><strong>Recursos</strong></td><td>\${renderValue(sesion.recursosYMateriales)}</td></tr>
+          <tr><td><strong>Evaluación</strong></td><td>\${renderValue(sesion.evaluacionFormativa)}</td></tr>
+        </table>
+      </div>
+    \`).join('');
+
   } else if (item.metadata?.materialContent) {
-    contentHtml = `<pre style="white-space:pre-wrap; font-family:Arial;">${item.metadata.materialContent}</pre>`;
+    contentHtml = \`<pre style="white-space:pre-wrap; font-family:Arial;">\${item.metadata.materialContent}</pre>\`;
   } else {
-    contentHtml = `<pre style="white-space:pre-wrap; font-family:Arial;">${item.description || ''}</pre>`;
+    contentHtml = \`<pre style="white-space:pre-wrap; font-family:Arial;">\${item.description || ''}</pre>\`;
   }
 
-  printWindow.document.write(`<!doctype html><html><head><title>${item.title}</title><style>@page{size:letter;margin:1in;}body{font-family:Arial, sans-serif;padding:24px;color:#111;}h1{font-size:24px;margin-bottom:0.5rem;color:#1e293b;}p{margin:0.5rem 0; line-height: 1.5;}</style></head><body><h1>${item.title}</h1><p><strong>Fecha:</strong> ${item.date}</p><p><strong>Tipo:</strong> ${item.type}</p><hr/>${contentHtml}</body></html>`);
+  printWindow.document.write(\`<!doctype html><html><head><title>\${item.title}</title><style>@page{size:letter;margin:1in;}body{font-family:Arial, sans-serif;padding:24px;color:#111;}h1{font-size:24px;margin-bottom:0.5rem;color:#1e293b;}p{margin:0.5rem 0; line-height: 1.5;}</style></head><body><h1>\${item.title}</h1><p><strong>Fecha:</strong> \${item.date}</p><p><strong>Tipo:</strong> \${item.type}</p><hr/>\${contentHtml}</body></html>\`);
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
