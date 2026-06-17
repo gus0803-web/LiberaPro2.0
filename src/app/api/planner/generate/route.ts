@@ -8,8 +8,8 @@ export const maxDuration = 60; // Allow up to 60 seconds for completion
 
 const planningSchema = z.object({
   retoComunitario: z.string().describe("Descripción general del Reto Comunitario"),
-  contenidos: z.array(z.string()).describe("Lista de contenidos curriculares trabajados en esta planeación").optional(),
-  pda: z.array(z.string()).describe("Lista de Procesos de Desarrollo de Aprendizaje (PDA) abordados").optional(),
+  contenidos: z.array(z.string()).describe("Lista de contenidos curriculares trabajados en esta planeación. Si no aplica, devuelve un array vacío."),
+  pda: z.array(z.string()).describe("Lista de Procesos de Desarrollo de Aprendizaje (PDA) abordados. Si no aplica, devuelve un array vacío."),
   vistaRapida: z.array(z.object({
     dia: z.string().describe("Día de la semana o número, ej. Día 1"),
     tema_central: z.string().describe("Máximo 5 palabras"),
@@ -21,8 +21,8 @@ const planningSchema = z.object({
     tiemposEstimados: z.string().describe("Ej: Bloque de 90 min."),
     actividades: z.string().describe("Desarrollo EXTREMADAMENTE DETALLADO de las actividades. DEBES incluir Inicio, Desarrollo y Cierre de forma explícita, con instrucciones paso a paso, preguntas detonadoras, tiempos y ejemplos concretos. Escribe varios párrafos extensos y detallados."),
     actividadesTEA: z.string().describe("Actividades adaptadas para alumnos con Trastorno del Espectro Autista (TEA). Si no se solicita, devuelve un string vacío."),
-    pasoMetodologia: z.string().describe("Paso de la metodología en el que se encuentra este día, ej: 'Paso 1: Identificación del problema comunitario'").optional(),
-    instrumentoEvaluacion: z.string().describe("Instrumento(s) de evaluación para este día. Seleccionar de: Rúbrica, Lista de Cotejo, Escala Estimativa, Portafolio de Evidencias, Registro Anecdótico, Autoevaluación, Coevaluación, Heteroevaluación.").optional(),
+    pasoMetodologia: z.string().describe("Paso de la metodología en el que se encuentra este día, ej: 'Paso 1: Identificación del problema comunitario'. Si no aplica, devuelve un string vacío."),
+    instrumentoEvaluacion: z.string().describe("Instrumento(s) de evaluación para este día. Seleccionar de: Rúbrica, Lista de Cotejo, Escala Estimativa, Portafolio de Evidencias, Registro Anecdótico, Autoevaluación, Coevaluación, Heteroevaluación. Si no aplica, devuelve un string vacío."),
     materiales: z.object({
       principal: z.string(),
       sustentable: z.string()

@@ -8,8 +8,8 @@ import { Download } from 'lucide-react';
 
 const planningSchema = z.object({
   retoComunitario: z.string().optional(),
-  contenidos: z.array(z.string()).optional(),
-  pda: z.array(z.string()).optional(),
+  contenidos: z.array(z.string()),
+  pda: z.array(z.string()),
   vistaRapida: z.array(z.object({
     dia: z.string(),
     tema_central: z.string(),
@@ -21,8 +21,8 @@ const planningSchema = z.object({
     tiemposEstimados: z.string().optional(),
     actividades: z.string(),
     actividadesTEA: z.string().optional(),
-    pasoMetodologia: z.string().optional(),
-    instrumentoEvaluacion: z.string().optional(),
+    pasoMetodologia: z.string(),
+    instrumentoEvaluacion: z.string(),
     materiales: z.object({
       principal: z.string().optional(),
       sustentable: z.string().optional(),
