@@ -394,31 +394,24 @@ export default function CalendarPage() {
                       {previewId === item.id ? (
                         <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
                           <p className="font-bold text-slate-900 mb-2">{isEs ? 'Contenido' : 'Content'}</p>
-                          {item.metadata?.object?.diaADia ? (
+                          {item.metadata?.object?.sesiones ? (
                             <div className="space-y-4">
-                              {item.metadata.object.retoComunitario && (
-                                <div className="mb-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                                  <h4 className="font-bold text-blue-800 mb-2">Reto Comunitario General</h4>
-                                  <div className="text-sm text-slate-700">{renderContent(item.metadata.object.retoComunitario)}</div>
-                                </div>
-                              )}
-                              {(Array.isArray(item.metadata.object.diaADia) ? item.metadata.object.diaADia : [item.metadata.object.diaADia]).map((dia: any, i: number) => (
+                              {(Array.isArray(item.metadata.object.sesiones) ? item.metadata.object.sesiones : [item.metadata.object.sesiones]).map((sesion: any, i: number) => (
                                 <div key={i} className="border-l-4 border-blue-500 pl-4 py-1">
-                                  <h5 className="font-bold text-blue-700">{renderContent(dia.dia) || `Día ${i + 1}`}</h5>
-                                  {dia.tiemposEstimados && <div className="mt-1 text-xs text-slate-500 font-medium">Tiempos Estimados: {renderContent(dia.tiemposEstimados)}</div>}
-                                  {dia.inicio && <div className="mt-2 text-xs"><strong>Inicio:</strong> {renderContent(dia.inicio)}</div>}
-                                  {dia.desarrollo && <div className="mt-2 text-xs"><strong>Desarrollo:</strong> {renderContent(dia.desarrollo)}</div>}
-                                  {dia.cierre && <div className="mt-2 text-xs"><strong>Cierre:</strong> {renderContent(dia.cierre)}</div>}
-                                  {(dia.materiales || dia.material_estandar) && <div className="mt-2 text-xs"><strong>Materiales:</strong> {renderContent(dia.materiales || dia.material_estandar)}</div>}
-                                  {dia.conaliteg_cita && <div className="mt-2 text-xs"><strong>Libro:</strong> {renderContent(dia.conaliteg_cita)}</div>}
+                                  <h5 className="font-bold text-blue-700">Sesión {i + 1}</h5>
+                                  {sesion.contenido && <div className="mt-1 text-xs text-slate-500 font-medium">Contenido: {renderContent(sesion.contenido)}</div>}
+                                  {sesion.secuenciaDidactica?.inicio && <div className="mt-2 text-xs"><strong>Inicio:</strong> {renderContent(sesion.secuenciaDidactica.inicio)}</div>}
+                                  {sesion.secuenciaDidactica?.desarrollo && <div className="mt-2 text-xs"><strong>Desarrollo:</strong> {renderContent(sesion.secuenciaDidactica.desarrollo)}</div>}
+                                  {sesion.secuenciaDidactica?.cierre && <div className="mt-2 text-xs"><strong>Cierre:</strong> {renderContent(sesion.secuenciaDidactica.cierre)}</div>}
+                                  {sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A' && (
+                                    <div className="mt-2 text-xs p-2 bg-amber-50 text-amber-900 border border-amber-200 rounded">
+                                      <strong>Adecuaciones TEA:</strong> {renderContent(sesion.adecuacionesTEA)}
+                                    </div>
+                                  )}
+                                  {sesion.recursosYMateriales && <div className="mt-2 text-xs"><strong>Recursos y Materiales:</strong> {renderContent(sesion.recursosYMateriales)}</div>}
+                                  {sesion.evaluacionFormativa && <div className="mt-2 text-xs"><strong>Evaluación Formativa:</strong> {renderContent(sesion.evaluacionFormativa)}</div>}
                                 </div>
                               ))}
-                              {item.metadata.object.anexoMateriales && (
-                                <div className="mt-4 p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                                  <h4 className="font-bold text-emerald-800 mb-2">Anexo de Materiales y Actividades</h4>
-                                  <div className="text-sm text-slate-700 whitespace-pre-wrap">{renderContent(item.metadata.object.anexoMateriales)}</div>
-                                </div>
-                              )}
                             </div>
                           ) : item.metadata?.materialContent ? (
                             <div className="prose prose-sm max-w-none text-slate-700 flex flex-col">

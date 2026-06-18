@@ -28,6 +28,7 @@ const nemPlanningSchema = z.object({
       desarrollo: z.string().describe("Actividades principales, estructuradas y secuenciadas"),
       cierre: z.string().describe("Actividades de conclusión y reflexión")
     }),
+    adecuacionesTEA: z.string().describe("Adaptaciones para alumnos con TEA si se solicita, sino N/A"),
     recursosYMateriales: z.string().describe("Lista de materiales mencionados por el maestro y sugerencias adicionales lógicas"),
     evaluacionFormativa: z.string().describe("Cómo se evaluará, qué productos o evidencias se esperan")
   }))
@@ -59,7 +60,11 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const { fase, tema, notasMaestro, metodologia } = await req.json();
+    const { fase, tema, notasMaestro, metodologia, duracion, hasTEA, schoolGroup } = await req.json();
+
+    let expectedSessions = 5;
+    if (duracion === 'Quincenal') expectedSessions = 10;
+    if (duracion === 'Mensual') expectedSessions = 20;
 
     // 1. Generar Embedding para la consulta RAG
     const query = `Fase: ${fase}. Tema: ${tema}. Metodología: ${metodologia}. Notas: ${notasMaestro}`;
@@ -106,11 +111,15 @@ ${contextText}
 </contexto>
 `;
 
-    const userPrompt = `
+const userPrompt = `
 ENTRADA DEL MAESTRO:
 Tema o Proyecto: ${tema}
 Fase NEM: ${fase}
 Metodología: ${metodologia}
+Grupo/Escuela: ${schoolGroup || 'No especificado'}
+Duración de la planeación: ${duracion} (Genera EXACTAMENTE ${expectedSessions} sesiones)
+${hasTEA ? 'ATENCIÓN: El maestro indicó que tiene alumnos con TEA. DEBES incluir adaptaciones específicas en el campo adecuacionesTEA para cada sesión.' : 'ATENCIÓN: El maestro NO indicó alumnos con TEA. Puedes poner N/A en adecuacionesTEA.'}
+
 Notas, contexto e ideas del maestro: "${notasMaestro}"
 `;
 

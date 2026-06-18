@@ -156,6 +156,9 @@ export function buildAgendaItemText(item: AgendaItem) {
         lines.push(`DESARROLLO:\n${sesion.secuenciaDidactica.desarrollo}`);
         lines.push(`CIERRE:\n${sesion.secuenciaDidactica.cierre}`);
       }
+      if (sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A') {
+        lines.push(`ADECUACIONES TEA:\n${sesion.adecuacionesTEA}`);
+      }
       if (sesion.evaluacionFormativa) lines.push(`EVALUACIÓN:\n${sesion.evaluacionFormativa}`);
     });
   } else if (item.metadata?.object) {
@@ -199,7 +202,7 @@ export function downloadAgendaItem(item: AgendaItem) {
         </tr>
         <tr>
           <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Grado y Grupo:</strong></td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(datos.gradoYGrupo)}</td>
+          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)}</td>
           <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Periodo:</strong></td>
           <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(datos.periodoAplicacion)}</td>
         </tr>
@@ -262,6 +265,11 @@ export function downloadAgendaItem(item: AgendaItem) {
             <td style="padding: 8px; border: 1px solid #ccc; background-color: #fef3c7; font-weight: bold; vertical-align: top; color: #92400e;">CIERRE</td>
             <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.cierre)}</td>
           </tr>
+          ${sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A' ? `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fffbeb; font-weight: bold; vertical-align: top; color: #b45309;">ADECUACIONES TEA</td>
+            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #78350f; white-space: pre-wrap;">${renderValue(sesion.adecuacionesTEA)}</td>
+          </tr>` : ''}
         </table>
 
         <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
@@ -337,7 +345,7 @@ export function printAgendaItem(item: AgendaItem) {
       </div>
       <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
         <tr><td><strong>Docente:</strong></td><td>${renderValue(datos.nombreDocente)}</td><td><strong>Fase:</strong></td><td>${renderValue(datos.fase)}</td></tr>
-        <tr><td><strong>Grado y Grupo:</strong></td><td>${renderValue(datos.gradoYGrupo)}</td><td><strong>Periodo:</strong></td><td>${renderValue(datos.periodoAplicacion)}</td></tr>
+        <tr><td><strong>Grado y Grupo:</strong></td><td>${item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)}</td><td><strong>Periodo:</strong></td><td>${renderValue(datos.periodoAplicacion)}</td></tr>
       </table>
       <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
         <tr><td width="25%"><strong>Campo Formativo:</strong></td><td>${renderValue(elems.camposFormativos)}</td></tr>
@@ -360,6 +368,7 @@ export function printAgendaItem(item: AgendaItem) {
           <tr><td width="15%"><strong>INICIO</strong></td><td style="white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.inicio)}</td></tr>
           <tr><td><strong>DESARROLLO</strong></td><td style="white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.desarrollo)}</td></tr>
           <tr><td><strong>CIERRE</strong></td><td style="white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.cierre)}</td></tr>
+          ${sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A' ? `<tr><td style="color: #b45309;"><strong>ADECUACIONES TEA</strong></td><td style="color: #78350f; white-space: pre-wrap;">${renderValue(sesion.adecuacionesTEA)}</td></tr>` : ''}
         </table>
         <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-bottom: 10px;">
           <tr><td width="25%"><strong>Recursos</strong></td><td>${renderValue(sesion.recursosYMateriales)}</td></tr>

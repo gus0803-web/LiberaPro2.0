@@ -58,12 +58,32 @@ export default function PlannerPage() {
     return <pre className="whitespace-pre-wrap text-xs mt-1 font-normal">{JSON.stringify(content, null, 2)}</pre>;
   };
 
-  const [fase, setFase] = useState('Fase 4: Primaria (3º y 4º)');
-  const [grado, setGrado] = useState('3º');
+  const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
+  const [grado, setGrado] = useState('');
   const [campoFormativo, setCampoFormativo] = useState('Lenguajes');
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [notasMaestro, setNotasMaestro] = useState('');
+  
+  const [duracion, setDuracion] = useState('Semanal');
+  const [hasTEA, setHasTEA] = useState(false);
+  const [schoolGroup, setSchoolGroup] = useState('');
+  const [schools, setSchools] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('liberapro_schools');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSchools(parsed);
+          setSchoolGroup(parsed[0]);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not parse schools from local storage', e);
+    }
+  }, []);
   const [selectedDate, setSelectedDate] = useState('');
   
   const [saveMessage, setSaveMessage] = useState('');
@@ -115,7 +135,14 @@ export default function PlannerPage() {
               fase,
               tema,
               metodologia,
-              object: sesionData ? { sesiones: [sesionData] } : object,
+              schoolGroup,
+              duracion,
+              hasTEA,
+              object: {
+                datosIdentificacion: object.datosIdentificacion,
+                elementosCurriculares: object.elementosCurriculares,
+                sesiones: sesionData ? [sesionData] : []
+              },
             },
             createdAt: new Date().toISOString(),
           };
@@ -134,7 +161,7 @@ export default function PlannerPage() {
       };
       savePlans();
     }
-  }, [object, isLoading, selectedDate, hasSavedPlan, fase, tema, metodologia]);
+  }, [object, isLoading, selectedDate, hasSavedPlan, fase, tema, metodologia, schoolGroup, duracion, hasTEA]);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +176,7 @@ export default function PlannerPage() {
     // El backend concatenará todo. Solo le pasamos lo estructurado.
     const notasCompletas = `Grado: ${grado}\nCampo Formativo: ${campoFormativo}\n\nNotas adicionales:\n${notasMaestro}`;
     
-    submit({ fase, tema, notasMaestro: notasCompletas, metodologia });
+    submit({ fase, tema, notasMaestro: notasCompletas, metodologia, duracion, hasTEA, schoolGroup });
   };
 
   return (
@@ -198,12 +225,31 @@ export default function PlannerPage() {
           </select>
         </div>
         <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo</label>
+          {schools.length > 0 ? (
+            <select value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
+              <option value="">No especificado</option>
+              {schools.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          ) : (
+            <input type="text" value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} placeholder="Ej. Esc. Patria - 1º A" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all" />
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Duración</label>
+          <select value={duracion} onChange={e => setDuracion(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
+            <option>Semanal</option>
+            <option>Quincenal</option>
+            <option>Mensual</option>
+          </select>
+        </div>
+        <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de inicio</label>
           <input
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
           />
         </div>
         <div>
@@ -220,6 +266,17 @@ export default function PlannerPage() {
             placeholder="Escribe aquí de qué trata la clase, problemáticas de tu grupo, actividades que ya tienes pensadas, o cualquier idea suelta..."
             className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors resize-y placeholder:text-slate-400"
           />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+            <input 
+              type="checkbox" 
+              checked={hasTEA} 
+              onChange={(e) => setHasTEA(e.target.checked)} 
+              className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+            />
+            <span className="text-sm font-semibold text-slate-700">Incluir adaptaciones para alumnos con Trastorno del Espectro Autista (TEA)</span>
+          </label>
         </div>
         
         <div className="sm:col-span-2 pt-2 flex flex-col gap-3 items-end">
