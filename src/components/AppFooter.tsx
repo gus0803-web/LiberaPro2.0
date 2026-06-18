@@ -24,6 +24,10 @@ export function AppFooter() {
             {isEs ? 'Política de Privacidad' : 'Privacy Policy'}
           </Link>
           <span className="text-slate-400">|</span>
+          <Link href="/app/collaborations" className="hover:text-black transition-colors underline-offset-2 hover:underline">
+            {isEs ? 'Directorio de Colaboradores' : 'Collaborators Directory'}
+          </Link>
+          <span className="text-slate-400">|</span>
           <Link href="/terms" className="hover:text-black transition-colors underline-offset-2 hover:underline">
             {isEs ? 'Términos de Uso' : 'Terms of Use'}
           </Link>

@@ -3,12 +3,22 @@
 import React, { useState } from 'react';
 import { Users, MapPin, Search } from 'lucide-react';
 
+// ==========================================
+// INSTRUCCIONES PARA AGREGAR MÁS MAESTROS:
+// ==========================================
+// Simplemente agrega un nuevo objeto a esta lista siguiendo el mismo formato.
+// 
+// Plantilla a copiar:
+// { id: 6, name: 'Nombre Apellido', state: 'Estado', phase: 'Fase X', method: 'Nombre Metodología' },
+// ==========================================
 const mockTeachers = [
   { id: 1, name: 'María García', state: 'Jalisco', phase: 'Fase 4', method: 'Proyectos Comunitarios' },
   { id: 2, name: 'Juan Pérez', state: 'Nuevo León', phase: 'Fase 5', method: 'STEAM' },
   { id: 3, name: 'Ana López', state: 'CDMX', phase: 'Fase 3', method: 'ABP' },
   { id: 4, name: 'Carlos Ruiz', state: 'Jalisco', phase: 'Fase 6', method: 'Proyectos Comunitarios' },
   { id: 5, name: 'Laura Torres', state: 'Yucatán', phase: 'Fase 2', method: 'Aprendizaje de Servicio' },
+  // ⬇️ PEGA TUS NUEVOS MAESTROS AQUÍ ABAJO ⬇️
+  
 ];
 
 const states = Array.from(new Set(mockTeachers.map(t => t.state))).sort();
