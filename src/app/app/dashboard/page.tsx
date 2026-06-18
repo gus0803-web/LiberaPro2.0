@@ -369,7 +369,23 @@ export default function DashboardPage() {
 
   const taskList = planTasks;
 
-  const hoursSaved = planeacionItems.length * 2;
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const schoolYearStart = new Date(currentMonth >= 7 ? currentYear : currentYear - 1, 7, 1); // August 1st
+
+  const itemsThisMonth = planeacionItems.filter(p => {
+    const d = new Date(p.date);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+  
+  const itemsThisYear = planeacionItems.filter(p => {
+    const d = new Date(p.date);
+    return d >= schoolYearStart;
+  });
+
+  const hoursSavedMonth = itemsThisMonth.length * 2;
+  const hoursSavedYear = itemsThisYear.length * 2;
 
   return (
     <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -396,17 +412,25 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-6 sm:mt-8">
           
           {/* Tiempo Liberado Infographic */}
-          <div className="rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-purple-50 p-6 flex items-center justify-between shadow-sm relative overflow-hidden">
+          <div className="rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-purple-50 p-6 flex flex-col justify-center shadow-sm relative overflow-hidden">
             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
-            <div className="z-10">
-              <h3 className="text-3xl font-extrabold text-indigo-700">{hoursSaved} <span className="text-lg font-semibold text-indigo-500">{isEs ? 'horas' : 'hours'}</span></h3>
-              <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">{t.timeSavedTitle}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{t.timeSavedDesc}</p>
+            <div className="flex justify-between items-start z-10 w-full mb-3">
+              <div>
+                <h3 className="text-3xl font-extrabold text-indigo-700">{hoursSavedMonth} <span className="text-lg font-semibold text-indigo-500">{isEs ? 'hrs' : 'hrs'}</span></h3>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.timeSavedTitle}</p>
+                <p className="text-[10px] text-slate-400">{t.timeSavedDesc}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-indigo-100 shrink-0">
+                <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
             </div>
-            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center z-10 border border-indigo-100">
-              <svg className="w-6 h-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="z-10 pt-3 border-t border-indigo-100/50 flex justify-between items-center w-full">
+              <div>
+                <p className="text-[10px] text-indigo-400 font-semibold">{isEs ? 'ESTE CICLO ESCOLAR' : 'THIS SCHOOL YEAR'}</p>
+                <p className="text-sm font-bold text-indigo-800">{hoursSavedYear} {isEs ? 'horas liberadas' : 'hours saved'}</p>
+              </div>
             </div>
           </div>
 

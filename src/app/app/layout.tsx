@@ -17,8 +17,9 @@ export default async function AppLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email || '';
-  const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user?.id).single();
+  const { data: profile } = await supabase.from('profiles').select('full_name, credits').eq('id', user?.id).single();
   const nameToUse = profile?.full_name || userEmail;
+  const creditsAvailable = profile?.credits ?? 120;
   const initial = nameToUse ? nameToUse.charAt(0).toUpperCase() : 'U';
   const isAdmin = userEmail === 'gus0803@gmail.com';
 
@@ -46,7 +47,7 @@ export default async function AppLayout({
             <TopNav />
 
             {/* Right Side Icons & Profile */}
-            <TopBarActions initial={initial} isAdmin={isAdmin} creditsAvailable={120} />
+            <TopBarActions initial={initial} isAdmin={isAdmin} creditsAvailable={creditsAvailable} />
           </header>
 
           {/* Dynamic Content Area */}

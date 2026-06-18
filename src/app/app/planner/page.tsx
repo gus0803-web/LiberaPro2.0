@@ -59,7 +59,6 @@ export default function PlannerPage() {
   };
 
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
-  const [grado, setGrado] = useState('');
   const [campoFormativo, setCampoFormativo] = useState('Lenguajes');
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
@@ -179,7 +178,7 @@ export default function PlannerPage() {
     setHasSavedPlan(false);
     
     // El backend concatenará todo. Solo le pasamos lo estructurado.
-    const notasCompletas = `Grado: ${grado}\nCampo Formativo: ${campoFormativo}\n\nNotas adicionales:\n${notasMaestro}`;
+    const notasCompletas = `Campo Formativo: ${campoFormativo}\n\nNotas adicionales:\n${notasMaestro}`;
     
     submit({ fase, tema, notasMaestro: notasCompletas, metodologia, duracion, hasTEA, schoolGroup });
   };
@@ -206,10 +205,6 @@ export default function PlannerPage() {
             <option>Fase 5: Primaria (5º y 6º)</option>
             <option>Fase 6: Secundaria (1º a 3º)</option>
           </select>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Grado</label>
-          <input type="text" value={grado} onChange={e => setGrado(e.target.value)} placeholder="Ej: 3º B" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campo Formativo Principal</label>

@@ -137,8 +137,14 @@ Notas, contexto e ideas del maestro: "${notasMaestro}"
                 type: 'planeacion',
                 content: object
               });
+              
+              // Decrementar créditos
+              const { data: profile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+              if (profile && typeof profile.credits === 'number') {
+                await supabase.from('profiles').update({ credits: Math.max(0, profile.credits - 1) }).eq('id', user.id);
+              }
             } catch (e) {
-              console.error('Error saving generation to db', e);
+              console.error('Error saving generation to db or decrementing credits', e);
             }
           }
         }

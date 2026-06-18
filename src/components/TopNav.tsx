@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
-import { Menu, X, Home, BookOpen, Calendar, FileBarChart, ScanLine } from 'lucide-react';
+import { Menu, X, Home, BookOpen, Calendar, FileBarChart, ScanLine, Users } from 'lucide-react';
 
 export function TopNav() {
   const { language } = useTheme();
@@ -17,6 +17,7 @@ export function TopNav() {
     { href: '/app/planner', labelEn: 'Lesson Plans', labelEs: 'Planeaciones', icon: BookOpen },
     { href: '/app/calendar', labelEn: 'Calendar', labelEs: 'Calendario', icon: Calendar },
     { href: '/app/reports', labelEn: 'Reports', labelEs: 'Reportes', icon: FileBarChart },
+    { href: '/app/collaborations', labelEn: 'Collaborations', labelEs: 'Colaboraciones', icon: Users },
     { href: '/app/scanner', labelEn: 'Scanner', labelEs: 'Escáner', icon: ScanLine },
   ];
 

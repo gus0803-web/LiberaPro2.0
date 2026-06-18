@@ -174,151 +174,147 @@ export function buildAgendaItemText(item: AgendaItem) {
 
 export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
-
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, HeadingLevel, AlignmentType } = require('docx');
+  
   const renderValue = (val: any) => {
-    if (!val) return '';
+    if (!val) return 'N/A';
     if (typeof val === 'string') return val;
     return JSON.stringify(val);
   };
 
-  let contentHtml = '';
+  let doc;
+
   if (item.metadata?.object?.datosIdentificacion) {
     const obj = item.metadata.object;
     const datos = obj.datosIdentificacion;
     const elems = obj.elementosCurriculares;
     const sesiones = Array.isArray(obj.sesiones) ? obj.sesiones : [obj.sesiones];
     
-    contentHtml = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="font-size: 18pt; font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; margin: 0; text-transform: uppercase;">PLANEACIÓN DIDÁCTICA NEM</h1>
-      </div>
-      
-      <table width="100%" style="border-collapse: collapse; margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; border: 1px solid #ccc;">
-        <tr>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Docente:</strong></td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(datos.nombreDocente)}</td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Fase:</strong></td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(datos.fase)}</td>
-        </tr>
-        <tr>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Grado y Grupo:</strong></td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)}</td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f8fafc;"><strong>Periodo:</strong></td>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(datos.periodoAplicacion)}</td>
-        </tr>
-      </table>
+    const createCell = (text: string, isHeader: boolean = false, bgColor?: string) => {
+      return new TableCell({
+        shading: bgColor ? { fill: bgColor } : undefined,
+        margins: { top: 100, bottom: 100, left: 100, right: 100 },
+        children: [new Paragraph({ children: [new TextRun({ text, bold: isHeader, size: 22 })] })],
+      });
+    };
 
-      <table width="100%" style="border-collapse: collapse; margin-bottom: 20px; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; border: 1px solid #ccc;">
-        <tr>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #e0f2fe;"><strong>Campo Formativo:</strong></td>
-          <td width="75%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(elems.camposFormativos)}</td>
-        </tr>
-        <tr>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #e0f2fe;"><strong>Metodología:</strong></td>
-          <td width="75%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(elems.metodologia)}</td>
-        </tr>
-        <tr>
-          <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #e0f2fe;"><strong>Problemática:</strong></td>
-          <td width="75%" style="padding: 8px; border: 1px solid #ccc;">${renderValue(elems.problematica)}</td>
-        </tr>
-      </table>
-    `;
+    const sections = [];
+    
+    // Header Title
+    sections.push(new Paragraph({
+      text: "PLANEACIÓN DIDÁCTICA NEM",
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 300 }
+    }));
 
-    contentHtml += sesiones.map((sesion: any, idx: number) => `
-      <div style="margin-bottom: 24px; font-family: 'Helvetica', 'Arial', sans-serif; page-break-inside: avoid;">
-        <h3 style="margin-top: 0; font-size: 14pt; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px; text-transform: uppercase;">
-          Sesión ${idx + 1}
-        </h3>
-        
-        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
-          <tr>
-            <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Contenido</td>
-            <td width="75%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(sesion.contenido)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">PDA</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(sesion.pda)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Ejes Articuladores</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(sesion.ejesArticuladores)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Libros y Escenario</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(sesion.librosYEscenario)}</td>
-          </tr>
-        </table>
+    // Info Table
+    sections.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            createCell('Docente:', true, "f8fafc"),
+            createCell(renderValue(datos.nombreDocente)),
+            createCell('Fase:', true, "f8fafc"),
+            createCell(renderValue(datos.fase)),
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCell('Grado y Grupo:', true, "f8fafc"),
+            createCell(item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)),
+            createCell('Periodo:', true, "f8fafc"),
+            createCell(renderValue(datos.periodoAplicacion)),
+          ]
+        })
+      ]
+    }));
+    sections.push(new Paragraph({ spacing: { after: 200 } }));
 
-        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
-          <tr>
-            <td colspan="2" style="padding: 8px; border: 1px solid #ccc; background-color: #dbeafe; font-weight: bold; text-align: center; color: #1e3a8a;">SECUENCIA DIDÁCTICA</td>
-          </tr>
-          <tr>
-            <td width="15%" style="padding: 8px; border: 1px solid #ccc; background-color: #d1fae5; font-weight: bold; vertical-align: top; color: #065f46;">INICIO</td>
-            <td width="85%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.inicio)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #bfdbfe; font-weight: bold; vertical-align: top; color: #1e3a8a;">DESARROLLO</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.desarrollo)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fef3c7; font-weight: bold; vertical-align: top; color: #92400e;">CIERRE</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333; white-space: pre-wrap;">${renderValue(sesion.secuenciaDidactica?.cierre)}</td>
-          </tr>
-          ${sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A' ? `
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #fffbeb; font-weight: bold; vertical-align: top; color: #b45309;">ADECUACIONES TEA</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #78350f; white-space: pre-wrap;">${renderValue(sesion.adecuacionesTEA)}</td>
-          </tr>` : ''}
-        </table>
+    // Curricular Elements Table
+    sections.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({ children: [createCell('Campo Formativo:', true, "e0f2fe"), createCell(renderValue(elems.camposFormativos))] }),
+        new TableRow({ children: [createCell('Metodología:', true, "e0f2fe"), createCell(renderValue(elems.metodologia))] }),
+        new TableRow({ children: [createCell('Problemática:', true, "e0f2fe"), createCell(renderValue(elems.problematica))] }),
+      ]
+    }));
+    sections.push(new Paragraph({ spacing: { after: 300 } }));
 
-        <table width="100%" style="border-collapse: collapse; margin-top: 10px; font-size: 11pt; border: 1px solid #ccc;">
-          <tr>
-            <td width="25%" style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Recursos y Materiales</td>
-            <td width="75%" style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(sesion.recursosYMateriales)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ccc; background-color: #f1f5f9; font-weight: bold; vertical-align: top;">Evaluación Formativa</td>
-            <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #333;">${renderValue(sesion.evaluacionFormativa)}</td>
-          </tr>
-        </table>
-      </div>
-    `).join('');
+    sesiones.forEach((sesion: any, idx: number) => {
+      sections.push(new Paragraph({
+        children: [new TextRun({ text: `Sesión ${idx + 1}`, bold: true, size: 28, color: "1e3a8a" })],
+        spacing: { before: 200, after: 100 }
+      }));
 
-  } else if (item.metadata?.materialContent) {
-    contentHtml = `
-      <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
-        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <div style="font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.metadata.materialContent}</div>
-      </div>
-    `;
+      sections.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          new TableRow({ children: [createCell('Contenido', true, "f1f5f9"), createCell(renderValue(sesion.contenido))] }),
+          new TableRow({ children: [createCell('PDA', true, "f1f5f9"), createCell(renderValue(sesion.pda))] }),
+          new TableRow({ children: [createCell('Ejes Articuladores', true, "f1f5f9"), createCell(renderValue(sesion.ejesArticuladores))] }),
+          new TableRow({ children: [createCell('Libros y Escenario', true, "f1f5f9"), createCell(renderValue(sesion.librosYEscenario))] }),
+        ]
+      }));
+      sections.push(new Paragraph({ spacing: { after: 100 } }));
+
+      const seqRows = [
+        new TableRow({ children: [new TableCell({ columnSpan: 2, shading: { fill: "dbeafe" }, children: [new Paragraph({ children: [new TextRun({ text: "SECUENCIA DIDÁCTICA", bold: true })], alignment: AlignmentType.CENTER })] })] }),
+        new TableRow({ children: [createCell('INICIO', true, "d1fae5"), createCell(renderValue(sesion.secuenciaDidactica?.inicio))] }),
+        new TableRow({ children: [createCell('DESARROLLO', true, "bfdbfe"), createCell(renderValue(sesion.secuenciaDidactica?.desarrollo))] }),
+        new TableRow({ children: [createCell('CIERRE', true, "fef3c7"), createCell(renderValue(sesion.secuenciaDidactica?.cierre))] }),
+      ];
+
+      if (sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A') {
+        seqRows.push(new TableRow({ children: [createCell('ADECUACIONES TEA', true, "fffbeb"), createCell(renderValue(sesion.adecuacionesTEA))] }));
+      }
+
+      sections.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: seqRows }));
+      sections.push(new Paragraph({ spacing: { after: 100 } }));
+
+      sections.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: [
+          new TableRow({ children: [createCell('Recursos y Materiales', true, "f1f5f9"), createCell(renderValue(sesion.recursosYMateriales))] }),
+          new TableRow({ children: [createCell('Evaluación Formativa', true, "f1f5f9"), createCell(renderValue(sesion.evaluacionFormativa))] }),
+        ]
+      }));
+      sections.push(new Paragraph({ spacing: { after: 300 } }));
+    });
+
+    doc = new Document({
+      sections: [{
+        properties: {},
+        children: sections,
+      }]
+    });
+
   } else {
-    contentHtml = `
-      <div style="font-family: 'Helvetica', 'Arial', sans-serif;">
-        <h1 style="font-size: 18pt; text-align: center; color: #1e293b;">${item.title}</h1>
-        <p style="font-size: 11pt; color: #475569;"><strong>Fecha:</strong> ${item.date}</p>
-        <div style="white-space: pre-wrap; font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11pt; color: #333; line-height: 1.6;">${item.description || ''}</div>
-      </div>
-    `;
+    doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({ text: item.title, heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
+          new Paragraph({ text: `Fecha: ${item.date}` }),
+          new Paragraph({ text: item.description || '' }),
+          new Paragraph({ text: item.metadata?.materialContent || '' }),
+        ]
+      }]
+    });
   }
 
-  const finalHtml = `<div style="padding: 20px; background: white; color: #111;">${contentHtml}</div>`;
-
-  const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML to Word</title></head><body>";
-  const footer = "</body></html>";
-  const sourceHTML = header + finalHtml + footer;
-
-  const blob = new Blob(['\\ufeff', sourceHTML], {
-      type: 'application/msword'
+  Packer.toBlob(doc).then((blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    const fileDownload = document.createElement("a");
+    document.body.appendChild(fileDownload);
+    fileDownload.href = url;
+    fileDownload.download = `${safeFilename(item.title)}-${item.date}.docx`;
+    fileDownload.click();
+    document.body.removeChild(fileDownload);
+    URL.revokeObjectURL(url);
   });
-  const url = URL.createObjectURL(blob);
-  const fileDownload = document.createElement("a");
-  document.body.appendChild(fileDownload);
-  fileDownload.href = url;
-  fileDownload.download = `${safeFilename(item.title)}-${item.date}.doc`;
-  fileDownload.click();
-  document.body.removeChild(fileDownload);
-  URL.revokeObjectURL(url);
 }
 
 export function printAgendaItem(item: AgendaItem) {
