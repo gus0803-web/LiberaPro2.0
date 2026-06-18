@@ -76,8 +76,13 @@ export default function PlannerPage() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setSchools(parsed);
-          setSchoolGroup(parsed[0]);
+          const formatted = parsed
+            .filter(p => p.school || p.group)
+            .map(p => `${p.school || ''} ${p.group ? `- ${p.group}` : ''}`.trim());
+          if (formatted.length > 0) {
+            setSchools(formatted);
+            setSchoolGroup(formatted[0]);
+          }
         }
       }
     } catch (e) {
