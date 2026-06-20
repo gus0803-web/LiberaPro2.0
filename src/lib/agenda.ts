@@ -151,10 +151,8 @@ export function buildAgendaItemText(item: AgendaItem) {
       lines.push(`\nSESIÓN ${index + 1}`);
       if (sesion.contenido) lines.push(`CONTENIDO:\n${sesion.contenido}`);
       if (sesion.pda) lines.push(`PDA:\n${sesion.pda}`);
-      if (sesion.secuenciaDidactica) {
-        lines.push(`INICIO:\n${sesion.secuenciaDidactica.inicio}`);
-        lines.push(`DESARROLLO:\n${sesion.secuenciaDidactica.desarrollo}`);
-        lines.push(`CIERRE:\n${sesion.secuenciaDidactica.cierre}`);
+      if (sesion.fasesMetodologicas) {
+        lines.push(`FASES Y ACTIVIDADES:\n${sesion.fasesMetodologicas}`);
       }
       if (sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A') {
         lines.push(`ADECUACIONES TEA:\n${sesion.adecuacionesTEA}`);
@@ -190,11 +188,15 @@ export function downloadAgendaItem(item: AgendaItem) {
     const elems = obj.elementosCurriculares;
     const sesiones = Array.isArray(obj.sesiones) ? obj.sesiones : [obj.sesiones];
     
-    const createCell = (text: string, isHeader: boolean = false, bgColor?: string) => {
+    const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1) => {
+      const paragraphs = String(text).split('\n').map(line => 
+        new Paragraph({ children: [new TextRun({ text: line, bold: isHeader, size: 22 })] })
+      );
       return new TableCell({
+        columnSpan: colSpan,
         shading: bgColor ? { fill: bgColor } : undefined,
-        margins: { top: 100, bottom: 100, left: 100, right: 100 },
-        children: [new Paragraph({ children: [new TextRun({ text, bold: isHeader, size: 22 })] })],
+        margins: { top: 150, bottom: 150, left: 150, right: 150 },
+        children: paragraphs,
       });
     };
 
@@ -255,16 +257,14 @@ export function downloadAgendaItem(item: AgendaItem) {
           new TableRow({ children: [createCell('Contenido', true, "f1f5f9"), createCell(renderValue(sesion.contenido))] }),
           new TableRow({ children: [createCell('PDA', true, "f1f5f9"), createCell(renderValue(sesion.pda))] }),
           new TableRow({ children: [createCell('Ejes Articuladores', true, "f1f5f9"), createCell(renderValue(sesion.ejesArticuladores))] }),
-          new TableRow({ children: [createCell('Libros y Escenario', true, "f1f5f9"), createCell(renderValue(sesion.librosYEscenario))] }),
+          new TableRow({ children: [createCell('Escenario', true, "f1f5f9"), createCell(renderValue(sesion.escenario))] }),
         ]
       }));
       sections.push(new Paragraph({ spacing: { after: 100 } }));
 
       const seqRows = [
-        new TableRow({ children: [new TableCell({ columnSpan: 2, shading: { fill: "dbeafe" }, children: [new Paragraph({ children: [new TextRun({ text: "SECUENCIA DIDÁCTICA", bold: true })], alignment: AlignmentType.CENTER })] })] }),
-        new TableRow({ children: [createCell('INICIO', true, "d1fae5"), createCell(renderValue(sesion.secuenciaDidactica?.inicio))] }),
-        new TableRow({ children: [createCell('DESARROLLO', true, "bfdbfe"), createCell(renderValue(sesion.secuenciaDidactica?.desarrollo))] }),
-        new TableRow({ children: [createCell('CIERRE', true, "fef3c7"), createCell(renderValue(sesion.secuenciaDidactica?.cierre))] }),
+        new TableRow({ children: [new TableCell({ columnSpan: 2, shading: { fill: "dbeafe" }, children: [new Paragraph({ children: [new TextRun({ text: "FASES Y ACTIVIDADES DE LA SESIÓN", bold: true })], alignment: AlignmentType.CENTER })] })] }),
+        new TableRow({ children: [createCell(renderValue(sesion.fasesMetodologicas), false, undefined, 2)] }),
       ];
 
       if (sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A') {

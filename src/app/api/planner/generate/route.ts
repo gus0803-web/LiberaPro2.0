@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { FULL_AI_BRAIN } from '@/lib/nem-brain';
 
-export const maxDuration = 60; // Allow up to 60 seconds for completion
+export const maxDuration = 300; // Allow up to 300 seconds for completion (Vercel max for some plans)
 
 const nemPlanningSchema = z.object({
   datosIdentificacion: z.object({
@@ -21,13 +21,9 @@ const nemPlanningSchema = z.object({
   sesiones: z.array(z.object({
     contenido: z.string().describe("El contenido del programa sintético aplicable"),
     pda: z.string().describe("Procesos de Desarrollo de Aprendizaje esperados"),
-    librosYEscenario: z.string().describe("Escenario: Aula/Escolar/Comunitario y referencias a libros de texto pertinentes"),
+    escenario: z.string().describe("Escenario: Aula, Escolar o Comunitario"),
     ejesArticuladores: z.string().describe("Ej: Inclusión, Pensamiento Crítico, Vida Saludable, etc."),
-    secuenciaDidactica: z.object({
-      inicio: z.string().describe("Actividades de arranque basadas en las notas del maestro"),
-      desarrollo: z.string().describe("Actividades principales, estructuradas y secuenciadas"),
-      cierre: z.string().describe("Actividades de conclusión y reflexión")
-    }),
+    fasesMetodologicas: z.string().describe("Detalle exhaustivo de las actividades de la sesión, estructuradas OBLIGATORIAMENTE según las FASES o MOMENTOS de la metodología elegida. Extender la redacción de manera abundante y detallada para proporcionar suficiente contenido para impartir 6 HORAS DE CLASE. Eliminar por completo el formato genérico de inicio/desarrollo/cierre."),
     adecuacionesTEA: z.string().describe("Adaptaciones para alumnos con TEA si se solicita, sino N/A"),
     recursosYMateriales: z.string().describe("Lista de materiales mencionados por el maestro y sugerencias adicionales lógicas"),
     evaluacionFormativa: z.string().describe("Cómo se evaluará, qué productos o evidencias se esperan")
@@ -60,55 +56,20 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const { fase, tema, notasMaestro, metodologia, duracion, hasTEA, schoolGroup } = await req.json();
+    const { fase, tema, notasMaestro, metodologia, duracion, hasTEA, schoolGroup, fechaInicio, fechaTermino } = await req.json();
 
     let expectedSessions = 5;
     if (duracion === 'Quincenal') expectedSessions = 10;
     if (duracion === 'Mensual') expectedSessions = 20;
 
-    // 1. Generar Embedding para la consulta RAG
-    const query = `Fase: ${fase}. Tema: ${tema}. Metodología: ${metodologia}. Notas: ${notasMaestro}`;
-    
-    // Note: requires NEXT_PUBLIC_OPENAI_API_KEY in env to work automatically with @ai-sdk/openai
-    const { embedding } = await embed({
-      model: openai.embedding('text-embedding-3-small'),
-      value: query,
-    });
-
-    // 2. Consulta Vectorial a Supabase (RAG)
-    let documents = [];
-    const { data, error: rpcError } = await supabase.rpc('match_nem_curriculum', {
-      query_embedding: embedding,
-      match_threshold: 0.7,
-      match_count: 5,
-      p_fase: fase
-    });
-
-    if (rpcError) {
-      console.warn('Supabase RPC Error (RAG Fallback):', rpcError);
-      // Fallback: Si no existe la función o falla, no detenemos la generación.
-    } else if (data) {
-      documents = data;
-    }
-
-    // Preparar el contexto inyectado
-    const contextText = documents && documents.length > 0 ? documents.map((doc: any) => 
-      `- PDA: ${doc.pda_text} | Referencia: ${doc.book_reference} p.${doc.page} | URL: ${doc.url}`
-    ).join('\n') : 'No se encontró contexto específico de los libros de texto, pero aplica tus conocimientos generales de la Nueva Escuela Mexicana.';
-
-    // 3. Generación Estructurada con Vercel AI SDK
     const systemPrompt = `
 Eres un experto en pedagogía y diseño curricular especializado en el marco de la Nueva Escuela Mexicana (NEM). Tu objetivo es actuar como un estructurador académico: vas a tomar los apuntes, ideas y el contexto proporcionado por el maestro y los vas a transformar en una planeación didáctica formal y completa.
 
-REGLA DE ORO: El maestro es el experto en su grupo. Debes respetar fielmente las ideas, problemáticas, actividades y temas que el maestro proporciona en sus "Notas". Tu trabajo no es inventar una clase desde cero, sino:
-1. Darle forma académica a las notas del maestro.
-2. Llenar los vacíos técnicos (por ejemplo, redactar correctamente los PDA - Procesos de Desarrollo de Aprendizaje, identificar los Ejes Articuladores correspondientes, o darle formato a la evaluación).
-3. Estructurar toda la información en el formato oficial de la NEM.
-
-Contexto pedagógico NEM extraído de los libros de texto (RAG):
-<contexto>
-${contextText}
-</contexto>
+REGLAS DE ORO:
+1. El maestro es el experto. Respeta fielmente las ideas, problemáticas, actividades y temas de sus "Notas".
+2. CERO LIBROS DE TEXTO: No incluyas referencias a libros de texto ni páginas, ya que los libros han desaparecido. 
+3. ELIMINA INICIO/DESARROLLO/CIERRE: Organiza la sección 'fasesMetodologicas' estrictamente utilizando las fases, momentos o etapas correspondientes a la metodología sociocrítica seleccionada (ej. ABP, STEAM, Proyectos Comunitarios, Aprendizaje Servicio).
+4. EXTENSIÓN PARA 6 HORAS: El maestro necesita muchísimo nivel de detalle. Cada sesión debe tener contenido suficiente, descriptivo y exhaustivo para impartir 6 horas de clase. Expande las explicaciones de las actividades, debates, lecturas y dinámicas sugeridas.
 `;
 
 const userPrompt = `
@@ -117,14 +78,15 @@ Tema o Proyecto: ${tema}
 Fase NEM: ${fase}
 Metodología: ${metodologia}
 Grupo/Escuela: ${schoolGroup || 'No especificado'}
-Duración de la planeación: ${duracion} (Genera EXACTAMENTE ${expectedSessions} sesiones)
+Periodo de Aplicación: Del ${fechaInicio} al ${fechaTermino}
+Duración de la planeación: ${duracion} (Genera EXACTAMENTE ${expectedSessions} sesiones super detalladas)
 ${hasTEA ? 'ATENCIÓN: El maestro indicó que tiene alumnos con TEA. DEBES incluir adaptaciones específicas en el campo adecuacionesTEA para cada sesión.' : 'ATENCIÓN: El maestro NO indicó alumnos con TEA. Puedes poner N/A en adecuacionesTEA.'}
 
 Notas, contexto e ideas del maestro: "${notasMaestro}"
 `;
 
     const result = await streamObject({
-      model: openai('gpt-4o-mini'),
+      model: openai('gpt-4o'),
       schema: nemPlanningSchema,
       system: systemPrompt,
       prompt: userPrompt,

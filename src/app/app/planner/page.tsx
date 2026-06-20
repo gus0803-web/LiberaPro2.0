@@ -21,13 +21,10 @@ const nemPlanningSchema = z.object({
   sesiones: z.array(z.object({
     contenido: z.string(),
     pda: z.string(),
-    librosYEscenario: z.string(),
+    escenario: z.string(),
     ejesArticuladores: z.string(),
-    secuenciaDidactica: z.object({
-      inicio: z.string(),
-      desarrollo: z.string(),
-      cierre: z.string()
-    }),
+    fasesMetodologicas: z.string(),
+    adecuacionesTEA: z.string(),
     recursosYMateriales: z.string(),
     evaluacionFormativa: z.string()
   }))
@@ -51,6 +48,12 @@ function getBusinessDays(startDateStr: string, count: number) {
   return dates;
 }
 
+function getEndDateStr(startDateStr: string, count: number) {
+  if (!startDateStr || count <= 0) return '';
+  const dates = getBusinessDays(startDateStr, count);
+  return dates[dates.length - 1];
+}
+
 export default function PlannerPage() {
   const renderContent = (content: any) => {
     if (!content) return null;
@@ -59,7 +62,7 @@ export default function PlannerPage() {
   };
 
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
-  const [campoFormativo, setCampoFormativo] = useState('Lenguajes');
+  const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes']);
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [notasMaestro, setNotasMaestro] = useState('');
@@ -177,10 +180,26 @@ export default function PlannerPage() {
     }
     setHasSavedPlan(false);
     
+    // Calcular días y fecha término
+    let expectedSessions = 5;
+    if (duracion === 'Quincenal') expectedSessions = 10;
+    if (duracion === 'Mensual') expectedSessions = 20;
+    const fechaTermino = getEndDateStr(selectedDate, expectedSessions);
+
     // El backend concatenará todo. Solo le pasamos lo estructurado.
-    const notasCompletas = `Campo Formativo: ${campoFormativo}\n\nNotas adicionales:\n${notasMaestro}`;
+    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\n\nNotas adicionales:\n${notasMaestro}`;
     
-    submit({ fase, tema, notasMaestro: notasCompletas, metodologia, duracion, hasTEA, schoolGroup });
+    submit({ 
+      fase, 
+      tema, 
+      notasMaestro: notasCompletas, 
+      metodologia, 
+      duracion, 
+      hasTEA, 
+      schoolGroup,
+      fechaInicio: selectedDate,
+      fechaTermino
+    });
   };
 
   return (
@@ -207,13 +226,26 @@ export default function PlannerPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campo Formativo Principal</label>
-          <select value={campoFormativo} onChange={e => setCampoFormativo(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option>Lenguajes</option>
-            <option>Saberes y Pensamiento Científico</option>
-            <option>Ética, Naturaleza y Sociedades</option>
-            <option>De lo Humano y lo Comunitario</option>
-          </select>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campos Formativos</label>
+          <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 max-h-[120px] overflow-y-auto">
+            {['Lenguajes', 'Saberes y Pensamiento Científico', 'Ética, Naturaleza y Sociedades', 'De lo Humano y lo Comunitario'].map(campo => (
+              <label key={campo} className="flex items-center gap-2 cursor-pointer group">
+                <input 
+                  type="checkbox"
+                  checked={camposFormativos.includes(campo)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setCamposFormativos(prev => [...prev, campo]);
+                    } else {
+                      setCamposFormativos(prev => prev.filter(c => c !== campo));
+                    }
+                  }}
+                  className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                />
+                <span className="text-sm text-slate-700 group-hover:text-slate-900">{campo}</span>
+              </label>
+            ))}
+          </div>
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Metodología Sociocrítica</label>
@@ -362,22 +394,14 @@ export default function PlannerPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pl-2 text-sm">
                   <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Contenido:</span>{renderContent(sesion?.contenido)}</div>
                   <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">PDA:</span>{renderContent(sesion?.pda)}</div>
-                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Libros y Escenario:</span>{renderContent(sesion?.librosYEscenario)}</div>
+                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Escenario:</span>{renderContent(sesion?.escenario)}</div>
                   <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Ejes Articuladores:</span>{renderContent(sesion?.ejesArticuladores)}</div>
                 </div>
 
                 <div className="pl-2 space-y-4">
-                  <div className="border-l-2 border-emerald-300 pl-4">
-                    <h5 className="font-bold text-emerald-700 uppercase text-xs mb-1">Inicio</h5>
-                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.secuenciaDidactica?.inicio)}</p>
-                  </div>
                   <div className="border-l-2 border-blue-300 pl-4">
-                    <h5 className="font-bold text-blue-700 uppercase text-xs mb-1">Desarrollo</h5>
-                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.secuenciaDidactica?.desarrollo)}</p>
-                  </div>
-                  <div className="border-l-2 border-amber-300 pl-4">
-                    <h5 className="font-bold text-amber-700 uppercase text-xs mb-1">Cierre</h5>
-                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.secuenciaDidactica?.cierre)}</p>
+                    <h5 className="font-bold text-blue-700 uppercase text-xs mb-1">Fases y Actividades de la Sesión</h5>
+                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.fasesMetodologicas)}</p>
                   </div>
                 </div>
 
