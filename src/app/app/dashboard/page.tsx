@@ -317,6 +317,7 @@ export default function DashboardPage() {
         setNewlyCreatedMaterialId(newMaterial.id);
         setPreviewId(newMaterial.id); // Auto-open preview!
         setMaterialMessage(isEs ? '¡Material generado y guardado en calendario!' : 'Material generated and saved!');
+        router.refresh();
       } else {
         setMaterialMessage(isEs ? 'Error al guardar el material en la nube.' : 'Error saving material to cloud.');
       }

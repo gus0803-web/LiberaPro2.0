@@ -5,6 +5,7 @@ import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
 import { AgendaItem, addAgendaItem, loadSelectedPlanDate, downloadAgendaItem } from '@/lib/agenda';
 import { Download } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const nemPlanningSchema = z.object({
   datosIdentificacion: z.object({
@@ -61,6 +62,7 @@ export default function PlannerPage() {
     return <pre className="whitespace-pre-wrap text-xs mt-1 font-normal">{JSON.stringify(content, null, 2)}</pre>;
   };
 
+  const router = useRouter();
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
   const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes']);
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
@@ -164,6 +166,7 @@ export default function PlannerPage() {
           setSaveMessage('Error parcial al guardar en la nube.');
         }
         setHasSavedPlan(true);
+        router.refresh();
         window.setTimeout(() => setSaveMessage(''), 5000);
       };
       savePlans();
@@ -204,19 +207,19 @@ export default function PlannerPage() {
 
   return (
     <div className="space-y-8">
-      <section className="space-y-2">
-        <h2 className="text-2xl sm:text-4xl font-light text-slate-900 tracking-tight">
+      <section className="space-y-1">
+        <h2 className="text-2xl sm:text-3xl font-light text-slate-900 tracking-tight">
           Estructurador <span className="font-bold text-blue-600">Académico NEM</span>
         </h2>
-        <p className="text-sm sm:text-base text-slate-500 font-light max-w-2xl">
-          Ingresa tus apuntes y contexto. El AI se encargará de darles la estructura oficial, rellenando los vacíos técnicos (PDAs, Ejes) y organizando las sesiones.
+        <p className="text-sm text-slate-500 font-light max-w-2xl">
+          Ingresa tus apuntes y contexto. El AI se encargará de darles la estructura oficial.
         </p>
       </section>
 
-      <form onSubmit={handleGenerate} className="bg-white/60 backdrop-blur-md p-4 sm:p-8 rounded-3xl border border-white/60 shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+      <form onSubmit={handleGenerate} className="bg-white/60 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-white/60 shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fase (Nivel Educativo)</label>
-          <select value={fase} onChange={e => setFase(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+          <select value={fase} onChange={e => setFase(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
             <option>Fase 1: Inicial (Maternal)</option>
             <option>Fase 2: Preescolar (1º a 3º)</option>
             <option>Fase 3: Primaria (1º y 2º)</option>
@@ -227,7 +230,7 @@ export default function PlannerPage() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campos Formativos</label>
-          <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2 max-h-[120px] overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5 max-h-[100px] overflow-y-auto">
             {['Lenguajes', 'Saberes y Pensamiento Científico', 'Ética, Naturaleza y Sociedades', 'De lo Humano y lo Comunitario'].map(campo => (
               <label key={campo} className="flex items-center gap-2 cursor-pointer group">
                 <input 
@@ -249,7 +252,7 @@ export default function PlannerPage() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Metodología Sociocrítica</label>
-          <select value={metodologia} onChange={e => setMetodologia(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+          <select value={metodologia} onChange={e => setMetodologia(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
             <option>Aprendizaje Basado en Proyectos Comunitarios</option>
             <option>Aprendizaje Basado en Indagación (STEAM)</option>
             <option>Aprendizaje Basado en Problemas (ABP)</option>
@@ -259,17 +262,17 @@ export default function PlannerPage() {
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo</label>
           {schools.length > 0 ? (
-            <select value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
+            <select value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
               <option value="">No especificado</option>
               {schools.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           ) : (
-            <input type="text" value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} placeholder="Ej. Esc. Patria - 1º A" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all" />
+            <input type="text" value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} placeholder="Ej. Esc. Patria - 1º A" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all" />
           )}
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Duración</label>
-          <select value={duracion} onChange={e => setDuracion(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
+          <select value={duracion} onChange={e => setDuracion(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
             <option>Semanal</option>
             <option>Quincenal</option>
             <option>Mensual</option>
@@ -281,12 +284,12 @@ export default function PlannerPage() {
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
           />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema o Proyecto</label>
-          <input type="text" required value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. El ciclo del agua en la comunidad" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" />
+          <input type="text" required value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. El ciclo del agua en la comunidad" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" />
         </div>
         <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notas, contexto e ideas del maestro</label>
@@ -296,7 +299,7 @@ export default function PlannerPage() {
             value={notasMaestro}
             onChange={e => setNotasMaestro(e.target.value)}
             placeholder="Escribe aquí de qué trata la clase, problemáticas de tu grupo, actividades que ya tienes pensadas, o cualquier idea suelta..."
-            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors resize-y placeholder:text-slate-400"
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors resize-y placeholder:text-slate-400"
           />
         </div>
         <div className="sm:col-span-2">
