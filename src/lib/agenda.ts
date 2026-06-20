@@ -289,9 +289,21 @@ export function downloadAgendaItem(item: AgendaItem) {
     });
 
     doc = new Document({
-      sections: [{
-        properties: {},
-        children: sections,
+      sections: [{ 
+        properties: {
+          page: {
+            size: {
+              orientation: "landscape",
+            },
+            margin: {
+              top: 720,
+              right: 720,
+              bottom: 720,
+              left: 720,
+            },
+          },
+        },
+        children: sections 
       }]
     });
 
