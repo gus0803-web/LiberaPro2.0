@@ -63,6 +63,21 @@ export default function PlannerPage() {
   };
 
   const router = useRouter();
+  const [docenteName, setDocenteName] = useState('N/A');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+        if (profile?.full_name) setDocenteName(profile.full_name);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
   const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes']);
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
@@ -148,7 +163,11 @@ export default function PlannerPage() {
               duracion,
               hasTEA,
               object: {
-                datosIdentificacion: object.datosIdentificacion,
+                datosIdentificacion: {
+                  ...object.datosIdentificacion,
+                  nombreDocente: docenteName || object.datosIdentificacion?.nombreDocente || 'N/A',
+                  periodoAplicacion: `Del ${selectedDate} al ${getEndDateStr(selectedDate, object.sesiones?.length || 1)}`
+                },
                 elementosCurriculares: object.elementosCurriculares,
                 sesiones: sesionData ? [sesionData] : []
               },
@@ -230,7 +249,7 @@ export default function PlannerPage() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campos Formativos</label>
-          <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5 max-h-[100px] overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5 overflow-y-auto">
             {['Lenguajes', 'Saberes y Pensamiento Científico', 'Ética, Naturaleza y Sociedades', 'De lo Humano y lo Comunitario'].map(campo => (
               <label key={campo} className="flex items-center gap-2 cursor-pointer group">
                 <input 
