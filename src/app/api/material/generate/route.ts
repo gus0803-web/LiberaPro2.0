@@ -1,6 +1,7 @@
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { FULL_AI_BRAIN } from '@/lib/nem-brain';
+import { createClient } from '@/lib/supabase/server';
 
 export const maxDuration = 60; // Permite que la función se ejecute por más tiempo (Vercel Hobby = 10s o 60s en Pro)
 
@@ -46,10 +47,27 @@ DESCRIPCIÓN DE LA CLASE: ${planDescription}
 DATOS DEL DÍA: ${JSON.stringify(planData)}
 `;
 
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
     const { text } = await generateText({
       model: openai('gpt-4o'),
       prompt: prompt,
     });
+
+    // Descontar crédito
+    try {
+      const { data: profile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+      if (profile && typeof profile.credits === 'number') {
+        await supabase.from('profiles').update({ credits: Math.max(0, profile.credits - 1) }).eq('id', user.id);
+      }
+    } catch (e) {
+      console.error('Error decrementing credits:', e);
+    }
 
     return new Response(JSON.stringify({ content: text }), {
       status: 200,

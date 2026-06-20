@@ -213,6 +213,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Info Table
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      columnWidths: [2000, 3000, 2000, 3000],
       rows: [
         new TableRow({
           children: [
@@ -237,6 +238,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Curricular Elements Table
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      columnWidths: [3000, 7000],
       rows: [
         new TableRow({ children: [createCell('Campo Formativo:', true, "e0f2fe"), createCell(renderValue(elems.camposFormativos))] }),
         new TableRow({ children: [createCell('Metodología:', true, "e0f2fe"), createCell(renderValue(elems.metodologia))] }),
@@ -253,6 +255,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       sections.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
+        columnWidths: [3000, 7000],
         rows: [
           new TableRow({ children: [createCell('Contenido', true, "f1f5f9"), createCell(renderValue(sesion.contenido))] }),
           new TableRow({ children: [createCell('PDA', true, "f1f5f9"), createCell(renderValue(sesion.pda))] }),
@@ -271,11 +274,12 @@ export function downloadAgendaItem(item: AgendaItem) {
         seqRows.push(new TableRow({ children: [createCell('ADECUACIONES TEA', true, "fffbeb"), createCell(renderValue(sesion.adecuacionesTEA))] }));
       }
 
-      sections.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: seqRows }));
+      sections.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, columnWidths: [5000, 5000], rows: seqRows }));
       sections.push(new Paragraph({ spacing: { after: 100 } }));
 
       sections.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
+        columnWidths: [3000, 7000],
         rows: [
           new TableRow({ children: [createCell('Recursos y Materiales', true, "f1f5f9"), createCell(renderValue(sesion.recursosYMateriales))] }),
           new TableRow({ children: [createCell('Evaluación Formativa', true, "f1f5f9"), createCell(renderValue(sesion.evaluacionFormativa))] }),
