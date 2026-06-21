@@ -17,17 +17,18 @@ const nemPlanningSchema = z.object({
   elementosCurriculares: z.object({
     camposFormativos: z.string(),
     metodologia: z.string(),
-    problematica: z.string()
-  }),
-  sesiones: z.array(z.object({
-    contenido: z.string(),
+    problematica: z.string(),
+    contenidos: z.string(),
     pda: z.string(),
-    escenario: z.string(),
     ejesArticuladores: z.string(),
-    fasesMetodologicas: z.string(),
-    adecuacionesTEA: z.string(),
+    escenario: z.string()
+  }),
+  fases: z.array(z.object({
+    titulo: z.string(),
+    actividades: z.string(),
     recursosYMateriales: z.string(),
-    evaluacionFormativa: z.string()
+    evaluacionFormativa: z.string(),
+    adecuacionesTEA: z.string()
   }))
 });
 
@@ -140,21 +141,31 @@ export default function PlannerPage() {
   }, [selectedDate]);
 
   useEffect(() => {
-    if (object?.sesiones && !isLoading && selectedDate && !hasSavedPlan) {
-      const daysCount = object.sesiones.length;
-      if (daysCount === 0) return;
-
-      const datesToCover = getBusinessDays(selectedDate, daysCount);
+    if (object?.fases && !isLoading && selectedDate && !hasSavedPlan) {
+      let expectedSessions = 5;
+      if (duracion === 'Quincenal') expectedSessions = 10;
+      if (duracion === 'Mensual') expectedSessions = 20;
+      
+      const datesToCover = getBusinessDays(selectedDate, expectedSessions);
 
       const savePlans = async () => {
+        const fullPlanObject = {
+          datosIdentificacion: {
+            ...object.datosIdentificacion,
+            nombreDocente: docenteName || object.datosIdentificacion?.nombreDocente || 'N/A',
+            periodoAplicacion: `Del ${selectedDate} al ${getEndDateStr(selectedDate, expectedSessions)}`
+          },
+          elementosCurriculares: object.elementosCurriculares,
+          fases: object.fases
+        };
+
         const promises = datesToCover.map((dateStr, index) => {
-          const sesionData = object.sesiones?.[index] || null;
           const newPlan: AgendaItem = {
             id: `${Date.now()}-${dateStr}-${index}`,
             date: dateStr,
             type: 'planeacion',
             title: tema || 'Planeación NEM',
-            description: `Sesión ${index + 1}: Fase: ${fase} - ${metodologia}`,
+            description: `Planeación Proyecto: Fase ${fase} - ${metodologia}`,
             metadata: {
               fase,
               tema,
@@ -162,15 +173,7 @@ export default function PlannerPage() {
               schoolGroup,
               duracion,
               hasTEA,
-              object: {
-                datosIdentificacion: {
-                  ...object.datosIdentificacion,
-                  nombreDocente: docenteName || object.datosIdentificacion?.nombreDocente || 'N/A',
-                  periodoAplicacion: `Del ${selectedDate} al ${getEndDateStr(selectedDate, object.sesiones?.length || 1)}`
-                },
-                elementosCurriculares: object.elementosCurriculares,
-                sesiones: sesionData ? [sesionData] : []
-              },
+              object: fullPlanObject,
             },
             createdAt: new Date().toISOString(),
           };
@@ -395,6 +398,7 @@ export default function PlannerPage() {
             <div className="space-y-3 text-sm">
               <p><strong className="text-blue-800">Campos Formativos:</strong> {renderContent(object.elementosCurriculares.camposFormativos)}</p>
               <p><strong className="text-blue-800">Metodología:</strong> {renderContent(object.elementosCurriculares.metodologia)}</p>
+
               <div className="mt-2 bg-white p-3 rounded-xl border border-blue-100">
                 <strong className="text-blue-800 block mb-1">Problemática:</strong>
                 <span className="text-slate-700">{renderContent(object.elementosCurriculares.problematica)}</span>
@@ -404,38 +408,49 @@ export default function PlannerPage() {
         </section>
       )}
 
-      {object?.sesiones && object.sesiones.length > 0 && (
+      {object?.fases && object.fases.length > 0 && (
         <section className="space-y-6 pt-6 border-t border-slate-200">
-          <h3 className="text-2xl font-bold text-slate-900 mb-4">Secuencias Didácticas (Sesiones)</h3>
+          <h3 className="text-2xl font-bold text-slate-900 mb-4">Fases Metodológicas y Actividades</h3>
           <div className="space-y-8">
-            {object.sesiones.map((sesion, idx) => (
-              <div key={idx} className="bg-white/80 rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
-                <h4 className="text-xl font-bold text-blue-700 mb-4 pl-2 border-b pb-2">Sesión {idx + 1}</h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pl-2 text-sm">
-                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Contenido:</span>{renderContent(sesion?.contenido)}</div>
-                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">PDA:</span>{renderContent(sesion?.pda)}</div>
-                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Escenario:</span>{renderContent(sesion?.escenario)}</div>
-                  <div className="bg-slate-50 p-3 rounded-lg"><span className="font-semibold text-slate-700 block mb-1">Ejes Articuladores:</span>{renderContent(sesion?.ejesArticuladores)}</div>
+            {object.fases.map((faseItem, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+                  <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <div className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                      {idx + 1}
+                    </div>
+                    {faseItem?.titulo || `Fase ${idx + 1}`}
+                  </h4>
                 </div>
-
-                <div className="pl-2 space-y-4">
-                  <div className="border-l-2 border-blue-300 pl-4">
-                    <h5 className="font-bold text-blue-700 uppercase text-xs mb-1">Fases y Actividades de la Sesión</h5>
-                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{renderContent(sesion?.fasesMetodologicas)}</p>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h5 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Actividades de Aprendizaje</h5>
+                    {renderContent(faseItem?.actividades)}
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pl-2 text-sm border-t pt-4">
-                  <div><span className="font-bold text-slate-700 block mb-1">Recursos y Materiales:</span><span className="text-slate-600">{renderContent(sesion?.recursosYMateriales)}</span></div>
-                  <div><span className="font-bold text-slate-700 block mb-1">Evaluación Formativa:</span><span className="text-slate-600">{renderContent(sesion?.evaluacionFormativa)}</span></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                      <h5 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Recursos</h5>
+                      {renderContent(faseItem?.recursosYMateriales)}
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                      <h5 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Evaluación Formativa</h5>
+                      {renderContent(faseItem?.evaluacionFormativa)}
+                    </div>
+                  </div>
+                  {faseItem?.adecuacionesTEA && faseItem.adecuacionesTEA !== 'N/A' && (
+                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                      <h5 className="text-sm font-semibold text-amber-800 uppercase tracking-wider mb-2">Adecuaciones TEA</h5>
+                      {renderContent(faseItem?.adecuacionesTEA)}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </section>
       )}
+
+
 
       {object && (
         <div className="pt-8 pb-4 flex justify-center sm:justify-end">

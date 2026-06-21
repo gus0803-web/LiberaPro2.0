@@ -186,11 +186,11 @@ export function downloadAgendaItem(item: AgendaItem) {
     const obj = item.metadata.object;
     const datos = obj.datosIdentificacion;
     const elems = obj.elementosCurriculares;
-    const sesiones = Array.isArray(obj.sesiones) ? obj.sesiones : [obj.sesiones];
+    const fases = Array.isArray(obj.fases) ? obj.fases : (Array.isArray(obj.sesiones) ? obj.sesiones : []);
     
-    const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1) => {
+    const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1, textColor?: string) => {
       const paragraphs = String(text).split('\n').map(line => 
-        new Paragraph({ children: [new TextRun({ text: line, bold: isHeader, size: 22 })] })
+        new Paragraph({ children: [new TextRun({ text: line, bold: isHeader, size: 22, color: textColor })] })
       );
       return new TableCell({
         columnSpan: colSpan,
@@ -213,80 +213,114 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Info Table
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [1800, 2700, 1800, 2700],
+      columnWidths: [2250, 2250, 2250, 2250],
       rows: [
         new TableRow({
           children: [
-            createCell('Docente:', true, "f8fafc"),
+            createCell('Nombre del Docente:', true, "f8fafc"),
             createCell(renderValue(datos.nombreDocente)),
-            createCell('Fase:', true, "f8fafc"),
-            createCell(renderValue(datos.fase)),
+            createCell('Grado y Grupo:', true, "f8fafc"),
+            createCell(item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)),
           ]
         }),
         new TableRow({
           children: [
-            createCell('Grado y Grupo:', true, "f8fafc"),
-            createCell(item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)),
-            createCell('Periodo:', true, "f8fafc"),
+            createCell('Fase:', true, "f8fafc"),
+            createCell(renderValue(datos.fase)),
+            createCell('Periodo de aplicación:', true, "f8fafc"),
             createCell(renderValue(datos.periodoAplicacion)),
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCell('Campo Formativo:', true, "e0f2fe"),
+            createCell(renderValue(elems.camposFormativos), false, "ffffff", 3),
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCell('Metodología:', true, "e0f2fe"),
+            createCell(renderValue(elems.metodologia), false, "ffffff", 3),
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCell('Problemática:', true, "e0f2fe"),
+            createCell(renderValue(elems.problematica), false, "ffffff", 3),
           ]
         })
       ]
     }));
-    sections.push(new Paragraph({ spacing: { after: 200 } }));
+    sections.push(new Paragraph({ spacing: { after: 300 } }));
 
-    // Curricular Elements Table
+    // Curriculum Table
+    const contenidoText = elems.contenidos || (fases[0]?.contenido) || 'N/A';
+    const pdaText = elems.pda || (fases[0]?.pda) || 'N/A';
+    const ejesText = elems.ejesArticuladores || (fases[0]?.ejesArticuladores) || 'N/A';
+    const escenarioText = elems.escenario || (fases[0]?.escenario) || 'N/A';
+
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [2700, 6300],
+      columnWidths: [2250, 2250, 2250, 2250],
       rows: [
-        new TableRow({ children: [createCell('Campo Formativo:', true, "e0f2fe"), createCell(renderValue(elems.camposFormativos))] }),
-        new TableRow({ children: [createCell('Metodología:', true, "e0f2fe"), createCell(renderValue(elems.metodologia))] }),
-        new TableRow({ children: [createCell('Problemática:', true, "e0f2fe"), createCell(renderValue(elems.problematica))] }),
+        new TableRow({
+          children: [
+            createCell('CONTENIDO(S)', true, "1e3a8a", 1, "ffffff"),
+            createCell('PROCESOS DE DESARROLLO DE APRENDIZAJE (PDA)', true, "1e3a8a", 1, "ffffff"),
+            createCell('EJES ARTICULADORES', true, "1e3a8a", 1, "ffffff"),
+            createCell('ESCENARIO', true, "1e3a8a", 1, "ffffff")
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCell(renderValue(contenidoText)),
+            createCell(renderValue(pdaText)),
+            createCell(renderValue(ejesText)),
+            createCell(renderValue(escenarioText))
+          ]
+        })
       ]
     }));
     sections.push(new Paragraph({ spacing: { after: 300 } }));
 
-    sesiones.forEach((sesion: any, idx: number) => {
-      sections.push(new Paragraph({
-        children: [new TextRun({ text: `Sesión ${idx + 1}`, bold: true, size: 28, color: "1e3a8a" })],
-        spacing: { before: 200, after: 100 }
-      }));
+    // Activities Table
+    const actRows = [
+      new TableRow({
+        children: [
+          createCell('ACTIVIDADES DE APRENDIZAJE', true, "10b981", 1, "ffffff"),
+          createCell('RECURSOS MATERIALES', true, "10b981", 1, "ffffff"),
+          createCell('EVALUACIÓN FORMATIVA', true, "10b981", 1, "ffffff")
+        ]
+      })
+    ];
 
-      sections.push(new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        columnWidths: [2700, 6300],
-        rows: [
-          new TableRow({ children: [createCell('Contenido', true, "f1f5f9"), createCell(renderValue(sesion.contenido))] }),
-          new TableRow({ children: [createCell('PDA', true, "f1f5f9"), createCell(renderValue(sesion.pda))] }),
-          new TableRow({ children: [createCell('Ejes Articuladores', true, "f1f5f9"), createCell(renderValue(sesion.ejesArticuladores))] }),
-          new TableRow({ children: [createCell('Escenario', true, "f1f5f9"), createCell(renderValue(sesion.escenario))] }),
+    fases.forEach((faseObj: any, idx: number) => {
+      const titulo = faseObj.titulo || `Fase/Sesión ${idx + 1}`;
+      const actividades = faseObj.actividades || faseObj.fasesMetodologicas || 'N/A';
+      const actCellContent = `[${titulo}]\n\n${actividades}`;
+      
+      actRows.push(new TableRow({
+        children: [
+          createCell(renderValue(actCellContent)),
+          createCell(renderValue(faseObj.recursosYMateriales || faseObj.recursos || 'N/A')),
+          createCell(renderValue(faseObj.evaluacionFormativa || faseObj.evaluacion || 'N/A'))
         ]
       }));
-      sections.push(new Paragraph({ spacing: { after: 100 } }));
 
-      const seqRows = [
-        new TableRow({ children: [new TableCell({ columnSpan: 2, shading: { fill: "dbeafe" }, children: [new Paragraph({ children: [new TextRun({ text: "FASES Y ACTIVIDADES DE LA SESIÓN", bold: true })], alignment: AlignmentType.CENTER })] })] }),
-        new TableRow({ children: [createCell(renderValue(sesion.fasesMetodologicas), false, undefined, 2)] }),
-      ];
-
-      if (sesion.adecuacionesTEA && sesion.adecuacionesTEA !== 'N/A') {
-        seqRows.push(new TableRow({ children: [createCell('ADECUACIONES TEA', true, "fffbeb"), createCell(renderValue(sesion.adecuacionesTEA))] }));
+      if (faseObj.adecuacionesTEA && faseObj.adecuacionesTEA !== 'N/A') {
+        actRows.push(new TableRow({
+          children: [
+            createCell('ADECUACIONES TEA:\n' + renderValue(faseObj.adecuacionesTEA), false, "fffbeb", 3)
+          ]
+        }));
       }
-
-      sections.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, columnWidths: [4500, 4500], rows: seqRows }));
-      sections.push(new Paragraph({ spacing: { after: 100 } }));
-
-      sections.push(new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        columnWidths: [2700, 6300],
-        rows: [
-          new TableRow({ children: [createCell('Recursos y Materiales', true, "f1f5f9"), createCell(renderValue(sesion.recursosYMateriales))] }),
-          new TableRow({ children: [createCell('Evaluación Formativa', true, "f1f5f9"), createCell(renderValue(sesion.evaluacionFormativa))] }),
-        ]
-      }));
-      sections.push(new Paragraph({ spacing: { after: 300 } }));
     });
+
+    sections.push(new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      columnWidths: [4500, 2250, 2250],
+      rows: actRows
+    }));
 
     doc = new Document({
       sections: [{ 
