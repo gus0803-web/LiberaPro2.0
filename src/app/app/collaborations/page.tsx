@@ -12,11 +12,11 @@ import { Users, MapPin, Search } from 'lucide-react';
 // { id: 6, name: 'Nombre Apellido', state: 'Estado', phase: 'Fase X', method: 'Nombre Metodología' },
 // ==========================================
 const mockTeachers = [
-  { id: 1, name: 'María García', state: 'Jalisco', phase: 'Fase 4', method: 'Proyectos Comunitarios' },
-  { id: 2, name: 'Juan Pérez', state: 'Nuevo León', phase: 'Fase 5', method: 'STEAM' },
-  { id: 3, name: 'Ana López', state: 'CDMX', phase: 'Fase 3', method: 'ABP' },
-  { id: 4, name: 'Carlos Ruiz', state: 'Jalisco', phase: 'Fase 6', method: 'Proyectos Comunitarios' },
-  { id: 5, name: 'Laura Torres', state: 'Yucatán', phase: 'Fase 2', method: 'Aprendizaje de Servicio' },
+  { id: 1, name: 'Erendira Mendez Macias', state: 'Aguascalientes', phase: 'Fase 4', method: 'Proyectos Comunitarios' },
+  { id: 2, name: 'Erika Mendez Macias', state: 'Aguascalientes', phase: 'Fase 5', method: 'STEAM' },
+  { id: 3, name: 'Alejandra Mendez Macias', state: 'Aguascalientes', phase: 'Fase 5', method: 'Diseno' },
+  { id: 4, name: 'TBD', state: 'Jalisco', phase: 'Fase 6', method: 'Proyectos Comunitarios' },
+  { id: 5, name: 'Gustavo Arellano', state: 'CDMX', phase: 'CEO', method: 'Director' },
   // ⬇️ PEGA TUS NUEVOS MAESTROS AQUÍ ABAJO ⬇️
   
 ];
