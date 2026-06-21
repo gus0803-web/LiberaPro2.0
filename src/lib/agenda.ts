@@ -174,10 +174,21 @@ export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
   const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, HeadingLevel, AlignmentType } = require('docx');
   
+  const stripMarkdown = (text: string) => {
+    return text
+      .replace(/\\*\\*/g, '') // remove bold **
+      .replace(/__/g, '') // remove bold __
+      .replace(/\\*/g, '') // remove italic *
+      .replace(/#/g, '') // remove headings #
+      .replace(/---/g, '') // remove horizontal rules
+      .replace(/>/g, '') // remove blockquotes
+      .replace(/`/g, ''); // remove backticks
+  };
+
   const renderValue = (val: any) => {
     if (!val) return 'N/A';
-    if (typeof val === 'string') return val;
-    return JSON.stringify(val);
+    if (typeof val === 'string') return stripMarkdown(val);
+    return stripMarkdown(JSON.stringify(val));
   };
 
   let doc;

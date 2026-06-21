@@ -447,7 +447,17 @@ export default function PlannerPage() {
                 type: 'planeacion',
                 title: tema || 'Planeación Completa',
                 description: `Documento Maestro: ${fase} - ${metodologia}`,
-                metadata: { object: object, selectedDate },
+                metadata: { 
+                  object: {
+                    ...object,
+                    datosIdentificacion: {
+                      ...(object.datosIdentificacion || {}),
+                      nombreDocente: docenteName,
+                      gradoYGrupo: schoolGroup || object.datosIdentificacion?.gradoYGrupo
+                    }
+                  }, 
+                  selectedDate 
+                },
                 createdAt: new Date().toISOString()
               };
               downloadAgendaItem(masterItem);
