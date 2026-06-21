@@ -102,7 +102,8 @@ REGLAS DE ORO:
 3. ESTRUCTURA POR FASES: En lugar de redactar día por día (sesiones), vas a agrupar la planeación utilizando ESTRICTAMENTE las siguientes fases de la metodología ${metodologia}:
 ${fasesEstrictas}
 4. ASIGNACIÓN DE DÍAS: Para cada fase, asigna en el título los días que le corresponden (ej. "Días 1-3", "Días 4-7") de modo que entre todas las fases cubran los ${expectedSessions} días del periodo solicitado.
-5. EXTENSIÓN MASIVA (6 HORAS DIARIAS): Cada fase debe detallar TODO lo que se hará en los días asignados. Incluye múltiples actividades, dinámicas, asambleas, rutinas, pausas activas, y explicaciones exhaustivas para cubrir 6 horas de clase por día. ¡NO RESUMAS! 
+5. EXTENSIÓN MASIVA (6 HORAS DIARIAS): Cada fase debe detallar TODO lo que se hará en los días asignados. Incluye múltiples actividades, dinámicas, asambleas, rutinas, pausas activas, y explicaciones exhaustivas para cubrir 6 horas de clase por día. ¡NO RESUMAS!
+6. PROGRAMA SINTÉTICO (MUY IMPORTANTE): Tus 'contenidos' y 'PDA' DEBEN ser extraídos o alineados estrictamente al Programa Sintético Oficial (Acuerdo 08/08/23 de la SEP) correspondiente a la Fase indicada. No inventes contenidos.
 `;
 
 const userPrompt = `
@@ -116,6 +117,34 @@ ${hasTEA ? 'ATENCIÓN: El maestro indicó alumnos con TEA. DEBES incluir adaptac
 
 Notas, contexto e ideas del maestro: "${notasMaestro}"
 `;
+
+    // Validar Créditos y Reseteo Mensual
+    if (user) {
+      try {
+        const { data: profile } = await supabase.from('profiles').select('credits, last_credit_reset').eq('id', user.id).single();
+        if (profile) {
+          let currentCredits = profile.credits ?? 120;
+          let lastReset = profile.last_credit_reset ? new Date(profile.last_credit_reset) : new Date(0);
+          const now = new Date();
+
+          // Check if it's a new month (different month or year)
+          if (lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
+            currentCredits = 120;
+            // Reset to 120
+            await supabase.from('profiles').update({ 
+              credits: currentCredits,
+              last_credit_reset: now.toISOString()
+            }).eq('id', user.id);
+          }
+
+          if (currentCredits <= 0) {
+            return new Response(JSON.stringify({ error: 'Se agotaron tus créditos mensuales. Tus créditos se reiniciarán el primer día del próximo mes.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+          }
+        }
+      } catch (err) {
+        console.error('Error verificando créditos:', err);
+      }
+    }
 
     const result = await streamObject({
       model: openai('gpt-4o'),

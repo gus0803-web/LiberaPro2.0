@@ -54,6 +54,32 @@ DATOS DEL DÍA: ${JSON.stringify(planData)}
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Validar Créditos y Reseteo Mensual
+    try {
+      const { data: profile } = await supabase.from('profiles').select('credits, last_credit_reset').eq('id', user.id).single();
+      if (profile) {
+        let currentCredits = profile.credits ?? 120;
+        let lastReset = profile.last_credit_reset ? new Date(profile.last_credit_reset) : new Date(0);
+        const now = new Date();
+
+        // Check if it's a new month (different month or year)
+        if (lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
+          currentCredits = 120;
+          // Reset to 120
+          await supabase.from('profiles').update({ 
+            credits: currentCredits,
+            last_credit_reset: now.toISOString()
+          }).eq('id', user.id);
+        }
+
+        if (currentCredits <= 0) {
+          return new Response(JSON.stringify({ error: 'Se agotaron tus créditos mensuales. Tus créditos se reiniciarán el primer día del próximo mes.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+        }
+      }
+    } catch (err) {
+      console.error('Error verificando créditos:', err);
+    }
+
     const { text } = await generateText({
       model: openai('gpt-4o'),
       prompt: prompt,

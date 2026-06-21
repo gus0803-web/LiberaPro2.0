@@ -65,18 +65,19 @@ export default function PlannerPage() {
 
   const router = useRouter();
   const [docenteName, setDocenteName] = useState('N/A');
+  const [savedSchools, setSavedSchools] = useState<{school: string, group: string}[]>([]);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
-        if (profile?.full_name) setDocenteName(profile.full_name);
-      }
-    };
-    fetchProfile();
+    const savedName = localStorage.getItem('liberapro_teacher_name');
+    if (savedName) setDocenteName(savedName);
+
+    const schoolsRaw = localStorage.getItem('liberapro_schools');
+    if (schoolsRaw) {
+      try {
+        const parsed = JSON.parse(schoolsRaw).filter((s: any) => s.school || s.group);
+        setSavedSchools(parsed);
+      } catch(e) {}
+    }
   }, []);
 
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
@@ -88,27 +89,7 @@ export default function PlannerPage() {
   const [duracion, setDuracion] = useState('Semanal');
   const [hasTEA, setHasTEA] = useState(false);
   const [schoolGroup, setSchoolGroup] = useState('');
-  const [schools, setSchools] = useState<string[]>([]);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('liberapro_schools');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const formatted = parsed
-            .filter(p => p.school || p.group)
-            .map(p => `${p.school || ''} ${p.group ? `- ${p.group}` : ''}`.trim());
-          if (formatted.length > 0) {
-            setSchools(formatted);
-            setSchoolGroup(formatted[0]);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Could not parse schools from local storage', e);
-    }
-  }, []);
   const [selectedDate, setSelectedDate] = useState('');
   
   const [saveMessage, setSaveMessage] = useState('');
@@ -283,10 +264,13 @@ export default function PlannerPage() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo</label>
-          {schools.length > 0 ? (
+          {savedSchools.length > 0 ? (
             <select value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
               <option value="">No especificado</option>
-              {schools.map(s => <option key={s} value={s}>{s}</option>)}
+              {savedSchools.map((s, idx) => {
+                const text = `${s.school || ''} ${s.group ? `- ${s.group}` : ''}`.trim();
+                return <option key={idx} value={text}>{text}</option>;
+              })}
             </select>
           ) : (
             <input type="text" value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} placeholder="Ej. Esc. Patria - 1º A" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all" />

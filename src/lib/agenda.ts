@@ -213,7 +213,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Info Table
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [2250, 2250, 2250, 2250],
+      columnWidths: [4000, 4000, 4000, 4118],
       rows: [
         new TableRow({
           children: [
@@ -261,7 +261,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [2250, 2250, 2250, 2250],
+      columnWidths: [4000, 4000, 4000, 4118],
       rows: [
         new TableRow({
           children: [
@@ -318,7 +318,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
     sections.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [4500, 2250, 2250],
+      columnWidths: [8118, 4000, 4000],
       rows: actRows
     }));
 
@@ -330,10 +330,10 @@ export function downloadAgendaItem(item: AgendaItem) {
               orientation: "landscape",
             },
             margin: {
-              top: 720,
-              right: 720,
-              bottom: 720,
-              left: 720,
+              top: 360,
+              right: 360,
+              bottom: 360,
+              left: 360,
             },
           },
         },
