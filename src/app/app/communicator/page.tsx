@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { MessageSquare, Send, Plus, Trash2, CheckCircle2, Users, Bell, Package, BookOpen, Star, Filter, ShieldCheck, Loader2, KeyRound, Copy, Check, Print } from 'lucide-react';
+import { MessageSquare, Send, Plus, Trash2, CheckCircle2, Users, Bell, Package, BookOpen, Star, Filter, ShieldCheck, Loader2, KeyRound, Copy, Check, Printer } from 'lucide-react';
 
 interface StudentContact {
   id: string;
