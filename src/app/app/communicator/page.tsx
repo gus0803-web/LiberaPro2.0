@@ -27,8 +27,12 @@ export default function CommunicatorPage() {
   const [copied, setCopied] = useState(false);
   const [teacherName, setTeacherName] = useState('Profesor de Grupo');
   const [schoolName, setSchoolName] = useState('Escuela Primaria');
+  const [groupWhatsappLink, setGroupWhatsappLink] = useState('');
 
   useEffect(() => {
+    const savedGroupLink = localStorage.getItem('liberapro_group_whatsapp_link');
+    if (savedGroupLink) setGroupWhatsappLink(savedGroupLink);
+
     const savedContacts = localStorage.getItem('liberapro_contacts');
     if (savedContacts) {
       try {
@@ -230,6 +234,26 @@ export default function CommunicatorPage() {
               />
             </div>
 
+            {/* Configuración Enlace de Grupo (Opcional) */}
+            <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 space-y-2">
+              <label className="block text-xs font-bold text-emerald-900">
+                💬 Enlace del Grupo de WhatsApp del Salón (Opcional - Envío sin pedir teléfonos):
+              </label>
+              <input
+                type="url"
+                placeholder="Ej. https://chat.whatsapp.com/TuCodigoDeGrupo"
+                value={groupWhatsappLink}
+                onChange={(e) => {
+                  setGroupWhatsappLink(e.target.value);
+                  localStorage.setItem('liberapro_group_whatsapp_link', e.target.value);
+                }}
+                className="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-400"
+              />
+              <p className="text-[11px] text-emerald-700 font-medium">
+                💡 <strong>¿No quieres registrar números de teléfono?</strong> Guarda aquí el enlace de tu grupo de WhatsApp. Podrás abrir directamente el chat de tu grupo con el aviso copiado al portapapeles.
+              </p>
+            </div>
+
             {/* Vista Previa del Mensaje Formatado WhatsApp */}
             <div className="mt-4 bg-emerald-950 text-emerald-100 p-4 rounded-2xl border border-emerald-800 space-y-2">
               <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Vista Previa de Formato WhatsApp:</span>
@@ -246,8 +270,22 @@ export default function CommunicatorPage() {
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 text-sm transition-all shadow-md"
               >
                 {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                {copied ? '¡Copiado para WhatsApp!' : 'Copiar Comunicado Grupal'}
+                {copied ? '¡Copiado al Portapapeles!' : 'Copiar Comunicado Grupal'}
               </button>
+
+              {groupWhatsappLink && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCopyGroupMessage();
+                    window.open(groupWhatsappLink, '_blank');
+                  }}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 text-sm transition-all shadow-md"
+                >
+                  <Send className="w-5 h-5 text-emerald-400" />
+                  Copiar y Abrir Grupo de WhatsApp
+                </button>
+              )}
             </div>
 
           </div>
