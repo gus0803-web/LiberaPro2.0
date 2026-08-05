@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Send, Plus, Trash2, Copy, Check, Users, User, Bell, Package, BookOpen, Star, Phone } from 'lucide-react';
+import { MessageSquare, Send, Plus, Trash2, CheckCircle2, Users, Bell, Package, BookOpen, Star, Phone, Filter, ShieldCheck, Loader2 } from 'lucide-react';
 
 interface Contact {
   id: string;
@@ -18,31 +18,32 @@ export default function CommunicatorPage() {
   const [phone, setPhone] = useState('');
   const [group, setGroup] = useState('2º A');
 
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>('Todos');
+
   const [category, setCategory] = useState<'recordatorio' | 'materiales' | 'tareas' | 'actividades'>('recordatorio');
   const [noticeTitle, setNoticeTitle] = useState('');
   const [noticeDetails, setNoticeDetails] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  const [selectedContactId, setSelectedContactId] = useState<string>('');
-  const [copied, setCopied] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [sendSuccessMessage, setSendSuccessMessage] = useState('');
+  const [sendError, setSendError] = useState('');
+
   const [teacherName, setTeacherName] = useState('Profesor de Grupo');
   const [schoolName, setSchoolName] = useState('Escuela Primaria');
-  const [groupWhatsappLink, setGroupWhatsappLink] = useState('');
 
   useEffect(() => {
-    const savedGroupLink = localStorage.getItem('liberapro_group_whatsapp_link');
-    if (savedGroupLink) setGroupWhatsappLink(savedGroupLink);
-
     const savedContacts = localStorage.getItem('liberapro_contacts');
     if (savedContacts) {
       try {
-        setContacts(JSON.parse(savedContacts));
+        const parsed = JSON.parse(savedContacts);
+        setContacts(parsed);
       } catch (e) {}
     } else {
-      // Contactos de demostración
       const demoContacts: Contact[] = [
         { id: '1', studentName: 'Mateo González', parentName: 'Sra. Carmen González', phone: '5215512345678', group: '2º A' },
-        { id: '2', studentName: 'Sofia Hernández', parentName: 'Sr. Roberto Hernández', phone: '5215587654321', group: '2º A' }
+        { id: '2', studentName: 'Sofia Hernández', parentName: 'Sr. Roberto Hernández', phone: '5215587654321', group: '2º A' },
+        { id: '3', studentName: 'Lucas Morales', parentName: 'Sra. Patricia Morales', phone: '5215599887766', group: '3º B' }
       ];
       setContacts(demoContacts);
       localStorage.setItem('liberapro_contacts', JSON.stringify(demoContacts));
@@ -69,7 +70,6 @@ export default function CommunicatorPage() {
     e.preventDefault();
     if (!studentName || !phone) return;
 
-    // Normalizar número de teléfono (quitar espacios o guiones)
     let cleanPhone = phone.replace(/\D/g, '');
     if (!cleanPhone.startsWith('52') && cleanPhone.length === 10) {
       cleanPhone = `521${cleanPhone}`;
@@ -96,15 +96,25 @@ export default function CommunicatorPage() {
     saveContactsToStorage(updated);
   };
 
+  // Obtener lista única de grupos para el filtro
+  const availableGroups = Array.from(new Set(contacts.map(c => c.group || 'General')));
+
+  // Contactos filtrados según el grupo seleccionado
+  const filteredContacts = selectedGroupFilter === 'Todos'
+    ? contacts
+    : contacts.filter(c => c.group === selectedGroupFilter);
+
   const getFormattedMessage = (targetContact?: Contact) => {
     let prefix = '📌 *AVISO IMPORTANTE PARA PADRES DE FAMILIA*';
     if (category === 'materiales') prefix = '🎨 *LISTA DE MATERIALES Y ÚTILES REQUERIDOS*';
     if (category === 'tareas') prefix = '📝 *RECORDATORIO DE TAREA PENDIENTE*';
     if (category === 'actividades') prefix = '🌟 *RESUMEN DE ACTIVIDADES Y LOGROS DEL DÍA*';
 
+    const groupLabel = selectedGroupFilter !== 'Todos' ? selectedGroupFilter : (targetContact?.group || group);
+
     const greeting = targetContact 
       ? `Estimado(a) ${targetContact.parentName} (Tutor/a de ${targetContact.studentName}):`
-      : `Estimados Padres de Familia y Tutores del grupo ${group}:`;
+      : `Estimados Padres de Familia y Tutores del grupo ${groupLabel}:`;
 
     let body = `${prefix}\n\n${greeting}\n\n`;
 
@@ -125,30 +135,91 @@ export default function CommunicatorPage() {
     return body;
   };
 
-  const handleCopyGroupMessage = () => {
-    const msg = getFormattedMessage();
-    navigator.clipboard.writeText(msg);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+  // Envío Maestro a Todo el Grupo por Servidor
+  const handleSendGroupServerNotification = async () => {
+    if (filteredContacts.length === 0) {
+      setSendError('No hay contactos en el grupo seleccionado.');
+      return;
+    }
+
+    setIsSending(true);
+    setSendSuccessMessage('');
+    setSendError('');
+
+    try {
+      const msg = getFormattedMessage();
+      const response = await fetch('/api/notifications/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isGroup: true,
+          contactsList: filteredContacts,
+          message: msg,
+          groupName: selectedGroupFilter
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al procesar el envío masivo');
+      }
+
+      setSendSuccessMessage(data.message || `Notificación masiva enviada a los ${filteredContacts.length} tutores del grupo.`);
+      setTimeout(() => setSendSuccessMessage(''), 8000);
+    } catch (err: any) {
+      setSendError(err.message || 'No se pudo enviar la notificación masiva.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  const handleSendIndividualWhatsApp = (contact: Contact) => {
-    const msg = getFormattedMessage(contact);
-    const encodedMsg = encodeURIComponent(msg);
-    const url = `https://wa.me/${contact.phone}?text=${encodedMsg}`;
-    window.open(url, '_blank');
+  // Envío Individual por Servidor
+  const handleSendIndividualServer = async (contact: Contact) => {
+    setIsSending(true);
+    setSendSuccessMessage('');
+    setSendError('');
+
+    try {
+      const msg = getFormattedMessage(contact);
+      const response = await fetch('/api/notifications/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isGroup: false,
+          recipientPhone: contact.phone,
+          message: msg
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Error enviando mensaje individual');
+      }
+
+      setSendSuccessMessage(`Notificación enviada a ${contact.parentName} (${contact.studentName}) desde el servidor de LiberaPro.`);
+      setTimeout(() => setSendSuccessMessage(''), 6000);
+    } catch (err: any) {
+      setSendError(err.message || 'Error al enviar mensaje individual.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
     <div className="space-y-8">
-      <section className="space-y-1">
-        <h2 className="text-2xl sm:text-3xl font-light text-slate-900 tracking-tight flex items-center gap-3">
-          <MessageSquare className="w-8 h-8 text-emerald-600" />
-          Comunicación <span className="font-bold text-emerald-600">WhatsApp para Padres</span>
-        </h2>
-        <p className="text-sm text-slate-500 font-light max-w-2xl">
-          Crea avisos, recordatorios, listas de materiales y tareas estructurados para enviar a padres de familia vía WhatsApp grupal o individual.
-        </p>
+      {/* Banner de Privacidad Docente */}
+      <section className="bg-emerald-900 text-emerald-100 p-6 rounded-3xl border border-emerald-800 shadow-md space-y-2">
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="w-8 h-8 text-emerald-400 flex-shrink-0" />
+          <div>
+            <h2 className="text-xl font-bold text-white">
+              Sistema de Comunicación Institucional <span className="text-emerald-400">100% Privado</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-emerald-200">
+              Las notificaciones se envían directamente desde el servidor de LiberaPro. <strong>Tu número de teléfono personal NUNCA es visible para los padres o alumnos.</strong>
+            </p>
+          </div>
+        </div>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -234,72 +305,82 @@ export default function CommunicatorPage() {
               />
             </div>
 
-            {/* Configuración Enlace de Grupo (Opcional) */}
-            <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 space-y-2">
-              <label className="block text-xs font-bold text-emerald-900">
-                💬 Enlace del Grupo de WhatsApp del Salón (Opcional - Envío sin pedir teléfonos):
-              </label>
-              <input
-                type="url"
-                placeholder="Ej. https://chat.whatsapp.com/TuCodigoDeGrupo"
-                value={groupWhatsappLink}
-                onChange={(e) => {
-                  setGroupWhatsappLink(e.target.value);
-                  localStorage.setItem('liberapro_group_whatsapp_link', e.target.value);
-                }}
-                className="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-400"
-              />
-              <p className="text-[11px] text-emerald-700 font-medium">
-                💡 <strong>¿No quieres registrar números de teléfono?</strong> Guarda aquí el enlace de tu grupo de WhatsApp. Podrás abrir directamente el chat de tu grupo con el aviso copiado al portapapeles.
-              </p>
-            </div>
-
-            {/* Vista Previa del Mensaje Formatado WhatsApp */}
-            <div className="mt-4 bg-emerald-950 text-emerald-100 p-4 rounded-2xl border border-emerald-800 space-y-2">
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Vista Previa de Formato WhatsApp:</span>
-              <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm text-emerald-50 leading-relaxed bg-emerald-900/50 p-3 rounded-xl border border-emerald-800">
-                {getFormattedMessage(contacts.find(c => c.id === selectedContactId))}
+            {/* Vista Previa del Mensaje Formateado */}
+            <div className="mt-4 bg-slate-900 text-emerald-100 p-4 rounded-2xl border border-slate-800 space-y-2">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Vista Previa de Notificación Institucional:</span>
+              <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm text-slate-100 leading-relaxed bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                {getFormattedMessage()}
               </pre>
             </div>
 
-            {/* Acciones de Envío Grupal */}
-            <div className="pt-2 flex flex-wrap gap-3 justify-end">
+            {/* Mensajes de Estado */}
+            {sendSuccessMessage && (
+              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-emerald-800 text-sm flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <span>{sendSuccessMessage}</span>
+              </div>
+            )}
+
+            {sendError && (
+              <div className="bg-red-50 border border-red-200 p-4 rounded-2xl text-red-700 text-sm">
+                <strong>Error:</strong> {sendError}
+              </div>
+            )}
+
+            {/* BOTÓN MAESTRO DE ENVÍO GRUPAL POR SERVIDOR */}
+            <div className="pt-3 flex justify-end">
               <button
                 type="button"
-                onClick={handleCopyGroupMessage}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 text-sm transition-all shadow-md"
+                disabled={isSending || filteredContacts.length === 0}
+                onClick={handleSendGroupServerNotification}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 text-base transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                {copied ? '¡Copiado al Portapapeles!' : 'Copiar Comunicado Grupal'}
+                {isSending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Despachando Notificaciones...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    <span>🚀 Enviar a Todo el Grupo {selectedGroupFilter !== 'Todos' ? `(${selectedGroupFilter})` : ''} [{filteredContacts.length} tutores]</span>
+                  </>
+                )}
               </button>
-
-              {groupWhatsappLink && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleCopyGroupMessage();
-                    window.open(groupWhatsappLink, '_blank');
-                  }}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 text-sm transition-all shadow-md"
-                >
-                  <Send className="w-5 h-5 text-emerald-400" />
-                  Copiar y Abrir Grupo de WhatsApp
-                </button>
-              )}
             </div>
 
           </div>
 
         </div>
 
-        {/* Columna Derecha: Lista de Distribución de Contactos */}
+        {/* Columna Derecha: Lista de Distribución de Contactos por Grupo */}
         <div className="space-y-6">
+
+          {/* Filtro de Grupos */}
+          <div className="bg-white/80 backdrop-blur-md p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+              <Filter className="w-4 h-4 text-emerald-600" />
+              Filtrar Lista por Grupo
+            </label>
+            <select
+              value={selectedGroupFilter}
+              onChange={e => setSelectedGroupFilter(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 font-bold"
+            >
+              <option value="Todos">Todos los Grupos ({contacts.length} tutores)</option>
+              {availableGroups.map(grp => (
+                <option key={grp} value={grp}>
+                  Grupo: {grp} ({contacts.filter(c => c.group === grp).length} tutores)
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Formulario Agregar Contacto */}
           <div className="bg-white/80 backdrop-blur-md p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-md font-bold text-slate-900 flex items-center gap-2">
               <Plus className="w-5 h-5 text-emerald-600" />
-              Agregar Alumno / Tutor
+              Agregar Alumno / Tutor a la Lista
             </h3>
             
             <form onSubmit={handleAddContact} className="space-y-3">
@@ -328,19 +409,19 @@ export default function CommunicatorPage() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Teléfono / WhatsApp</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Teléfono WhatsApp</label>
                   <input 
                     type="tel" 
                     required
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
-                    placeholder="10 dígitos o +52"
+                    placeholder="10 dígitos"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Grupo</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Grupo / Salón</label>
                   <input 
                     type="text" 
                     value={group}
@@ -361,27 +442,27 @@ export default function CommunicatorPage() {
             </form>
           </div>
 
-          {/* Lista de Contactos & Envío Individual */}
+          {/* Lista de Contactos & Envío Individual por Servidor */}
           <div className="bg-white/80 backdrop-blur-md p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b pb-2">
               <h3 className="text-md font-bold text-slate-900 flex items-center gap-2">
                 <Users className="w-5 h-5 text-emerald-600" />
-                Lista de Distribución ({contacts.length})
+                Contactos ({filteredContacts.length})
               </h3>
             </div>
 
-            {contacts.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-4">No hay contactos guardados aún.</p>
+            {filteredContacts.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-4">No hay contactos en este grupo.</p>
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                {contacts.map(c => (
+                {filteredContacts.map(c => (
                   <div key={c.id} className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="font-bold text-xs text-slate-900 block">{c.studentName}</span>
                         <span className="text-[11px] text-slate-500 block">{c.parentName} ({c.group})</span>
-                        <span className="text-[10px] font-mono text-emerald-700 flex items-center gap-1 mt-0.5">
-                          <Phone className="w-3 h-3" /> {c.phone}
+                        <span className="text-[10px] font-mono text-slate-600 flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3 text-emerald-600" /> {c.phone}
                         </span>
                       </div>
                       <button 
@@ -396,11 +477,12 @@ export default function CommunicatorPage() {
 
                     <button
                       type="button"
-                      onClick={() => handleSendIndividualWhatsApp(c)}
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                      disabled={isSending}
+                      onClick={() => handleSendIndividualServer(c)}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      Enviar por WhatsApp
+                      Enviar por Servidor LiberaPro
                     </button>
                   </div>
                 ))}
