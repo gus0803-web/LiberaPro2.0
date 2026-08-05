@@ -4,32 +4,57 @@ import React, { useEffect, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
 import { AgendaItem, addAgendaItem, loadSelectedPlanDate, downloadAgendaItem } from '@/lib/agenda';
-import { Download } from 'lucide-react';
+import { Download, Sparkles, CheckCircle2, FileText, Calendar, BookOpen, Layers, Award } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const nemPlanningSchema = z.object({
   datosIdentificacion: z.object({
     nombreDocente: z.string(),
+    escuela: z.string(),
+    cct: z.string(),
+    turno: z.string(),
+    director: z.string(),
     gradoYGrupo: z.string(),
     fase: z.string(),
-    periodoAplicacion: z.string()
+    periodoAplicacion: z.string(),
+    mesPlan: z.string()
   }),
-  elementosCurriculares: z.object({
-    camposFormativos: z.string(),
-    metodologia: z.string(),
-    problematica: z.string(),
-    contenidos: z.string(),
-    pda: z.string(),
-    ejesArticuladores: z.string(),
-    escenario: z.string()
-  }),
-  fases: z.array(z.object({
+  justificacionYDiagnostico: z.string(),
+  proyectoIntegrador: z.object({
     titulo: z.string(),
-    actividades: z.string(),
-    recursosYMateriales: z.string(),
-    evaluacionFormativa: z.string(),
-    adecuacionesTEA: z.string()
-  }))
+    metodologia: z.string(),
+    proposito: z.string()
+  }),
+  estructuraCurricular: z.array(z.object({
+    campoFormativo: z.string(),
+    contenidoContextualizado: z.string(),
+    pda: z.string(),
+    ejesArticuladores: z.string()
+  })),
+  secuenciasDidacticas: z.array(z.object({
+    dia: z.string(),
+    campoFormativo: z.string(),
+    temaActividad: z.string(),
+    inicio: z.string(),
+    desarrollo: z.string(),
+    cierre: z.string(),
+    materialesYRecursos: z.string()
+  })),
+  estrategiaEvaluacion: z.string(),
+  anexosListasCotejo: z.array(z.object({
+    tituloAnexo: z.string(),
+    campoFormativo: z.string(),
+    indicadores: z.array(z.object({
+      pdaIndicador: z.string(),
+      logrado: z.string(),
+      enProceso: z.string(),
+      observaciones: z.string()
+    }))
+  })),
+  firmas: z.object({
+    docente: z.string(),
+    director: z.string()
+  })
 });
 
 function getBusinessDays(startDateStr: string, count: number) {
@@ -39,7 +64,7 @@ function getBusinessDays(startDateStr: string, count: number) {
   
   while (dates.length < count) {
     const dayOfWeek = d.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
       const yy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
@@ -64,8 +89,8 @@ export default function PlannerPage() {
   };
 
   const router = useRouter();
-  const [docenteName, setDocenteName] = useState('N/A');
-  const [savedSchools, setSavedSchools] = useState<{school: string, group: string}[]>([]);
+  const [docenteName, setDocenteName] = useState('Profesor de Grupo');
+  const [savedSchools, setSavedSchools] = useState<any[]>([]);
 
   useEffect(() => {
     const savedName = localStorage.getItem('liberapro_teacher_name');
@@ -81,14 +106,14 @@ export default function PlannerPage() {
   }, []);
 
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
-  const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes']);
+  const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes', 'Saberes y Pensamiento Científico']);
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [notasMaestro, setNotasMaestro] = useState('');
   
-  const [duracion, setDuracion] = useState('Semanal');
+  const [duracion, setDuracion] = useState('Quincenal');
   const [hasTEA, setHasTEA] = useState(false);
-  const [schoolGroup, setSchoolGroup] = useState('');
+  const [schoolGroupIndex, setSchoolGroupIndex] = useState<number>(0);
 
   const [selectedDate, setSelectedDate] = useState('');
   
@@ -121,8 +146,16 @@ export default function PlannerPage() {
     }
   }, [selectedDate]);
 
+  const selectedSchoolInfo = savedSchools[schoolGroupIndex] || {
+    school: 'Escuela Primaria Justo Sierra',
+    group: '2º Grado "A"',
+    cct: '02DPRXXXXX',
+    turno: 'Matutino',
+    director: 'Directora de la Escuela'
+  };
+
   useEffect(() => {
-    if (object?.fases && !isLoading && selectedDate && !hasSavedPlan) {
+    if ((object?.secuenciasDidacticas || (object as any)?.fases) && !isLoading && selectedDate && !hasSavedPlan) {
       let expectedSessions = 5;
       if (duracion === 'Quincenal') expectedSessions = 10;
       if (duracion === 'Mensual') expectedSessions = 20;
@@ -132,12 +165,17 @@ export default function PlannerPage() {
       const savePlans = async () => {
         const fullPlanObject = {
           datosIdentificacion: {
-            ...object.datosIdentificacion,
-            nombreDocente: docenteName || object.datosIdentificacion?.nombreDocente || 'N/A',
+            ...object?.datosIdentificacion,
+            nombreDocente: docenteName || selectedSchoolInfo.school || 'N/A',
             periodoAplicacion: `Del ${selectedDate} al ${getEndDateStr(selectedDate, expectedSessions)}`
           },
-          elementosCurriculares: object.elementosCurriculares,
-          fases: object.fases
+          justificacionYDiagnostico: object?.justificacionYDiagnostico,
+          proyectoIntegrador: object?.proyectoIntegrador,
+          estructuraCurricular: object?.estructuraCurricular,
+          secuenciasDidacticas: object?.secuenciasDidacticas,
+          estrategiaEvaluacion: object?.estrategiaEvaluacion,
+          anexosListasCotejo: object?.anexosListasCotejo,
+          firmas: object?.firmas
         };
 
         const promises = datesToCover.map((dateStr, index) => {
@@ -145,13 +183,13 @@ export default function PlannerPage() {
             id: `${Date.now()}-${dateStr}-${index}`,
             date: dateStr,
             type: 'planeacion',
-            title: tema || 'Planeación NEM',
-            description: `Planeación Proyecto: Fase ${fase} - ${metodologia}`,
+            title: tema || 'Planeación Oficial NEM',
+            description: `Proyecto: ${tema} (${fase} - ${metodologia})`,
             metadata: {
               fase,
               tema,
               metodologia,
-              schoolGroup,
+              schoolGroup: selectedSchoolInfo.group || '2º A',
               duracion,
               hasTEA,
               object: fullPlanObject,
@@ -161,7 +199,7 @@ export default function PlannerPage() {
           return addAgendaItem(newPlan);
         });
 
-        setSaveMessage('Guardando planeación en la nube...');
+        setSaveMessage('Guardando planeación oficial en el calendario...');
         const results = await Promise.all(promises);
         if (results.every(r => r)) {
           setSaveMessage('Planeación distribuida y guardada en el calendario.');
@@ -174,7 +212,7 @@ export default function PlannerPage() {
       };
       savePlans();
     }
-  }, [object, isLoading, selectedDate, hasSavedPlan, fase, tema, metodologia, schoolGroup, duracion, hasTEA]);
+  }, [object, isLoading, selectedDate, hasSavedPlan, fase, tema, metodologia, duracion, hasTEA, docenteName, selectedSchoolInfo]);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,14 +224,12 @@ export default function PlannerPage() {
     }
     setHasSavedPlan(false);
     
-    // Calcular días y fecha término
     let expectedSessions = 5;
     if (duracion === 'Quincenal') expectedSessions = 10;
     if (duracion === 'Mensual') expectedSessions = 20;
     const fechaTermino = getEndDateStr(selectedDate, expectedSessions);
 
-    // El backend concatenará todo. Solo le pasamos lo estructurado.
-    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\n\nNotas adicionales:\n${notasMaestro}`;
+    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\n\nNotas e indicaciones del docente:\n${notasMaestro}`;
     
     submit({ 
       fase, 
@@ -202,9 +238,16 @@ export default function PlannerPage() {
       metodologia, 
       duracion, 
       hasTEA, 
-      schoolGroup,
+      schoolGroup: `${selectedSchoolInfo.school || 'Escuela'} - ${selectedSchoolInfo.group || 'Grupo'}`,
       fechaInicio: selectedDate,
-      fechaTermino
+      fechaTermino,
+      profileData: {
+        teacherName: docenteName,
+        schoolName: selectedSchoolInfo.school,
+        cct: selectedSchoolInfo.cct,
+        turno: selectedSchoolInfo.turno,
+        directorName: selectedSchoolInfo.director
+      }
     });
   };
 
@@ -212,14 +255,35 @@ export default function PlannerPage() {
     <div className="space-y-8">
       <section className="space-y-1">
         <h2 className="text-2xl sm:text-3xl font-light text-slate-900 tracking-tight">
-          Estructurador <span className="font-bold text-blue-600">Académico NEM</span>
+          Estructurador <span className="font-bold text-blue-600">Académico NEM (6 Secciones)</span>
         </h2>
         <p className="text-sm text-slate-500 font-light max-w-2xl">
-          Ingresa tus apuntes y contexto. El AI se encargará de darles la estructura oficial.
+          Genera planeaciones didácticas completas y rigurosas alineadas a la Nueva Escuela Mexicana con el formato oficial de 6 secciones.
         </p>
       </section>
 
-      <form onSubmit={handleGenerate} className="bg-white/60 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-white/60 shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <form onSubmit={handleGenerate} className="bg-white/60 backdrop-blur-md p-4 sm:p-6 rounded-3xl border border-white/60 shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo (Perfil Docente)</label>
+          {savedSchools.length > 0 ? (
+            <select 
+              value={schoolGroupIndex} 
+              onChange={e => setSchoolGroupIndex(Number(e.target.value))} 
+              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
+            >
+              {savedSchools.map((s, idx) => (
+                <option key={idx} value={idx}>
+                  {s.school ? `${s.school} (${s.group || 'Sin grupo'})` : `Escuela ${idx + 1}`}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+              Puedes configurar tus escuelas y CCT en la pestaña <strong>Settings</strong>. Se usarán datos predeterminados.
+            </div>
+          )}
+        </div>
+
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fase (Nivel Educativo)</label>
           <select value={fase} onChange={e => setFase(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
@@ -231,9 +295,10 @@ export default function PlannerPage() {
             <option>Fase 6: Secundaria (1º a 3º)</option>
           </select>
         </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campos Formativos</label>
-          <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5 overflow-y-auto">
+
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campos Formativos Involucrados</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white border border-slate-200 rounded-xl p-3">
             {['Lenguajes', 'Saberes y Pensamiento Científico', 'Ética, Naturaleza y Sociedades', 'De lo Humano y lo Comunitario'].map(campo => (
               <label key={campo} className="flex items-center gap-2 cursor-pointer group">
                 <input 
@@ -248,11 +313,12 @@ export default function PlannerPage() {
                   }}
                   className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                 />
-                <span className="text-sm text-slate-700 group-hover:text-slate-900">{campo}</span>
+                <span className="text-xs sm:text-sm text-slate-700 group-hover:text-slate-900 font-medium">{campo}</span>
               </label>
             ))}
           </div>
         </div>
+
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Metodología Sociocrítica</label>
           <select value={metodologia} onChange={e => setMetodologia(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
@@ -262,30 +328,18 @@ export default function PlannerPage() {
             <option>Aprendizaje de Servicio (AS)</option>
           </select>
         </div>
+
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo</label>
-          {savedSchools.length > 0 ? (
-            <select value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
-              <option value="">No especificado</option>
-              {savedSchools.map((s, idx) => {
-                const text = `${s.school || ''} ${s.group ? `- ${s.group}` : ''}`.trim();
-                return <option key={idx} value={text}>{text}</option>;
-              })}
-            </select>
-          ) : (
-            <input type="text" value={schoolGroup} onChange={e => setSchoolGroup(e.target.value)} placeholder="Ej. Esc. Patria - 1º A" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all" />
-          )}
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Duración</label>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Duración del Proyecto</label>
           <select value={duracion} onChange={e => setDuracion(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
-            <option>Semanal</option>
-            <option>Quincenal</option>
-            <option>Mensual</option>
+            <option value="Semanal">Semanal (5 Días Hábiles)</option>
+            <option value="Quincenal">Quincenal (10 Días Hábiles)</option>
+            <option value="Mensual">Mensual (20 Días Hábiles)</option>
           </select>
         </div>
+
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de inicio</label>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fecha de Inicio</label>
           <input
             type="date"
             value={selectedDate}
@@ -293,21 +347,31 @@ export default function PlannerPage() {
             className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all"
           />
         </div>
+
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema o Proyecto</label>
-          <input type="text" required value={tema} onChange={e => setTema(e.target.value)} placeholder="Ej. El ciclo del agua en la comunidad" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" />
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema o Título del Proyecto</label>
+          <input 
+            type="text" 
+            required 
+            value={tema} 
+            onChange={e => setTema(e.target.value)} 
+            placeholder="Ej. Nuestra historia en el aula: organizando el regreso a clases" 
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" 
+          />
         </div>
+
         <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notas, contexto e ideas del maestro</label>
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notas, Diagnóstico y Requerimientos del Maestro</label>
           <textarea
             required
-            rows={5}
+            rows={4}
             value={notasMaestro}
             onChange={e => setNotasMaestro(e.target.value)}
-            placeholder="Escribe aquí de qué trata la clase, problemáticas de tu grupo, actividades que ya tienes pensadas, o cualquier idea suelta..."
+            placeholder="Describe la problemática, saberes previos, enfoque socioemocional o actividades particulares que deseas incluir..."
             className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors resize-y placeholder:text-slate-400"
           />
         </div>
+
         <div className="sm:col-span-2">
           <label className="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 p-3 rounded-xl hover:bg-slate-50 transition-colors">
             <input 
@@ -316,157 +380,242 @@ export default function PlannerPage() {
               onChange={(e) => setHasTEA(e.target.checked)} 
               className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
             />
-            <span className="text-sm font-semibold text-slate-700">Incluir adaptaciones para alumnos con Trastorno del Espectro Autista (TEA)</span>
+            <span className="text-sm font-semibold text-slate-700">Incluir adecuaciones específicas para alumnos con Trastorno del Espectro Autista (TEA)</span>
           </label>
         </div>
         
-        <div className="sm:col-span-2 pt-2 flex flex-col gap-3 items-end">
-          <button disabled={isLoading || !selectedDate || !tema || !notasMaestro} type="submit" className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            {isLoading ? 'Estructurando...' : 'Generar Planeación Oficial'}
+        <div className="sm:col-span-2 pt-2 flex justify-end">
+          <button 
+            disabled={isLoading || !selectedDate || !tema || !notasMaestro} 
+            type="submit" 
+            className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-blue-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-5 h-5" />
+            {isLoading ? 'Generando Planeación Didáctica...' : 'Generar Planeación Oficial (6 Secciones)'}
           </button>
         </div>
       </form>
 
-      {saveMessage ? (
-        <div className="rounded-3xl bg-emerald-100 border border-emerald-200 p-6 text-sm text-emerald-800 space-y-2">
-          <p className="font-bold">¡Planeación Generada Exitosamente!</p>
-          <p>{saveMessage}</p>
+      {saveMessage && (
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-sm text-emerald-800 flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold">¡Planeación Didáctica Generada Exitosamente!</p>
+            <p>{saveMessage}</p>
+          </div>
         </div>
-      ) : null}
+      )}
 
-      {/* Loading State / Skeleton */}
       {isLoading && !object && (
         <div className="space-y-6">
-          <h3 className="text-xl text-blue-600 font-semibold animate-pulse">Traduciendo tus notas a formato NEM...</h3>
+          <h3 className="text-xl text-blue-600 font-semibold animate-pulse">Estructurando planeación en 6 fases pedagógicas...</h3>
           <div className="h-64 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse"></div>
         </div>
       )}
 
       {error && (
-        <div className="rounded-3xl bg-red-50 border border-red-200 p-6 text-red-700">
+        <div className="rounded-2xl bg-red-50 border border-red-200 p-6 text-red-700">
           <strong>Error:</strong> {typeof error === 'string' ? error : error?.message || 'No se pudo generar la planeación. Por favor intenta de nuevo.'}
         </div>
       )}
 
-      {hasSubmitted && !isLoading && !object && !error && !debugError && (
-        <div className="rounded-3xl bg-amber-50 border border-amber-200 p-6 text-amber-700">
-          No se generó ningún resultado aún. Revisa tu conexión o intenta de nuevo con otros datos.
-        </div>
-      )}
-
-      {debugError && (
-        <div className="rounded-3xl bg-red-100 border border-red-300 p-6 text-red-800">
-          <strong>Debug Error:</strong> {debugError}
-        </div>
-      )}
-
-      {/* Results Rendering */}
-      {object?.datosIdentificacion && (
-        <section className="space-y-4 pt-4">
-          <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Datos de Identificación</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-slate-500 block text-xs uppercase">Docente</span><span className="font-semibold">{renderContent(object.datosIdentificacion.nombreDocente)}</span></div>
-              <div><span className="text-slate-500 block text-xs uppercase">Grado y Grupo</span><span className="font-semibold">{renderContent(object.datosIdentificacion.gradoYGrupo)}</span></div>
-              <div><span className="text-slate-500 block text-xs uppercase">Fase</span><span className="font-semibold">{renderContent(object.datosIdentificacion.fase)}</span></div>
-              <div><span className="text-slate-500 block text-xs uppercase">Periodo de Aplicación</span><span className="font-semibold">{renderContent(object.datosIdentificacion.periodoAplicacion)}</span></div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {object?.elementosCurriculares && (
-        <section className="space-y-4">
-          <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 shadow-sm">
-            <h3 className="text-xl font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2">Elementos Curriculares</h3>
-            <div className="space-y-3 text-sm">
-              <p><strong className="text-blue-800">Campos Formativos:</strong> {renderContent(object.elementosCurriculares.camposFormativos)}</p>
-              <p><strong className="text-blue-800">Metodología:</strong> {renderContent(object.elementosCurriculares.metodologia)}</p>
-
-              <div className="mt-2 bg-white p-3 rounded-xl border border-blue-100">
-                <strong className="text-blue-800 block mb-1">Problemática:</strong>
-                <span className="text-slate-700">{renderContent(object.elementosCurriculares.problematica)}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {object?.fases && object.fases.length > 0 && (
-        <section className="space-y-6 pt-6 border-t border-slate-200">
-          <h3 className="text-2xl font-bold text-slate-900 mb-4">Fases Metodológicas y Actividades</h3>
-          <div className="space-y-8">
-            {object.fases.map((faseItem, idx) => (
-              <div key={idx} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
-                  <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <div className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">
-                      {idx + 1}
-                    </div>
-                    {faseItem?.titulo || `Fase ${idx + 1}`}
-                  </h4>
-                </div>
-                <div className="p-6 space-y-6">
-                  <div>
-                    <h5 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Actividades de Aprendizaje</h5>
-                    {renderContent(faseItem?.actividades)}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                      <h5 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Recursos</h5>
-                      {renderContent(faseItem?.recursosYMateriales)}
-                    </div>
-                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                      <h5 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Evaluación Formativa</h5>
-                      {renderContent(faseItem?.evaluacionFormativa)}
-                    </div>
-                  </div>
-                  {faseItem?.adecuacionesTEA && faseItem.adecuacionesTEA !== 'N/A' && (
-                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                      <h5 className="text-sm font-semibold text-amber-800 uppercase tracking-wider mb-2">Adecuaciones TEA</h5>
-                      {renderContent(faseItem?.adecuacionesTEA)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-
-
+      {/* Render 6 Official Sections */}
       {object && (
-        <div className="pt-8 pb-4 flex justify-center sm:justify-end">
-          <button 
-            type="button"
-            onClick={() => {
-              const masterItem: AgendaItem = {
-                id: `master-download-${Date.now()}`,
-                date: selectedDate || new Date().toISOString().slice(0, 10),
-                type: 'planeacion',
-                title: tema || 'Planeación Completa',
-                description: `Documento Maestro: ${fase} - ${metodologia}`,
-                metadata: { 
-                  object: {
-                    ...object,
-                    datosIdentificacion: {
-                      ...(object.datosIdentificacion || {}),
-                      nombreDocente: docenteName,
-                      gradoYGrupo: schoolGroup || object.datosIdentificacion?.gradoYGrupo
-                    }
-                  }, 
-                  selectedDate 
-                },
-                createdAt: new Date().toISOString()
-              };
-              downloadAgendaItem(masterItem);
-            }} 
-            className="w-full sm:w-auto bg-blue-600 text-white font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-lg"
-          >
-            <Download className="w-5 h-5" />
-            Descargar Planeación Oficial (.docx)
-          </button>
+        <div className="space-y-8 pt-4">
+
+          {/* Sección 1: Encabezado & Datos de Identificación */}
+          {object.datosIdentificacion && (
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-slate-900 text-white p-6">
+                <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Secretaría de Educación Pública</div>
+                <h3 className="text-2xl font-bold mt-1">{object.datosIdentificacion.escuela || selectedSchoolInfo.school || 'Escuela Primaria'}</h3>
+                <p className="text-slate-300 text-sm mt-1">Planeación Didáctica - {object.datosIdentificacion.mesPlan || 'Agosto 2026'}</p>
+              </div>
+              <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm bg-slate-50">
+                <div><span className="text-slate-500 block text-xs uppercase font-semibold">Docente</span><span className="font-semibold">{object.datosIdentificacion.nombreDocente}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-semibold">Grado y Grupo</span><span className="font-semibold">{object.datosIdentificacion.gradoYGrupo}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-semibold">CCT</span><span className="font-semibold">{object.datosIdentificacion.cct}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-semibold">Turno</span><span className="font-semibold">{object.datosIdentificacion.turno}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-semibold">Fase</span><span className="font-semibold">{object.datosIdentificacion.fase}</span></div>
+                <div><span className="text-slate-500 block text-xs uppercase font-semibold">Director(a)</span><span className="font-semibold">{object.datosIdentificacion.director}</span></div>
+                <div className="sm:col-span-2"><span className="text-slate-500 block text-xs uppercase font-semibold">Periodo</span><span className="font-semibold">{object.datosIdentificacion.periodoAplicacion}</span></div>
+              </div>
+            </section>
+          )}
+
+          {/* Sección 1: Justificación Pedagógica y Diagnóstico Inicial */}
+          {object.justificacionYDiagnostico && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-blue-600" />
+                1. Justificación Pedagógica y Diagnóstico Inicial
+              </h4>
+              <p className="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
+                {object.justificacionYDiagnostico}
+              </p>
+            </section>
+          )}
+
+          {/* Sección 2: Proyecto Integrador */}
+          {object.proyectoIntegrador && (
+            <section className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 p-6 shadow-sm space-y-3">
+              <h4 className="text-lg font-bold text-blue-950 flex items-center gap-2 border-b border-blue-200 pb-2">
+                <Layers className="w-5 h-5 text-blue-700" />
+                2. Proyecto Integrador de Aprendizaje
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div><strong className="text-blue-900">Título del Proyecto:</strong> <p className="text-slate-800 font-semibold">{object.proyectoIntegrador.titulo}</p></div>
+                <div><strong className="text-blue-900">Metodología Principal:</strong> <p className="text-slate-800 font-semibold">{object.proyectoIntegrador.metodologia}</p></div>
+                <div className="sm:col-span-2"><strong className="text-blue-900">Propósito del Proyecto:</strong> <p className="text-slate-800 mt-0.5">{object.proyectoIntegrador.proposito}</p></div>
+              </div>
+            </section>
+          )}
+
+          {/* Sección 3: Estructura Curricular por Campos Formativos */}
+          {object.estructuraCurricular && object.estructuraCurricular.length > 0 && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-600" />
+                3. Estructura Curricular: Campos Formativos, Contenidos y PDA
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse border border-slate-200">
+                  <thead className="bg-slate-800 text-white text-xs uppercase">
+                    <tr>
+                      <th className="p-3 border border-slate-700">Campo Formativo</th>
+                      <th className="p-3 border border-slate-700">Contenido Contextualizado</th>
+                      <th className="p-3 border border-slate-700">Proceso de Desarrollo de Aprendizaje (PDA)</th>
+                      <th className="p-3 border border-slate-700">Ejes Articuladores</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {object.estructuraCurricular.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="p-3 border border-slate-200 font-bold text-slate-900">{item?.campoFormativo}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{item?.contenidoContextualizado}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{item?.pda}</td>
+                        <td className="p-3 border border-slate-200 text-slate-600">{item?.ejesArticuladores}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {/* Sección 4: Secuencias Didácticas Detalladas */}
+          {object.secuenciasDidacticas && object.secuenciasDidacticas.length > 0 && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-emerald-600" />
+                4. Secuencias Didácticas Detalladas (Día a Día)
+              </h4>
+              <div className="space-y-6">
+                {object.secuenciasDidacticas.map((sec, idx) => (
+                  <div key={idx} className="border border-slate-200 rounded-2xl p-5 bg-slate-50/50 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                      <span className="font-bold text-blue-700 text-base">{sec?.dia} - {sec?.temaActividad}</span>
+                      <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{sec?.campoFormativo}</span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <p><strong className="text-emerald-700">• Inicio (Activación):</strong> {sec?.inicio}</p>
+                      <p><strong className="text-blue-700">• Desarrollo (Acción y Construcción):</strong> {sec?.desarrollo}</p>
+                      <p><strong className="text-purple-700">• Cierre (Metacognición):</strong> {sec?.cierre}</p>
+                      <p className="text-slate-600 pt-1 text-xs"><strong>Materiales y Recursos:</strong> {sec?.materialesYRecursos}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Sección 5: Evaluación Formativa */}
+          {object.estrategiaEvaluacion && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-600" />
+                5. Estrategia de Evaluación Diagnóstica y Formativa
+              </h4>
+              <p className="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
+                {object.estrategiaEvaluacion}
+              </p>
+            </section>
+          )}
+
+          {/* Sección 6: Anexos - Listas de Cotejo */}
+          {object.anexosListasCotejo && object.anexosListasCotejo.length > 0 && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-teal-600" />
+                6. Anexos: Listas de Cotejo para la Evaluación Formativa
+              </h4>
+              {object.anexosListasCotejo.map((anexo, idx) => (
+                <div key={idx} className="space-y-3">
+                  <h5 className="font-bold text-slate-800 text-sm">{anexo?.tituloAnexo} ({anexo?.campoFormativo})</h5>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left border-collapse border border-slate-200">
+                      <thead className="bg-slate-100 text-slate-800">
+                        <tr>
+                          <th className="p-2.5 border border-slate-200">Indicador de Aprendizaje (PDA Relacionado)</th>
+                          <th className="p-2.5 border border-slate-200 text-center w-24">Logrado (SÍ)</th>
+                          <th className="p-2.5 border border-slate-200 text-center w-24">En Proceso (NO)</th>
+                          <th className="p-2.5 border border-slate-200">Observaciones / Evidencia</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {anexo?.indicadores?.map((ind, indIdx) => (
+                          <tr key={indIdx}>
+                            <td className="p-2.5 border border-slate-200 text-slate-800 font-medium">{ind?.pdaIndicador}</td>
+                            <td className="p-2.5 border border-slate-200 text-center font-bold text-emerald-600">{ind?.logrado || 'SÍ'}</td>
+                            <td className="p-2.5 border border-slate-200 text-center text-slate-400">{ind?.enProceso || 'NO'}</td>
+                            <td className="p-2.5 border border-slate-200 text-slate-500">{ind?.observaciones || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {/* Botón Descargar Word */}
+          <div className="pt-4 flex justify-end">
+            <button 
+              type="button"
+              onClick={() => {
+                const masterItem: AgendaItem = {
+                  id: `master-download-${Date.now()}`,
+                  date: selectedDate || new Date().toISOString().slice(0, 10),
+                  type: 'planeacion',
+                  title: tema || 'Planeación Oficial NEM',
+                  description: `Proyecto Integrador: ${tema}`,
+                  metadata: { 
+                    object: {
+                      ...object,
+                      datosIdentificacion: {
+                        ...(object.datosIdentificacion || {}),
+                        nombreDocente: docenteName,
+                        escuela: selectedSchoolInfo.school,
+                        cct: selectedSchoolInfo.cct,
+                        turno: selectedSchoolInfo.turno,
+                        director: selectedSchoolInfo.director,
+                        gradoYGrupo: selectedSchoolInfo.group
+                      }
+                    }, 
+                    selectedDate 
+                  },
+                  createdAt: new Date().toISOString()
+                };
+                downloadAgendaItem(masterItem);
+              }} 
+              className="bg-blue-600 text-white font-bold px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-blue-700 transition-all shadow-lg text-base"
+            >
+              <Download className="w-5 h-5" />
+              Descargar Planeación Oficial (.docx)
+            </button>
+          </div>
+
         </div>
       )}
     </div>

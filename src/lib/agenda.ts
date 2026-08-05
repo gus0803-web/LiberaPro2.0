@@ -172,17 +172,18 @@ export function buildAgendaItemText(item: AgendaItem) {
 
 export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
-  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle, HeadingLevel, AlignmentType } = require('docx');
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel, AlignmentType } = require('docx');
   
   const stripMarkdown = (text: string) => {
+    if (!text) return '';
     return text
-      .replace(/\\*\\*/g, '') // remove bold **
-      .replace(/__/g, '') // remove bold __
-      .replace(/\\*/g, '') // remove italic *
-      .replace(/#/g, '') // remove headings #
-      .replace(/---/g, '') // remove horizontal rules
-      .replace(/>/g, '') // remove blockquotes
-      .replace(/`/g, ''); // remove backticks
+      .replace(/\*\*/g, '')
+      .replace(/__/g, '')
+      .replace(/\*/g, '')
+      .replace(/#/g, '')
+      .replace(/---/g, '')
+      .replace(/>/g, '')
+      .replace(/`/g, '');
   };
 
   const renderValue = (val: any) => {
@@ -193,162 +194,295 @@ export function downloadAgendaItem(item: AgendaItem) {
 
   let doc;
 
-  if (item.metadata?.object?.datosIdentificacion) {
+  if (item.metadata?.object?.datosIdentificacion || item.metadata?.object?.secuenciasDidacticas) {
     const obj = item.metadata.object;
-    const datos = obj.datosIdentificacion;
-    const elems = obj.elementosCurriculares;
-    const fases = Array.isArray(obj.fases) ? obj.fases : (Array.isArray(obj.sesiones) ? obj.sesiones : []);
+    const datos = obj.datosIdentificacion || {};
+    const justificacion = obj.justificacionYDiagnostico || obj.justificacion || '';
+    const proyecto = obj.proyectoIntegrador || {};
+    const currList = Array.isArray(obj.estructuraCurricular) ? obj.estructuraCurricular : [];
+    const secuencias = Array.isArray(obj.secuenciasDidacticas) ? obj.secuenciasDidacticas : (Array.isArray(obj.fases) ? obj.fases : []);
+    const evaluacion = obj.estrategiaEvaluacion || '';
+    const anexos = Array.isArray(obj.anexosListasCotejo) ? obj.anexosListasCotejo : [];
+    const firmas = obj.firmas || {};
     
     const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1, textColor?: string) => {
-      const paragraphs = String(text).split('\n').map(line => 
-        new Paragraph({ children: [new TextRun({ text: line, bold: isHeader, size: 22, color: textColor })] })
+      const lines = String(text || '').split('\n');
+      const paragraphs = lines.map(line => 
+        new Paragraph({ 
+          children: [new TextRun({ text: line, bold: isHeader, size: 20, color: textColor || "111827" })],
+          spacing: { after: 60, before: 60 }
+        })
       );
       return new TableCell({
         columnSpan: colSpan,
         shading: bgColor ? { fill: bgColor } : undefined,
-        margins: { top: 150, bottom: 150, left: 150, right: 150 },
+        margins: { top: 120, bottom: 120, left: 150, right: 150 },
         children: paragraphs,
       });
     };
 
-    const sections = [];
+    const children: any[] = [];
     
     // Header Title
-    sections.push(new Paragraph({
-      text: "PLANEACIÓN DIDÁCTICA NEM",
-      heading: HeadingLevel.HEADING_1,
+    children.push(new Paragraph({
+      children: [new TextRun({ text: "SECRETARÍA DE EDUCACIÓN PÚBLICA", bold: true, size: 24, color: "1e3a8a" })],
       alignment: AlignmentType.CENTER,
-      spacing: { after: 300 }
+      spacing: { after: 60 }
+    }));
+    children.push(new Paragraph({
+      children: [new TextRun({ text: renderValue(datos.escuela || "Escuela Primaria"), bold: true, size: 22, color: "0f172a" })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 60 }
+    }));
+    children.push(new Paragraph({
+      children: [new TextRun({ text: `Planeación Didáctica - ${renderValue(datos.mesPlan || "Diagnóstico e Integración")}`, italic: true, size: 20, color: "475569" })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 }
     }));
 
     // Info Table
-    sections.push(new Table({
+    children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [4000, 4000, 4000, 4118],
       rows: [
         new TableRow({
           children: [
-            createCell('Nombre del Docente:', true, "f8fafc"),
+            createCell('Docente Titular:', true, "f1f5f9"),
             createCell(renderValue(datos.nombreDocente)),
-            createCell('Grado y Grupo:', true, "f8fafc"),
-            createCell(item.metadata.schoolGroup || renderValue(datos.gradoYGrupo)),
+            createCell('Grado y Grupo:', true, "f1f5f9"),
+            createCell(renderValue(datos.gradoYGrupo)),
           ]
         }),
         new TableRow({
           children: [
-            createCell('Fase:', true, "f8fafc"),
+            createCell('Fase Curricular:', true, "f1f5f9"),
             createCell(renderValue(datos.fase)),
-            createCell('Periodo de aplicación:', true, "f8fafc"),
-            createCell(renderValue(datos.periodoAplicacion)),
+            createCell('Turno:', true, "f1f5f9"),
+            createCell(renderValue(datos.turno || 'Matutino')),
           ]
         }),
         new TableRow({
           children: [
-            createCell('Campo Formativo:', true, "e0f2fe"),
-            createCell(renderValue(elems.camposFormativos), false, "ffffff", 3),
+            createCell('Director(a):', true, "f1f5f9"),
+            createCell(renderValue(datos.director)),
+            createCell('CCT:', true, "f1f5f9"),
+            createCell(renderValue(datos.cct)),
           ]
         }),
         new TableRow({
           children: [
-            createCell('Metodología:', true, "e0f2fe"),
-            createCell(renderValue(elems.metodologia), false, "ffffff", 3),
-          ]
-        }),
-        new TableRow({
-          children: [
-            createCell('Problemática:', true, "e0f2fe"),
-            createCell(renderValue(elems.problematica), false, "ffffff", 3),
+            createCell('Periodo:', true, "f1f5f9"),
+            createCell(renderValue(datos.periodoAplicacion), false, undefined, 3),
           ]
         })
       ]
     }));
-    sections.push(new Paragraph({ spacing: { after: 300 } }));
+    children.push(new Paragraph({ spacing: { after: 240 } }));
 
-    // Curriculum Table
-    const contenidoText = elems.contenidos || (fases[0]?.contenido) || 'N/A';
-    const pdaText = elems.pda || (fases[0]?.pda) || 'N/A';
-    const ejesText = elems.ejesArticuladores || (fases[0]?.ejesArticuladores) || 'N/A';
-    const escenarioText = elems.escenario || (fases[0]?.escenario) || 'N/A';
-
-    sections.push(new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [4000, 4000, 4000, 4118],
-      rows: [
-        new TableRow({
-          children: [
-            createCell('CONTENIDO(S)', true, "1e3a8a", 1, "ffffff"),
-            createCell('PROCESOS DE DESARROLLO DE APRENDIZAJE (PDA)', true, "1e3a8a", 1, "ffffff"),
-            createCell('EJES ARTICULADORES', true, "1e3a8a", 1, "ffffff"),
-            createCell('ESCENARIO', true, "1e3a8a", 1, "ffffff")
-          ]
-        }),
-        new TableRow({
-          children: [
-            createCell(renderValue(contenidoText)),
-            createCell(renderValue(pdaText)),
-            createCell(renderValue(ejesText)),
-            createCell(renderValue(escenarioText))
-          ]
-        })
-      ]
+    // Sección 1: Justificación Pedagógica y Diagnóstico Inicial
+    children.push(new Paragraph({
+      text: "1. Justificación Pedagógica y Diagnóstico Inicial",
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 200, after: 120 }
     }));
-    sections.push(new Paragraph({ spacing: { after: 300 } }));
+    children.push(new Paragraph({
+      children: [new TextRun({ text: renderValue(justificacion), size: 21 })],
+      spacing: { after: 240 }
+    }));
 
-    // Activities Table
-    const actRows = [
-      new TableRow({
-        children: [
-          createCell('ACTIVIDADES DE APRENDIZAJE', true, "10b981", 1, "ffffff"),
-          createCell('RECURSOS MATERIALES', true, "10b981", 1, "ffffff"),
-          createCell('EVALUACIÓN FORMATIVA', true, "10b981", 1, "ffffff")
-        ]
-      })
-    ];
-
-    fases.forEach((faseObj: any, idx: number) => {
-      const titulo = faseObj.titulo || `Fase/Sesión ${idx + 1}`;
-      const actividades = faseObj.actividades || faseObj.fasesMetodologicas || 'N/A';
-      const actCellContent = `[${titulo}]\n\n${actividades}`;
-      
-      actRows.push(new TableRow({
-        children: [
-          createCell(renderValue(actCellContent)),
-          createCell(renderValue(faseObj.recursosYMateriales || faseObj.recursos || 'N/A')),
-          createCell(renderValue(faseObj.evaluacionFormativa || faseObj.evaluacion || 'N/A'))
-        ]
+    // Sección 2: Proyecto Integrador
+    if (proyecto.titulo || proyecto.metodologia) {
+      children.push(new Paragraph({
+        text: "2. Proyecto Integrador de Diagnóstico e Integración",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 120 }
       }));
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "• Título del Proyecto: ", bold: true, size: 21 }),
+          new TextRun({ text: renderValue(proyecto.titulo), size: 21 })
+        ],
+        spacing: { after: 60 }
+      }));
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "• Metodología Principal: ", bold: true, size: 21 }),
+          new TextRun({ text: renderValue(proyecto.metodologia), size: 21 })
+        ],
+        spacing: { after: 60 }
+      }));
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "• Propósito del Proyecto: ", bold: true, size: 21 }),
+          new TextRun({ text: renderValue(proyecto.proposito), size: 21 })
+        ],
+        spacing: { after: 240 }
+      }));
+    }
 
-      if (faseObj.adecuacionesTEA && faseObj.adecuacionesTEA !== 'N/A') {
-        actRows.push(new TableRow({
+    // Sección 3: Estructura Curricular
+    if (currList.length > 0) {
+      children.push(new Paragraph({
+        text: "3. Estructura Curricular: Campos Formativos, Contenidos y PDA",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 120 }
+      }));
+      
+      const currRows = [
+        new TableRow({
           children: [
-            createCell('ADECUACIONES TEA:\n' + renderValue(faseObj.adecuacionesTEA), false, "fffbeb", 3)
+            createCell('Campo Formativo', true, "1e293b", 1, "ffffff"),
+            createCell('Contenido Contextualizado', true, "1e293b", 1, "ffffff"),
+            createCell('Proceso de Desarrollo de Aprendizaje (PDA)', true, "1e293b", 1, "ffffff"),
+            createCell('Ejes Articuladores', true, "1e293b", 1, "ffffff"),
+          ]
+        })
+      ];
+
+      currList.forEach((c: any) => {
+        currRows.push(new TableRow({
+          children: [
+            createCell(renderValue(c.campoFormativo), true, "f8fafc"),
+            createCell(renderValue(c.contenidoContextualizado)),
+            createCell(renderValue(c.pda)),
+            createCell(renderValue(c.ejesArticuladores)),
           ]
         }));
-      }
-    });
+      });
 
-    sections.push(new Table({
+      children.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: currRows
+      }));
+      children.push(new Paragraph({ spacing: { after: 240 } }));
+    }
+
+    // Sección 4: Secuencias Didácticas Detalladas
+    if (secuencias.length > 0) {
+      children.push(new Paragraph({
+        text: "4. Secuencias Didácticas Detalladas (Día a Día)",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 120 }
+      }));
+
+      const secRows = [
+        new TableRow({
+          children: [
+            createCell('Día / Campo', true, "0f172a", 1, "ffffff"),
+            createCell('Descripción de Actividades (Inicio, Desarrollo y Cierre)', true, "0f172a", 1, "ffffff"),
+            createCell('Materiales y Recursos', true, "0f172a", 1, "ffffff"),
+          ]
+        })
+      ];
+
+      secuencias.forEach((s: any) => {
+        const diaCampo = `${renderValue(s.dia || s.titulo)}\n${renderValue(s.campoFormativo || '')}`;
+        let actText = '';
+        if (s.inicio || s.desarrollo || s.cierre) {
+          actText = `${renderValue(s.temaActividad || '')}\n• Inicio: ${renderValue(s.inicio)}\n• Desarrollo: ${renderValue(s.desarrollo)}\n• Cierre: ${renderValue(s.cierre)}`;
+        } else {
+          actText = renderValue(s.actividades || s.fasesMetodologicas || '');
+        }
+
+        secRows.push(new TableRow({
+          children: [
+            createCell(diaCampo, true, "f8fafc"),
+            createCell(actText),
+            createCell(renderValue(s.materialesYRecursos || s.recursos || 'N/A')),
+          ]
+        }));
+      });
+
+      children.push(new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: secRows
+      }));
+      children.push(new Paragraph({ spacing: { after: 240 } }));
+    }
+
+    // Sección 5: Estrategia de Evaluación Formativa
+    if (evaluacion) {
+      children.push(new Paragraph({
+        text: "5. Estrategia de Evaluación Diagnóstica y Formativa",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 120 }
+      }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: renderValue(evaluacion), size: 21 })],
+        spacing: { after: 240 }
+      }));
+    }
+
+    // Sección 6: Anexos - Listas de Cotejo
+    if (anexos.length > 0) {
+      children.push(new Paragraph({
+        text: "6. Anexos: Listas de Cotejo para la Evaluación Formativa",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 120 }
+      }));
+
+      anexos.forEach((anexo: any) => {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: `${renderValue(anexo.tituloAnexo)} (${renderValue(anexo.campoFormativo)})`, bold: true, size: 21 })],
+          spacing: { before: 120, after: 80 }
+        }));
+
+        const anexoRows = [
+          new TableRow({
+            children: [
+              createCell('Indicador de Aprendizaje (PDA Relacionado)', true, "334155", 1, "ffffff"),
+              createCell('Logrado (SÍ)', true, "334155", 1, "ffffff"),
+              createCell('En Proceso (NO)', true, "334155", 1, "ffffff"),
+              createCell('Observaciones / Evidencia', true, "334155", 1, "ffffff"),
+            ]
+          })
+        ];
+
+        (anexo.indicadores || []).forEach((ind: any) => {
+          anexoRows.push(new TableRow({
+            children: [
+              createCell(renderValue(ind.pdaIndicador)),
+              createCell(renderValue(ind.logrado || 'SÍ'), false, undefined, 1),
+              createCell(renderValue(ind.enProceso || 'NO'), false, undefined, 1),
+              createCell(renderValue(ind.observaciones || '')),
+            ]
+          }));
+        });
+
+        children.push(new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: anexoRows
+        }));
+        children.push(new Paragraph({ spacing: { after: 180 } }));
+      });
+    }
+
+    // Firmas Oficiales
+    children.push(new Paragraph({ spacing: { before: 400 } }));
+    children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [8118, 4000, 4000],
-      rows: actRows
+      rows: [
+        new TableRow({
+          children: [
+            createCell(`______________________________\nProfesor(a) de Grupo\n${renderValue(firmas.docente || datos.nombreDocente)}`),
+            createCell(`______________________________\nDirector(a) de la Escuela\n${renderValue(firmas.director || datos.director)}`),
+          ]
+        })
+      ]
     }));
 
     doc = new Document({
       sections: [{ 
         properties: {
           page: {
-            size: {
-              orientation: "landscape",
-            },
             margin: {
-              top: 360,
-              right: 360,
-              bottom: 360,
-              left: 360,
+              top: 720,
+              right: 720,
+              bottom: 720,
+              left: 720,
             },
           },
         },
-        children: sections 
+        children
       }]
     });
 

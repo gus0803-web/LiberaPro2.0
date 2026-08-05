@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { PlanificarIcon, ExamenesIcon, MaterialIcon, MochilaIcon } from './icons/NeoAztecIcons';
+import { MessageSquare } from 'lucide-react';
 
 export default function Sidebar() {
   return (
@@ -25,6 +26,10 @@ export default function Sidebar() {
         <Link href="/app/material" className="flex items-center space-x-4 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
           <MaterialIcon className="w-6 h-6 group-hover:text-turquoise-neon group-hover:scale-110 transition-all" />
           <span className="font-medium text-lg">Materiales</span>
+        </Link>
+        <Link href="/app/communicator" className="flex items-center space-x-4 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+          <MessageSquare className="w-6 h-6 group-hover:text-turquoise-neon group-hover:scale-110 transition-all text-emerald-400" />
+          <span className="font-medium text-lg">WhatsApp</span>
         </Link>
         <Link href="/app/saved" className="flex items-center space-x-4 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
           <MochilaIcon className="w-6 h-6 group-hover:text-turquoise-neon group-hover:scale-110 transition-all" />
