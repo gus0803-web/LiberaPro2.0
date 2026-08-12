@@ -12,6 +12,7 @@ interface StudentContact {
   gradeGroup: string;
   shift: string;
   linkCode: string;
+  lastReaction?: string;
 }
 
 export default function CommunicatorPage() {
@@ -51,7 +52,9 @@ export default function CommunicatorPage() {
     const savedStudents = localStorage.getItem('liberapro_student_link_codes');
     if (savedStudents) {
       try {
-        setStudents(JSON.parse(savedStudents));
+        const parsed = JSON.parse(savedStudents);
+        setStudents(parsed);
+        fetchReactions(parsed);
       } catch (e) {}
     } else {
       // Alumnos iniciales de demostración
@@ -77,7 +80,36 @@ export default function CommunicatorPage() {
       ];
       setStudents(demoStudents);
       localStorage.setItem('liberapro_student_link_codes', JSON.stringify(demoStudents));
+      fetchReactions(demoStudents);
     }
+  }, []);
+
+  const fetchReactions = async (loadedStudents: StudentContact[]) => {
+    try {
+      const supabase = createClient();
+      const codes = loadedStudents.map(s => s.linkCode);
+      if (codes.length === 0) return;
+      const { data } = await supabase.from('family_link_codes').select('link_code, last_reaction').in('link_code', codes);
+      if (data && data.length > 0) {
+        setStudents(prev => prev.map(s => {
+          const match = data.find(d => d.link_code === s.linkCode);
+          return match && match.last_reaction ? { ...s, lastReaction: match.last_reaction } : s;
+        }));
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase.channel('family_reactions_channel')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'family_link_codes' }, (payload) => {
+        const updatedRow = payload.new as any;
+        if (updatedRow.last_reaction) {
+          setStudents(prev => prev.map(s => s.linkCode === updatedRow.link_code ? { ...s, lastReaction: updatedRow.last_reaction } : s));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); }
   }, []);
 
   const [studentAddedMsg, setStudentAddedMsg] = useState('');
@@ -120,7 +152,7 @@ export default function CommunicatorPage() {
 
     const schoolNameStr = selectedSchoolInfo?.school || 'Escuela Primaria';
     const gradeGroupStr = selectedSchoolInfo?.group || '2º A';
-    const shiftStr = selectedSchoolInfo?.turno || 'Vespertino';
+    const shiftStr = selectedSchoolInfo?.turno || selectedSchoolInfo?.shift || 'Matutino';
 
     const code = generateSalonLinkCode(schoolNameStr, gradeGroupStr, shiftStr);
 
@@ -197,9 +229,9 @@ export default function CommunicatorPage() {
     if (category === 'tareas') prefix = '📝 *RECORDATORIO DE TAREA PENDIENTE*';
     if (category === 'actividades') prefix = '🌟 *RESUMEN DE ACTIVIDADES DEL DÍA*';
 
-    const schoolText = selectedSchoolInfo.school || 'Escuela Primaria';
-    const groupText = selectedSchoolInfo.group || '2º A';
-    const shiftText = selectedSchoolInfo.turno || 'Vespertino';
+    const schoolText = selectedSchoolInfo?.school || 'Escuela Primaria';
+    const groupText = selectedSchoolInfo?.group || '2º A';
+    const shiftText = selectedSchoolInfo?.turno || selectedSchoolInfo?.shift || 'Matutino';
 
     let body = `${prefix}\n\nEstimados Padres de Familia de ${schoolText} (${groupText} - Turno ${shiftText}):\n\n`;
 
@@ -231,9 +263,9 @@ export default function CommunicatorPage() {
       if (user) {
         const { error } = await supabase.from('parent_messages').insert({
           sender_teacher_id: user.id,
-          school_name: selectedSchoolInfo.school || 'Escuela Primaria',
-          grade_group: selectedSchoolInfo.group || '2º A',
-          shift: selectedSchoolInfo.turno || 'Vespertino',
+          school_name: selectedSchoolInfo?.school || 'Escuela Primaria',
+          grade_group: selectedSchoolInfo?.group || '2º A',
+          shift: selectedSchoolInfo?.turno || selectedSchoolInfo?.shift || 'Matutino',
           category,
           title: noticeTitle || 'Aviso General',
           due_date: dueDate || null,
@@ -259,8 +291,7 @@ export default function CommunicatorPage() {
   };
 
   const handleCopyFichaPadre = (st: StudentContact) => {
-    const text = `👨‍👩‍👧 *FICHA DE CONEXIÓN PARA PADRES DE FAMILIA*\n\nEstimado tutor de ${st.studentName}:\n\nPara recibir las tareas, avisos y listas de materiales en tiempo real del grupo ${st.gradeGroup} (${st.shift}) en ${st.schoolName}, entra a:\n\n🌐 https://liberapro.app/familias\n\ne ingresa tu Código de Enlace:\n🔑 *${st.linkCode}*`;
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(st.linkCode);
     setCopiedCodeId(st.id);
     setTimeout(() => setCopiedCodeId(null), 3000);
   };
@@ -517,7 +548,10 @@ export default function CommunicatorPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="font-bold text-xs text-slate-900 block">{st.studentName}</span>
-                        <span className="text-[11px] text-slate-500 block">{st.parentName}</span>
+                        <span className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                          {st.parentName}
+                          {st.lastReaction && <span className="text-sm bg-slate-200 px-1 rounded shadow-sm">{st.lastReaction}</span>}
+                        </span>
                         <span className="text-[10px] text-slate-600 block mt-0.5">{st.schoolName} ({st.gradeGroup} - {st.shift})</span>
                       </div>
                       <button 

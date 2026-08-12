@@ -90,7 +90,7 @@ export default function FamiliasPortalPage() {
         if (data && data.length > 0) {
           const matched = data.filter(m => 
             (m.student_link_code && m.student_link_code === info.linkCode) ||
-            (m.grade_group === info.gradeGroup && m.school_name === info.schoolName)
+            (m.grade_group === info.gradeGroup && m.school_name === info.schoolName && m.shift === info.shift)
           );
 
           if (matched.length > 0) {
@@ -139,7 +139,7 @@ export default function FamiliasPortalPage() {
                 const newMsg = payload.new as any;
                 if (
                   newMsg.student_link_code === info.linkCode ||
-                  (newMsg.grade_group === info.gradeGroup && newMsg.school_name === info.schoolName)
+                  (newMsg.grade_group === info.gradeGroup && newMsg.school_name === info.schoolName && newMsg.shift === info.shift)
                 ) {
                   const msgObj: ParentMessage = {
                     id: newMsg.id || Date.now().toString(),
@@ -293,7 +293,11 @@ export default function FamiliasPortalPage() {
       const current = data?.reactions || {};
       const newReactions = { ...current, [emoji]: (current[emoji] || 0) + 1 };
       
+      
       await supabase.from('parent_messages').update({ reactions: newReactions }).eq('id', messageId);
+      
+      // Actualizar el emoji enviado por el padre en el código de enlace (perfil del alumno)
+      await supabase.from('family_link_codes').update({ last_reaction: emoji }).eq('link_code', activeSalonInfo.linkCode);
     } catch (e) {
       console.error('Error al enviar reacción');
     }
@@ -392,6 +396,7 @@ export default function FamiliasPortalPage() {
                 <input 
                   type="text" 
                   required
+                  maxLength={20}
                   value={linkCodeInput}
                   onChange={e => setLinkCodeInput(e.target.value)}
                   placeholder="Ej. JS-2A-VESP-8492"
