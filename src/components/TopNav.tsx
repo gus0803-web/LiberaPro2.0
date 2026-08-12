@@ -16,7 +16,7 @@ export function TopNav() {
     { href: '/app/dashboard', labelEn: 'Home', labelEs: 'Inicio', icon: Home },
     { href: '/app/planner', labelEn: 'Lesson Plans', labelEs: 'Planeaciones', icon: BookOpen },
     { href: '/app/calendar', labelEn: 'Calendar', labelEs: 'Calendario', icon: Calendar },
-    { href: '/app/communicator', labelEn: 'Virtual Board', labelEs: 'Pizarrón Virtual', icon: Megaphone },
+    { href: '/app/communicator', labelEn: 'Notices', labelEs: 'Avisos', icon: Megaphone },
     { href: '/app/reports', labelEn: 'Reports', labelEs: 'Reportes', icon: FileBarChart },
     { href: '/app/scanner', labelEn: 'Scanner', labelEs: 'Escáner', icon: ScanLine },
   ];

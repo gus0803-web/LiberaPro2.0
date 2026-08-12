@@ -29,7 +29,7 @@ export default function Sidebar() {
         </Link>
         <Link href="/app/communicator" className="flex items-center space-x-4 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
           <Megaphone className="w-6 h-6 group-hover:text-turquoise-neon group-hover:scale-110 transition-all text-emerald-400" />
-          <span className="font-medium text-lg">Pizarrón Virtual</span>
+          <span className="font-medium text-lg">Avisos</span>
         </Link>
         <Link href="/app/saved" className="flex items-center space-x-4 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
           <MochilaIcon className="w-6 h-6 group-hover:text-turquoise-neon group-hover:scale-110 transition-all" />
