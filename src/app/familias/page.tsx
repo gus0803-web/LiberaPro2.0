@@ -116,9 +116,11 @@ export default function FamiliasPortalPage() {
 
   const loadMessagesAndSubscribe = async (info: SalonInfo) => {
     setRealtimeStatus('connecting');
+    // Guardar tipo de usuario 'family' para la memoria de navegación
+    localStorage.setItem('liberapro_user_type', 'family');
     const supabase = createClient();
 
-    // 1. Cargar mensajes iniciales en Supabase
+    // 1. Cargar mensajes iniciales en Supabase con filtrado estricto de aula
     try {
       const { data, error } = await supabase
         .from('parent_messages')
@@ -126,11 +128,10 @@ export default function FamiliasPortalPage() {
         .order('created_at', { ascending: false });
 
       if (data && data.length > 0) {
-        // Filtrar por salón o por código de enlace específico
+        // Filtrado estricto: Coincidencia por código de alumno O coincidencia exacta de Grupo + Escuela
         const matched = data.filter(m => 
-          m.student_link_code === info.linkCode || 
-          m.grade_group === info.gradeGroup ||
-          m.school_name === info.schoolName
+          (m.student_link_code && m.student_link_code === info.linkCode) ||
+          (m.grade_group === info.gradeGroup && m.school_name === info.schoolName)
         );
 
         if (matched.length > 0) {
@@ -149,8 +150,8 @@ export default function FamiliasPortalPage() {
             id: 'welcome-1',
             category: 'recordatorio',
             title: `¡Aula Vinculada: ${info.gradeGroup}!`,
-            details: `Tu dispositivo ha quedado vinculado al aula ${info.gradeGroup} (${info.shift}) de ${info.schoolName} para el alumno ${info.studentName}.`,
-            formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}*. Tan pronto como el docente publique una tarea o aviso para el grupo ${info.gradeGroup}, aparecerá de inmediato en esta pantalla.\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
+            details: `Tu dispositivo ha quedado vinculado al grupo ${info.gradeGroup} (${info.shift}) de ${info.schoolName} para el alumno ${info.studentName}.`,
+            formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}* para el grupo ${info.gradeGroup} (${info.shift}) en ${info.schoolName}.\n\nTan pronto como el docente publique una tarea o aviso para tu grupo, aparecerá de inmediato en esta pantalla.\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
             created_at: new Date().toISOString()
           }]);
         }
@@ -160,7 +161,7 @@ export default function FamiliasPortalPage() {
           category: 'recordatorio',
           title: `¡Aula Vinculada: ${info.gradeGroup}!`,
           details: `Tu dispositivo ha quedado vinculado al aula ${info.gradeGroup} de ${info.schoolName}.`,
-          formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}*.\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
+          formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}* para el grupo ${info.gradeGroup} (${info.shift}).\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
           created_at: new Date().toISOString()
         }]);
       }
@@ -233,10 +234,17 @@ export default function FamiliasPortalPage() {
       
       {/* Top Header Bar */}
       <header className="flex justify-between items-center max-w-3xl w-full mx-auto pb-4 border-b border-slate-800">
-        <Link href="/" className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors">
+        <button 
+          type="button"
+          onClick={() => {
+            localStorage.removeItem('liberapro_user_type');
+            window.location.href = '/';
+          }}
+          className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Inicio</span>
-        </Link>
+          <span>Volver al Inicio / Cambiar Perfil</span>
+        </button>
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
           <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">LiberaPro Familias</span>
@@ -392,10 +400,16 @@ export default function FamiliasPortalPage() {
 
       </main>
 
-      {/* Footer Info */}
-      <footer className="max-w-3xl w-full mx-auto text-center text-[11px] text-slate-600 border-t border-slate-800/80 pt-4 flex justify-between items-center">
+      {/* Footer Info con Enlaces Legales y de Contacto */}
+      <footer className="max-w-3xl w-full mx-auto text-center text-[11px] text-slate-400 border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
         <span>© 2026 LiberaPro Familias</span>
-        <span className="text-emerald-500/80 font-mono">Privacidad Docente Garantizada 100%</span>
+        <div className="flex items-center gap-4 text-[11px] text-slate-400">
+          <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Política de Privacidad</Link>
+          <span>•</span>
+          <Link href="/terms" className="hover:text-emerald-400 transition-colors">Términos de Uso</Link>
+          <span>•</span>
+          <Link href="/contact" className="hover:text-emerald-400 transition-colors">Contacto</Link>
+        </div>
       </footer>
 
     </div>

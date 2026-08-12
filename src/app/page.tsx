@@ -1,8 +1,44 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, GraduationCap, Presentation, HeartHandshake, Award } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award, Crown, FileBarChart, Megaphone, X } from 'lucide-react';
 
 export default function Home() {
+  const router = useRouter();
+  const [showDirectorModal, setShowDirectorModal] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(true);
+
+  // MEMORIA DE TIPO DE USUARIO: Redirección automática al perfil recordado
+  useEffect(() => {
+    const savedType = localStorage.getItem('liberapro_user_type');
+    if (savedType === 'teacher') {
+      router.push('/app/dashboard');
+    } else if (savedType === 'family') {
+      router.push('/familias');
+    } else {
+      setIsRedirecting(false);
+    }
+  }, [router]);
+
+  const setTeacherUserType = () => {
+    localStorage.setItem('liberapro_user_type', 'teacher');
+  };
+
+  const setFamilyUserType = () => {
+    localStorage.setItem('liberapro_user_type', 'family');
+  };
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-[#060911] text-cyan-400 flex flex-col items-center justify-center space-y-4 font-sans">
+        <Sparkles className="w-10 h-10 animate-spin" />
+        <p className="text-sm font-mono tracking-widest text-slate-300">Cargando perfil recordado...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#060911] text-slate-100 flex flex-col justify-between p-6 sm:p-12 relative overflow-hidden font-sans">
       
@@ -53,9 +89,21 @@ export default function Home() {
           Libera<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-purple-400">Pro</span>
         </h1>
 
-        <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
-          Plataforma Educativa NEM 2026
-        </span>
+        <div className="flex items-center gap-3">
+          {/* ACCESO ESPECIAL DIRECTOR (gus0803@gmail.com) */}
+          <button
+            type="button"
+            onClick={() => setShowDirectorModal(true)}
+            className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/20 px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-md"
+          >
+            <Crown className="w-3.5 h-3.5 text-amber-400" />
+            <span>Acceso Director</span>
+          </button>
+
+          <span className="hidden sm:inline-block text-[11px] font-mono uppercase tracking-widest text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
+            Plataforma Educativa NEM 2026
+          </span>
+        </div>
       </header>
 
       {/* Main Hero Section */}
@@ -82,9 +130,10 @@ export default function Home() {
         {/* DUAL SELECTION CARDS - With Vector Icons from Mockup 1C */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 pt-4 max-w-4xl mx-auto text-left">
           
-          {/* Card 1: Acceso Docentes (Mockup 1C Vector Icon: Presentation) */}
+          {/* Card 1: Acceso Docentes */}
           <Link 
             href="/login" 
+            onClick={setTeacherUserType}
             className="group relative bg-[#0d1424]/80 hover:bg-[#0f172a] backdrop-blur-2xl border border-cyan-500/30 hover:border-cyan-400 p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:shadow-cyan-500/20 flex flex-col justify-between space-y-6 transform hover:-translate-y-1.5 overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all pointer-events-none" />
@@ -125,9 +174,10 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Card 2: Acceso Familias / Padres (Mockup 1C Vector Icon: Users) */}
+          {/* Card 2: Acceso Familias / Padres */}
           <Link 
             href="/familias" 
+            onClick={setFamilyUserType}
             className="group relative bg-[#120d24]/80 hover:bg-[#160f2e] backdrop-blur-2xl border border-purple-500/30 hover:border-purple-400 p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:shadow-purple-500/20 flex flex-col justify-between space-y-6 transform hover:-translate-y-1.5 overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all pointer-events-none" />
@@ -171,6 +221,76 @@ export default function Home() {
         </div>
 
       </main>
+
+      {/* MODAL DE SELECCIÓN DE MÓDULO PARA EL DIRECTOR (gus0803@gmail.com) */}
+      {showDirectorModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative">
+            
+            <button 
+              type="button" 
+              onClick={() => setShowDirectorModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                Panel Director / Administración (gus0803@gmail.com)
+              </div>
+              <h3 className="text-2xl font-extrabold text-white">¿A qué área deseas ingresar?</h3>
+              <p className="text-xs text-slate-400">Selecciona el módulo institucional al que deseas acceder:</p>
+            </div>
+
+            <div className="space-y-3">
+              <Link
+                href="/app/dashboard"
+                onClick={() => { setTeacherUserType(); setShowDirectorModal(false); }}
+                className="p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/50 flex items-center gap-4 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Presentation className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-cyan-300">1. Plataforma de Maestro</h4>
+                  <p className="text-xs text-slate-400">Diseñar planeaciones didácticas y generar exámenes</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/app/reports"
+                onClick={() => { setTeacherUserType(); setShowDirectorModal(false); }}
+                className="p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/50 flex items-center gap-4 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <FileBarChart className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-amber-300">2. Panel de Director / Reportes por Salón</h4>
+                  <p className="text-xs text-slate-400">Consultar avance curricular por grupos y exportar Word (.docx)</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/app/communicator"
+                onClick={() => { setTeacherUserType(); setShowDirectorModal(false); }}
+                className="p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-purple-500/50 flex items-center gap-4 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                  <Megaphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-purple-300">3. Módulo de Avisos y Comunicados</h4>
+                  <p className="text-xs text-slate-400">Publicar tareas y notificaciones en tiempo real</p>
+                </div>
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* Footer Info */}
       <footer className="max-w-6xl w-full mx-auto text-center text-xs text-slate-500 border-t border-slate-800/80 pt-6 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono">
