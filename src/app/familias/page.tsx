@@ -30,6 +30,7 @@ export default function FamiliasPortalPage() {
   const [linkedSalons, setLinkedSalons] = useState<SalonInfo[]>([]);
   const [activeSalonIndex, setActiveSalonIndex] = useState(0);
   const [isAddingCode, setIsAddingCode] = useState(false);
+  const [localReactions, setLocalReactions] = useState<Record<string, string>>({});
 
   const [messages, setMessages] = useState<ParentMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,11 @@ export default function FamiliasPortalPage() {
         } catch (e) {}
       }
     }
+
+    try {
+      const storedReactions = localStorage.getItem('liberapro_parent_reactions');
+      if (storedReactions) setLocalReactions(JSON.parse(storedReactions));
+    } catch(e) {}
 
     if (loadedSalons.length > 0) {
       setLinkedSalons(loadedSalons);
@@ -272,6 +278,12 @@ export default function FamiliasPortalPage() {
   };
 
   const handleReaction = async (messageId: string, emoji: string) => {
+    if (localReactions[messageId]) return; // El usuario ya reaccionó a este mensaje
+
+    const newLocal = { ...localReactions, [messageId]: emoji };
+    setLocalReactions(newLocal);
+    localStorage.setItem('liberapro_parent_reactions', JSON.stringify(newLocal));
+
     // 1. Optimistic update
     setMessages(prev => prev.map(m => {
       if (m.id === messageId && !m.id.startsWith('welcome-')) {
@@ -516,16 +528,30 @@ export default function FamiliasPortalPage() {
                       { emoji: '❤️', key: 'heart' },
                       { emoji: '👏', key: 'clap' },
                       { emoji: '✅', key: 'check' }
-                    ].map(r => (
-                      <button 
-                        key={r.key}
-                        onClick={() => handleReaction(msg.id, r.key)}
-                        className="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-xl text-xs flex items-center gap-1.5 transition-colors"
-                      >
-                        <span className="text-base leading-none">{r.emoji}</span>
-                        <span className="text-slate-400 font-bold">{msg.reactions?.[r.key] || 0}</span>
-                      </button>
-                    ))}
+                    ].map(r => {
+                      const hasReacted = localReactions[msg.id] !== undefined;
+                      const isSelected = localReactions[msg.id] === r.key;
+                      
+                      return (
+                        <button 
+                          key={r.key}
+                          onClick={() => handleReaction(msg.id, r.key)}
+                          disabled={hasReacted}
+                          className={`border px-2.5 py-1 rounded-xl text-xs flex items-center gap-1.5 transition-colors ${
+                            isSelected 
+                              ? 'bg-emerald-900 border-emerald-500' 
+                              : hasReacted 
+                                ? 'bg-slate-900 border-slate-800 opacity-50 cursor-not-allowed' 
+                                : 'bg-slate-800 hover:bg-slate-700 border-slate-700'
+                          }`}
+                        >
+                          <span className="text-base leading-none">{r.emoji}</span>
+                          <span className={`${isSelected ? 'text-emerald-400' : 'text-slate-400'} font-bold`}>
+                            {msg.reactions?.[r.key] || 0}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
 
                 </article>

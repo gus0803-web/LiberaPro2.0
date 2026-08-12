@@ -290,6 +290,16 @@ export default function CommunicatorPage() {
     }
   };
 
+  const getReactionBadge = (reactionKey: string) => {
+    switch (reactionKey) {
+      case 'thumb': return <span className="text-[10px] bg-yellow-200 text-yellow-800 border border-yellow-300 px-1.5 py-0.5 rounded-md shadow-sm flex items-center leading-none">👍</span>;
+      case 'heart': return <span className="text-[10px] bg-red-200 text-red-800 border border-red-300 px-1.5 py-0.5 rounded-md shadow-sm flex items-center leading-none">❤️</span>;
+      case 'clap': return <span className="text-[10px] bg-orange-200 text-orange-800 border border-orange-300 px-1.5 py-0.5 rounded-md shadow-sm flex items-center leading-none">👏</span>;
+      case 'check': return <span className="text-[10px] bg-green-200 text-green-800 border border-green-300 px-1.5 py-0.5 rounded-md shadow-sm flex items-center leading-none">✅</span>;
+      default: return null;
+    }
+  };
+
   const handleCopyFichaPadre = (st: StudentContact) => {
     navigator.clipboard.writeText(st.linkCode);
     setCopiedCodeId(st.id);
@@ -550,7 +560,7 @@ export default function CommunicatorPage() {
                         <span className="font-bold text-xs text-slate-900 block">{st.studentName}</span>
                         <span className="text-[11px] text-slate-500 flex items-center gap-1.5">
                           {st.parentName}
-                          {st.lastReaction && <span className="text-sm bg-slate-200 px-1 rounded shadow-sm">{st.lastReaction}</span>}
+                          {st.lastReaction && getReactionBadge(st.lastReaction)}
                         </span>
                         <span className="text-[10px] text-slate-600 block mt-0.5">{st.schoolName} ({st.gradeGroup} - {st.shift})</span>
                       </div>
