@@ -267,8 +267,8 @@ export default function CommunicatorPage() {
 
   return (
     <div className="space-y-8">
-      {/* Banner de Privacidad Docente */}
-      <section className="bg-slate-900 text-slate-100 p-6 rounded-3xl border border-slate-800 shadow-md space-y-2">
+      {/* Banner de Privacidad Docente con acceso al Portal de Padres */}
+      <section className="bg-slate-900 text-slate-100 p-6 rounded-3xl border border-slate-800 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <ShieldCheck className="w-8 h-8 text-emerald-400 flex-shrink-0" />
           <div>
@@ -280,6 +280,16 @@ export default function CommunicatorPage() {
             </p>
           </div>
         </div>
+
+        <a
+          href="/familias"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-shrink-0 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-purple-500/30"
+        >
+          <Users className="w-4 h-4 text-purple-200" />
+          <span>📱 Ir al Portal de Padres (/familias)</span>
+        </a>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
