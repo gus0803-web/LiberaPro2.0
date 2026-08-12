@@ -111,9 +111,12 @@ export default function CommunicatorPage() {
     return `${schoolInitials}-${cleanGroup}-${cleanShift}-${pin}`;
   };
 
-  const handleAddStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!studentNameInput.trim()) return;
+  const handleAddStudentDirect = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!studentNameInput.trim()) {
+      alert('Ingresa al menos el nombre del alumno.');
+      return;
+    }
 
     const schoolNameStr = selectedSchoolInfo?.school || 'Escuela Primaria';
     const gradeGroupStr = selectedSchoolInfo?.group || '2º A';
@@ -135,28 +138,36 @@ export default function CommunicatorPage() {
     const updated = [newStudent, ...students];
     saveStudentsToStorage(updated);
 
-    setStudentAddedMsg(`¡${newStudent.studentName} fue agregado exitosamente a ${newStudent.gradeGroup}! Código: ${newStudent.linkCode}`);
-    setTimeout(() => setStudentAddedMsg(''), 6000);
+    // Restablecer filtro a 'Todos' para que el alumno aparezca de inmediato en pantalla
+    setSelectedGroupFilter('Todos');
+
+    setStudentAddedMsg(`¡${newStudent.studentName} agregado a ${newStudent.gradeGroup}! Código: ${newStudent.linkCode}`);
+    setTimeout(() => setStudentAddedMsg(''), 8000);
 
     // Intentar guardar en Supabase si hay sesión
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('family_link_codes').insert({
-          teacher_id: user.id,
-          school_name: newStudent.schoolName,
-          grade_group: newStudent.gradeGroup,
-          shift: newStudent.shift,
-          student_name: newStudent.studentName,
-          parent_name: newStudent.parentName,
-          link_code: newStudent.linkCode
-        });
-      }
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from('family_link_codes').insert({
+            teacher_id: user.id,
+            school_name: newStudent.schoolName,
+            grade_group: newStudent.gradeGroup,
+            shift: newStudent.shift,
+            student_name: newStudent.studentName,
+            parent_name: newStudent.parentName,
+            link_code: newStudent.linkCode
+          });
+        }
+      });
     } catch (e) {}
 
     setStudentNameInput('');
     setParentNameInput('');
+  };
+
+  const handleAddStudent = async (e: React.FormEvent) => {
+    handleAddStudentDirect(e);
   };
 
   const handleDeleteStudent = (id: string) => {
@@ -458,8 +469,9 @@ export default function CommunicatorPage() {
               )}
 
               <button 
-                type="submit" 
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg"
+                type="button"
+                onClick={() => handleAddStudentDirect()} 
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg active:scale-98"
               >
                 <KeyRound className="w-4 h-4 text-emerald-400" />
                 Agregar Alumno y Generar Código

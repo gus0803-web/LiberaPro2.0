@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
-import { FileBarChart, Printer, Calendar as CalendarIcon, Download, Clock, School, Layers, CheckCircle2 } from 'lucide-react';
+import { FileBarChart, Printer, Calendar as CalendarIcon, Download, Clock, School, CheckCircle2, CheckSquare, Square, Filter } from 'lucide-react';
 import { loadAgendaItems, AgendaItem } from '@/lib/agenda';
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType, WidthType, HeadingLevel, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType, WidthType, HeadingLevel } from 'docx';
 
 export default function ReportsPage() {
   const { language } = useTheme();
@@ -13,15 +13,8 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExportingDocx, setIsExportingDocx] = useState(false);
 
-  useEffect(() => {
-    loadAgendaItems().then(data => {
-      setItems(data);
-      setIsLoading(false);
-    });
-  }, []);
-
   const now = new Date();
-  const currentMonth = now.getMonth();
+  const currentMonthIndex = now.getMonth();
   const currentYear = now.getFullYear();
 
   const monthNames = [
@@ -29,24 +22,52 @@ export default function ReportsPage() {
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
-  // Filtrar planeaciones del mes en curso
-  const planesEsteMes = items.filter(item => {
+  // Estado para la selección múltiple de meses (índices 0 a 11)
+  const [selectedMonths, setSelectedMonths] = useState<number[]>([currentMonthIndex]);
+
+  useEffect(() => {
+    loadAgendaItems().then(data => {
+      setItems(data);
+      setIsLoading(false);
+    });
+  }, []);
+
+  const toggleMonth = (monthIndex: number) => {
+    if (selectedMonths.includes(monthIndex)) {
+      if (selectedMonths.length > 1) {
+        setSelectedMonths(selectedMonths.filter(m => m !== monthIndex));
+      }
+    } else {
+      setSelectedMonths([...selectedMonths, monthIndex].sort((a, b) => a - b));
+    }
+  };
+
+  const selectAllMonths = () => {
+    if (selectedMonths.length === 12) {
+      setSelectedMonths([currentMonthIndex]);
+    } else {
+      setSelectedMonths([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    }
+  };
+
+  // Filtrar planeaciones según los meses seleccionados por el docente
+  const planesFiltrados = items.filter(item => {
     if (item.type !== 'planeacion') return false;
     const d = new Date(item.date);
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    return selectedMonths.includes(d.getMonth());
   });
 
-  const totalSesiones = planesEsteMes.reduce((acc, plan) => {
+  const totalSesiones = planesFiltrados.reduce((acc, plan) => {
     const sesiones = plan.metadata?.object?.secuenciasDidacticas || plan.metadata?.object?.sesiones;
     if (Array.isArray(sesiones)) return acc + sesiones.length;
-    return acc + 5; // Default 5 sesiones por plan
+    return acc + 5;
   }, 0);
 
-  const horasAhorradas = planesEsteMes.length * 2;
+  const horasAhorradas = planesFiltrados.length * 2;
 
   // AGRUPACIÓN POR SALÓN (GRADO Y GRUPO)
   const groupedBySalon: Record<string, AgendaItem[]> = {};
-  planesEsteMes.forEach(plan => {
+  planesFiltrados.forEach(plan => {
     const ident = plan.metadata?.object?.datosIdentificacion;
     const groupKey = plan.metadata?.schoolGroup || ident?.gradoYGrupo || 'Salón General (2º A)';
     if (!groupedBySalon[groupKey]) {
@@ -55,16 +76,21 @@ export default function ReportsPage() {
     groupedBySalon[groupKey].push(plan);
   });
 
-  // Si no hay agrupaciones pero hay items generales
-  if (Object.keys(groupedBySalon).length === 0 && planesEsteMes.length > 0) {
-    groupedBySalon['Salón 2º A'] = planesEsteMes;
+  // Si no hay agrupaciones pero hay items
+  if (Object.keys(groupedBySalon).length === 0 && planesFiltrados.length > 0) {
+    groupedBySalon['Salón 2º A'] = planesFiltrados;
   }
 
   const handlePrint = () => {
     window.print();
   };
 
-  // EXPORTACIÓN A ARCHIVO WORD (.docx) REAL
+  // Nombres de los meses seleccionados formateados
+  const selectedMonthsLabel = selectedMonths.length === 12
+    ? 'Todo el Ciclo Escolar (12 Meses)'
+    : selectedMonths.map(m => monthNames[m]).join(', ');
+
+  // EXPORTACIÓN A ARCHIVO WORD (.docx) MULTIMES REAL
   const handleExportDocx = async () => {
     setIsExportingDocx(true);
 
@@ -81,7 +107,6 @@ export default function ReportsPage() {
       ];
 
       Object.entries(groupedBySalon).forEach(([salonName, planList]) => {
-        // Fila de encabezado por Salón
         rows.push(
           new TableRow({
             children: [
@@ -124,13 +149,13 @@ export default function ReportsPage() {
                 alignment: AlignmentType.CENTER
               }),
               new Paragraph({
-                text: `Ciclo Escolar en curso | Mes: ${monthNames[currentMonth]} ${currentYear}`,
+                text: `Ciclo Escolar ${currentYear} | Meses Seleccionados: ${selectedMonthsLabel}`,
                 alignment: AlignmentType.CENTER
               }),
               new Paragraph({ text: "" }),
               new Paragraph({
                 children: [
-                  new TextRun({ text: `Total Planeaciones: ${planesEsteMes.length}  |  Total Sesiones: ${totalSesiones}  |  Horas Ahorradas: ${horasAhorradas} hrs`, bold: true })
+                  new TextRun({ text: `Total Planeaciones: ${planesFiltrados.length}  |  Total Sesiones: ${totalSesiones}  |  Horas Ahorradas: ${horasAhorradas} hrs`, bold: true })
                 ]
               }),
               new Paragraph({ text: "" }),
@@ -140,7 +165,7 @@ export default function ReportsPage() {
               }),
               new Paragraph({ text: "" }),
               new Paragraph({
-                text: "Documento oficial generado por la Plataforma LiberaPro NEM para validación de avance curricular.",
+                text: "Documento oficial generado por la Plataforma LiberaPro NEM para comprobación curricular ante Dirección y Supervisión Escolar.",
                 alignment: AlignmentType.CENTER
               })
             ]
@@ -152,7 +177,7 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Reporte_Administrativo_Salones_${monthNames[currentMonth]}_${currentYear}.docx`;
+      a.download = `Reporte_Administrativo_${selectedMonths.length}_Meses_${currentYear}.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -178,7 +203,7 @@ export default function ReportsPage() {
           </div>
           <div>
             <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Reporte Administrativo por Salón</h1>
-            <p className="text-slate-500 font-medium mt-1">Informe estructurado por Grado y Grupo para entregar a Dirección</p>
+            <p className="text-slate-500 font-medium mt-1">Selecciona uno o múltiples meses para consultar y descargar tu informe de avance</p>
           </div>
         </div>
 
@@ -204,12 +229,49 @@ export default function ReportsPage() {
         </div>
       </div>
 
+      {/* SELECTOR MÚLTIPLE DE MESES */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4 print:hidden">
+        <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <Filter className="w-4 h-4 text-emerald-600" />
+            Seleccionar Mes(es) a Consultar y Exportar:
+          </label>
+          
+          <button
+            type="button"
+            onClick={selectAllMonths}
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 underline transition-colors"
+          >
+            {selectedMonths.length === 12 ? 'Deseleccionar Todos' : 'Seleccionar Todo el Ciclo Escolar (12 Meses)'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+          {monthNames.map((mName, idx) => {
+            const isSelected = selectedMonths.includes(idx);
+            return (
+              <button
+                key={mName}
+                type="button"
+                onClick={() => toggleMonth(idx)}
+                className={`p-2.5 rounded-2xl border text-xs font-bold transition-all flex items-center justify-between gap-1.5 ${isSelected ? 'bg-emerald-900 text-white border-emerald-800 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`}
+              >
+                <span>{mName}</span>
+                {isSelected ? <CheckSquare className="w-3.5 h-3.5 text-emerald-400" /> : <Square className="w-3.5 h-3.5 text-slate-400" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Printable Report Card */}
       <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-8 sm:p-12 print:shadow-none print:border-none print:p-0">
         <div className="border-b-2 border-slate-900 pb-6 mb-8 flex justify-between items-end">
           <div>
             <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Reporte de Desempeño y Avance Curricular</h2>
-            <p className="text-lg text-slate-600 mt-2 font-medium">Ciclo Escolar en Curso | Mes: {monthNames[currentMonth]} {currentYear}</p>
+            <p className="text-base text-slate-600 mt-2 font-medium">
+              Ciclo Escolar {currentYear} | <strong>Meses Seleccionados:</strong> <span className="text-emerald-700 font-bold">{selectedMonthsLabel}</span>
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Generado por</p>
@@ -223,7 +285,7 @@ export default function ReportsPage() {
             <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
               <FileBarChart className="w-6 h-6" />
             </div>
-            <h3 className="text-4xl font-black text-slate-900">{planesEsteMes.length}</h3>
+            <h3 className="text-4xl font-black text-slate-900">{planesFiltrados.length}</h3>
             <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mt-1">Planeaciones Entregadas</p>
           </div>
 
@@ -248,11 +310,11 @@ export default function ReportsPage() {
         <div className="space-y-8">
           <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 border-b pb-4">
             <span className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold">✓</span>
-            Desglose de Actividades y Planeaciones por Salón
+            Desglose de Actividades por Salón ({selectedMonthsLabel})
           </h3>
 
           {Object.keys(groupedBySalon).length === 0 ? (
-            <p className="text-slate-500 text-center py-8">No hay planeaciones generadas este mes.</p>
+            <p className="text-slate-500 text-center py-8">No hay planeaciones generadas para los meses seleccionados.</p>
           ) : (
             Object.entries(groupedBySalon).map(([salonName, planList]) => (
               <div key={salonName} className="bg-slate-50 border border-slate-200 rounded-2xl p-6 space-y-4">
