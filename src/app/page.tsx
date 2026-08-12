@@ -3,11 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award, Crown, FileBarChart, Megaphone, X } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
-  const [showDirectorModal, setShowDirectorModal] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(true);
 
   // MEMORIA DE TIPO DE USUARIO: Redirección automática al perfil recordado
@@ -89,21 +88,9 @@ export default function Home() {
           Libera<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-purple-400">Pro</span>
         </h1>
 
-        <div className="flex items-center gap-3">
-          {/* ACCESO ESPECIAL DIRECTOR (gus0803@gmail.com) */}
-          <button
-            type="button"
-            onClick={() => setShowDirectorModal(true)}
-            className="text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 hover:bg-amber-500/20 px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 shadow-md"
-          >
-            <Crown className="w-3.5 h-3.5 text-amber-400" />
-            <span>Acceso Director</span>
-          </button>
-
-          <span className="hidden sm:inline-block text-[11px] font-mono uppercase tracking-widest text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
-            Plataforma Educativa NEM 2026
-          </span>
-        </div>
+        <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
+          Plataforma Educativa NEM 2026
+        </span>
       </header>
 
       {/* Main Hero Section */}
@@ -221,76 +208,6 @@ export default function Home() {
         </div>
 
       </main>
-
-      {/* MODAL DE SELECCIÓN DE MÓDULO PARA EL DIRECTOR (gus0803@gmail.com) */}
-      {showDirectorModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative">
-            
-            <button 
-              type="button" 
-              onClick={() => setShowDirectorModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                Panel Director / Administración (gus0803@gmail.com)
-              </div>
-              <h3 className="text-2xl font-extrabold text-white">¿A qué área deseas ingresar?</h3>
-              <p className="text-xs text-slate-400">Selecciona el módulo institucional al que deseas acceder:</p>
-            </div>
-
-            <div className="space-y-3">
-              <Link
-                href="/app/dashboard"
-                onClick={() => { setTeacherUserType(); setShowDirectorModal(false); }}
-                className="p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/50 flex items-center gap-4 transition-all group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                  <Presentation className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white group-hover:text-cyan-300">1. Plataforma de Maestro</h4>
-                  <p className="text-xs text-slate-400">Diseñar planeaciones didácticas y generar exámenes</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/app/reports"
-                onClick={() => { setTeacherUserType(); setShowDirectorModal(false); }}
-                className="p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-500/50 flex items-center gap-4 transition-all group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <FileBarChart className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white group-hover:text-amber-300">2. Panel de Director / Reportes por Salón</h4>
-                  <p className="text-xs text-slate-400">Consultar avance curricular por grupos y exportar Word (.docx)</p>
-                </div>
-              </Link>
-
-              <Link
-                href="/app/communicator"
-                onClick={() => { setTeacherUserType(); setShowDirectorModal(false); }}
-                className="p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-purple-500/50 flex items-center gap-4 transition-all group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                  <Megaphone className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white group-hover:text-purple-300">3. Módulo de Avisos y Comunicados</h4>
-                  <p className="text-xs text-slate-400">Publicar tareas y notificaciones en tiempo real</p>
-                </div>
-              </Link>
-            </div>
-
-          </div>
-        </div>
-      )}
 
       {/* Footer Info */}
       <footer className="max-w-6xl w-full mx-auto text-center text-xs text-slate-500 border-t border-slate-800/80 pt-6 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono">
