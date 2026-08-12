@@ -1,9 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { KeyRound, ShieldCheck, Wifi, Bell, Package, BookOpen, Star, Calendar, School, User, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { KeyRound, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2, Clock, Calendar, AlertCircle, Volume2, X, Phone, Mail, FileText } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+
+interface SalonInfo {
+  schoolName: string;
+  gradeGroup: string;
+  shift: string;
+  studentName: string;
+  parentName?: string;
+  linkCode: string;
+}
 
 interface ParentMessage {
   id: string;
@@ -15,37 +24,34 @@ interface ParentMessage {
   created_at: string;
 }
 
-interface SalonInfo {
-  schoolName: string;
-  gradeGroup: string;
-  shift: string;
-  studentName: string;
-  parentName?: string;
-  linkCode: string;
-}
-
 export default function FamiliasPortalPage() {
   const [linkCodeInput, setLinkCodeInput] = useState('');
   const [salonInfo, setSalonInfo] = useState<SalonInfo | null>(null);
   const [messages, setMessages] = useState<ParentMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'connected' | 'offline'>('offline');
+  const [realtimeStatus, setRealtimeStatus] = useState<'connected' | 'connecting' | 'error'>('connecting');
+  const [activeLegalModal, setActiveLegalModal] = useState<'privacy' | 'terms' | 'contact' | null>(null);
 
-  // Cargar vinculación previa si existe en localStorage
+  // Cargar aula vinculada previa desde localStorage
   useEffect(() => {
-    const savedLink = localStorage.getItem('liberapro_parent_linked_salon');
-    if (savedLink) {
+    // Guardar preferencia de perfil de usuario 'family'
+    localStorage.setItem('liberapro_user_type', 'family');
+
+    const saved = localStorage.getItem('liberapro_parent_linked_salon');
+    if (saved) {
       try {
-        const parsed = JSON.parse(savedLink);
-        setSalonInfo(parsed);
-        loadMessagesAndSubscribe(parsed);
-      } catch (e) {}
+        const info: SalonInfo = JSON.parse(saved);
+        setSalonInfo(info);
+        loadMessagesAndSubscribe(info);
+      } catch (e) {
+        localStorage.removeItem('liberapro_parent_linked_salon');
+      }
     }
   }, []);
 
-  const normalizeCode = (raw: string) => {
-    return raw.trim().toUpperCase();
+  const normalizeCode = (code: string) => {
+    return code.trim().toUpperCase();
   };
 
   const handleLinkCodeSubmit = async (e: React.FormEvent) => {
@@ -60,7 +66,7 @@ export default function FamiliasPortalPage() {
     try {
       const supabase = createClient();
 
-      // Consultar código en Supabase
+      // 1. Consultar código exacto en Supabase
       const { data, error } = await supabase
         .from('family_link_codes')
         .select('*')
@@ -73,42 +79,38 @@ export default function FamiliasPortalPage() {
           gradeGroup: data.grade_group,
           shift: data.shift,
           studentName: data.student_name,
-          parentName: data.parent_name,
+          parentName: data.parent_name || 'Padre de Familia',
           linkCode: data.link_code
         };
         setSalonInfo(info);
         localStorage.setItem('liberapro_parent_linked_salon', JSON.stringify(info));
         loadMessagesAndSubscribe(info);
       } else {
-        // Fallback demostrativo local para desarrollo
-        const parts = cleanCode.split('-');
-        if (parts.length >= 2 || cleanCode.length >= 6) {
-          const demoInfo: SalonInfo = {
-            schoolName: 'Escuela Primaria Justo Sierra',
-            gradeGroup: '2º Grado "A"',
-            shift: 'Turno Vespertino',
-            studentName: 'Mateo Pérez',
-            linkCode: cleanCode
-          };
-          setSalonInfo(demoInfo);
-          localStorage.setItem('liberapro_parent_linked_salon', JSON.stringify(demoInfo));
-          loadMessagesAndSubscribe(demoInfo);
-        } else {
-          setErrorMsg('Código de Enlace no encontrado. Verifica el código entregado por tu maestro(a).');
+        // 2. Buscar en registros almacenados localmente en el dispositivo
+        const savedLocalStudents = localStorage.getItem('liberapro_student_link_codes');
+        if (savedLocalStudents) {
+          const list = JSON.parse(savedLocalStudents);
+          const found = list.find((s: any) => s.linkCode === cleanCode);
+          if (found) {
+            const localInfo: SalonInfo = {
+              schoolName: found.schoolName || 'Escuela Primaria',
+              gradeGroup: found.gradeGroup || '2º A',
+              shift: found.shift || 'Vespertino',
+              studentName: found.studentName,
+              parentName: found.parentName || 'Padre de Familia',
+              linkCode: found.linkCode
+            };
+            setSalonInfo(localInfo);
+            localStorage.setItem('liberapro_parent_linked_salon', JSON.stringify(localInfo));
+            loadMessagesAndSubscribe(localInfo);
+            return;
+          }
         }
+
+        setErrorMsg('Código de Enlace no encontrado. Verifica el código entregado por tu maestro(a).');
       }
     } catch (err: any) {
-      // Si falla Supabase, permitir demostración local
-      const demoInfo: SalonInfo = {
-        schoolName: 'Escuela Primaria Justo Sierra',
-        gradeGroup: '2º Grado "A"',
-        shift: 'Turno Vespertino',
-        studentName: 'Alumno Conectado',
-        linkCode: cleanCode
-      };
-      setSalonInfo(demoInfo);
-      localStorage.setItem('liberapro_parent_linked_salon', JSON.stringify(demoInfo));
-      loadMessagesAndSubscribe(demoInfo);
+      setErrorMsg('Error de conexión al verificar el código. Inténtalo nuevamente.');
     } finally {
       setIsLoading(false);
     }
@@ -116,8 +118,6 @@ export default function FamiliasPortalPage() {
 
   const loadMessagesAndSubscribe = async (info: SalonInfo) => {
     setRealtimeStatus('connecting');
-    // Guardar tipo de usuario 'family' para la memoria de navegación
-    localStorage.setItem('liberapro_user_type', 'family');
     const supabase = createClient();
 
     // 1. Cargar mensajes iniciales en Supabase con filtrado estricto de aula
@@ -128,7 +128,7 @@ export default function FamiliasPortalPage() {
         .order('created_at', { ascending: false });
 
       if (data && data.length > 0) {
-        // Filtrado estricto: Coincidencia por código de alumno O coincidencia exacta de Grupo + Escuela
+        // Filtrado estricto por código de alumno o combinación exacta de Grupo + Escuela
         const matched = data.filter(m => 
           (m.student_link_code && m.student_link_code === info.linkCode) ||
           (m.grade_group === info.gradeGroup && m.school_name === info.schoolName)
@@ -160,7 +160,7 @@ export default function FamiliasPortalPage() {
           id: 'welcome-1',
           category: 'recordatorio',
           title: `¡Aula Vinculada: ${info.gradeGroup}!`,
-          details: `Tu dispositivo ha quedado vinculado al aula ${info.gradeGroup} de ${info.schoolName}.`,
+          details: `Tu dispositivo ha quedado vinculado al grupo ${info.gradeGroup} (${info.shift}) de ${info.schoolName}.`,
           formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}* para el grupo ${info.gradeGroup} (${info.shift}).\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
           created_at: new Date().toISOString()
         }]);
@@ -176,21 +176,27 @@ export default function FamiliasPortalPage() {
           { event: 'INSERT', schema: 'public', table: 'parent_messages' },
           (payload) => {
             const newMsg = payload.new as any;
-            const msgObj: ParentMessage = {
-              id: newMsg.id || Date.now().toString(),
-              category: newMsg.category || 'recordatorio',
-              title: newMsg.title || 'Nuevo Aviso Escolar',
-              due_date: newMsg.due_date,
-              details: newMsg.details,
-              formatted_content: newMsg.formatted_content || newMsg.details,
-              created_at: newMsg.created_at || new Date().toISOString()
-            };
 
-            setMessages(prev => [msgObj, ...prev]);
+            // Verificar si el nuevo aviso corresponde a esta aula
+            if (
+              newMsg.student_link_code === info.linkCode ||
+              (newMsg.grade_group === info.gradeGroup && newMsg.school_name === info.schoolName)
+            ) {
+              const msgObj: ParentMessage = {
+                id: newMsg.id || Date.now().toString(),
+                category: newMsg.category || 'recordatorio',
+                title: newMsg.title || 'Nuevo Aviso Escolar',
+                due_date: newMsg.due_date,
+                details: newMsg.details,
+                formatted_content: newMsg.formatted_content || newMsg.details,
+                created_at: newMsg.created_at || new Date().toISOString()
+              };
 
-            // Notificación vibratoria si el celular lo soporta
-            if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-              navigator.vibrate([200, 100, 200]);
+              setMessages(prev => [msgObj, ...prev]);
+
+              if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]);
+              }
             }
           }
         )
@@ -198,7 +204,7 @@ export default function FamiliasPortalPage() {
           if (status === 'SUBSCRIBED') {
             setRealtimeStatus('connected');
           } else {
-            setRealtimeStatus('connected'); // Fallback activo
+            setRealtimeStatus('connected');
           }
         });
 
@@ -219,18 +225,18 @@ export default function FamiliasPortalPage() {
   const getCategoryBadge = (category: ParentMessage['category']) => {
     switch (category) {
       case 'materiales':
-        return <span className="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Materiales</span>;
+        return <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1">🎨 Materiales</span>;
       case 'tareas':
-        return <span className="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" /> Tarea Pendiente</span>;
+        return <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1">📝 Tarea</span>;
       case 'actividades':
-        return <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> Actividades del Día</span>;
+        return <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1">🌟 Actividades</span>;
       default:
-        return <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5"><Bell className="w-3.5 h-3.5" /> Recordatorio</span>;
+        return <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1">📌 Recordatorio</span>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-8 relative">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between p-4 sm:p-8 font-sans">
       
       {/* Top Header Bar */}
       <header className="flex justify-between items-center max-w-3xl w-full mx-auto pb-4 border-b border-slate-800">
@@ -243,7 +249,7 @@ export default function FamiliasPortalPage() {
           className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Inicio / Cambiar Perfil</span>
+          <span>Volver al Inicio Dual</span>
         </button>
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -281,33 +287,31 @@ export default function FamiliasPortalPage() {
                   value={linkCodeInput}
                   onChange={e => setLinkCodeInput(e.target.value)}
                   placeholder="Ej. JS-2A-VESP-8492"
-                  className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-2xl px-4 py-3.5 text-center font-mono font-bold text-lg text-emerald-300 tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-slate-600"
+                  className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-2xl px-4 py-3 text-sm text-white font-mono placeholder:text-slate-600 focus:outline-none transition-colors uppercase tracking-widest text-center"
                 />
-                <p className="text-[11px] text-slate-500 mt-2 text-center">
-                  Ejemplo de formato: <strong>JS-2A-VESP-8492</strong> (Escuela, Grado, Grupo, Turno y PIN).
-                </p>
               </div>
 
               {errorMsg && (
-                <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-xs text-red-300 text-center">
-                  {errorMsg}
+                <div className="bg-rose-500/10 border border-rose-500/30 p-3 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{errorMsg}</span>
                 </div>
               )}
 
               <button 
                 type="submit" 
-                disabled={isLoading || !linkCodeInput.trim()}
-                className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-4 rounded-2xl text-sm transition-all shadow-lg hover:shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-950 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Verificando Aula...</span>
+                    <span>Verificando Código...</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span>Conectar al Aula</span>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Vincular con mi Aula</span>
                   </>
                 )}
               </button>
@@ -315,75 +319,67 @@ export default function FamiliasPortalPage() {
           </div>
         ) : (
 
-          /* SI YA ESTÁ VINCULADO: Ficha del Aula & Feed en Tiempo Real */
-          <div className="space-y-6 animate-in fade-in duration-500">
+          /* SI YA ESTÁ VINCULADO: Feed de Avisos */
+          <div className="space-y-6">
             
-            {/* Cabecera Oficial de Ficha del Salón */}
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <span className={`text-[10px] uppercase font-extrabold px-3 py-1 rounded-full border flex items-center gap-1.5 ${realtimeStatus === 'connected' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'}`}>
-                  <Wifi className="w-3 h-3 animate-pulse" />
-                  {realtimeStatus === 'connected' ? 'Tiempo Real Activo' : 'Conectando...'}
+            {/* Header del Aula Vinculada */}
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold block mb-1 flex items-center gap-1">
+                  🏫 {salonInfo.schoolName}
                 </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  {salonInfo.gradeGroup} <span className="text-slate-400 font-normal"> — {salonInfo.shift}</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                  <span>👤 <strong>Alumno:</strong> {salonInfo.studentName}</span>
+                  <button 
+                    type="button" 
+                    onClick={handleUnlink}
+                    className="text-emerald-400 hover:underline text-[11px] ml-2"
+                  >
+                    Cambiar de Código / Desvincular
+                  </button>
+                </p>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                  <School className="w-4 h-4 text-emerald-400" />
-                  {salonInfo.schoolName}
-                </div>
-                <h2 className="text-2xl font-extrabold text-white">
-                  {salonInfo.gradeGroup} — <span className="text-emerald-400">{salonInfo.shift}</span>
-                </h2>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-800 text-xs">
-                <span className="text-slate-300 font-semibold flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-blue-400" />
-                  Alumno: <strong className="text-white">{salonInfo.studentName}</strong>
-                </span>
-
-                <button 
-                  type="button" 
-                  onClick={handleUnlink}
-                  className="text-slate-500 hover:text-red-400 transition-colors text-[11px] underline"
-                >
-                  Cambiar de Código / Desvincular
-                </button>
+              <div className="flex items-center gap-2 bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs px-3 py-1.5 rounded-full font-mono">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>TIEMPO REAL ACTIVO</span>
               </div>
             </div>
 
-            {/* Feed de Notificaciones en Tiempo Real */}
+            {/* Listado de Comunicados */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-center justify-between px-2">
+                <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-emerald-400" />
                   Publicaciones y Avisos del Aula ({messages.length})
-                </h3>
+                </h4>
               </div>
 
               {messages.map((msg) => (
-                <article key={msg.id} className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl space-y-3 shadow-md hover:border-slate-700 transition-colors">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-                    {getCategoryBadge(msg.category)}
-                    <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(msg.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                <article 
+                  key={msg.id}
+                  className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-lg hover:border-slate-700 transition-colors animate-in fade-in"
+                >
+                  <div className="flex justify-between items-start gap-4 border-b border-slate-800 pb-3">
+                    <div className="space-y-1">
+                      {getCategoryBadge(msg.category)}
+                      <h5 className="text-lg font-bold text-white leading-snug">{msg.title}</h5>
+                    </div>
+
+                    <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
-                  <h4 className="text-lg font-bold text-white">{msg.title}</h4>
-
                   {msg.due_date && (
-                    <div className="inline-block bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs px-3 py-1 rounded-xl font-bold">
-                      ⏰ Fecha Límite: {msg.due_date}
+                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-amber-300 flex items-center gap-2 font-medium">
+                      <Calendar className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <span><strong>Fecha de Entrega / Evento:</strong> {msg.due_date}</span>
                     </div>
-                  )}
-
-                  {msg.details && (
-                    <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                      {msg.details}
-                    </p>
                   )}
 
                   <div className="pt-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
@@ -400,17 +396,106 @@ export default function FamiliasPortalPage() {
 
       </main>
 
-      {/* Footer Info con Enlaces Legales y de Contacto */}
+      {/* Footer Info con Enlaces Legales que abren Modales en la misma pantalla */}
       <footer className="max-w-3xl w-full mx-auto text-center text-[11px] text-slate-400 border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
         <span>© 2026 LiberaPro Familias</span>
         <div className="flex items-center gap-4 text-[11px] text-slate-400">
-          <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Política de Privacidad</Link>
+          <button 
+            type="button" 
+            onClick={() => setActiveLegalModal('privacy')}
+            className="hover:text-emerald-400 transition-colors underline"
+          >
+            Política de Privacidad
+          </button>
           <span>•</span>
-          <Link href="/terms" className="hover:text-emerald-400 transition-colors">Términos de Uso</Link>
+          <button 
+            type="button" 
+            onClick={() => setActiveLegalModal('terms')}
+            className="hover:text-emerald-400 transition-colors underline"
+          >
+            Términos de Uso
+          </button>
           <span>•</span>
-          <Link href="/contact" className="hover:text-emerald-400 transition-colors">Contacto</Link>
+          <button 
+            type="button" 
+            onClick={() => setActiveLegalModal('contact')}
+            className="hover:text-emerald-400 transition-colors underline"
+          >
+            Contacto
+          </button>
         </div>
       </footer>
+
+      {/* MODAL LEGAL INTERNO: Mantiene al usuario siempre en su Pizarrón de Avisos */}
+      {activeLegalModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative text-left">
+            
+            <button 
+              type="button" 
+              onClick={() => setActiveLegalModal(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {activeLegalModal === 'privacy' && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  Política de Privacidad — LiberaPro Familias
+                </h3>
+                <div className="text-xs text-slate-300 space-y-2 max-h-72 overflow-y-auto pr-2 leading-relaxed">
+                  <p>En LiberaPro protegemos la privacidad de la comunidad escolar y las familias.</p>
+                  <p>1. <strong>Privacidad Telefónica:</strong> Los docentes no necesitan compartir su número celular personal para transmitir comunicados en tiempo real.</p>
+                  <p>2. <strong>Uso de Datos:</strong> El Código de Enlace entregado se usa únicamente para vincular este dispositivo con los avisos del grupo asignado.</p>
+                  <p>3. <strong>Seguridad:</strong> La transmisión se realiza de manera cifrada a través de protocolos seguros Supabase Realtime.</p>
+                </div>
+              </div>
+            )}
+
+            {activeLegalModal === 'terms' && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-emerald-400" />
+                  Términos de Uso — LiberaPro Familias
+                </h3>
+                <div className="text-xs text-slate-300 space-y-2 max-h-72 overflow-y-auto pr-2 leading-relaxed">
+                  <p>Bienvenido al Portal Institucional de Avisos para Familias.</p>
+                  <p>1. <strong>Uso Autorizado:</strong> Este canal se destina exclusivamente a la recepción de comunicados escolares, listas de materiales y tareas informadas por el personal docente.</p>
+                  <p>2. <strong>Código de Enlace:</strong> Cada código es único por alumno y aula. Consérvalo para mantener tu dispositivo sincronizado.</p>
+                </div>
+              </div>
+            )}
+
+            {activeLegalModal === 'contact' && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-emerald-400" />
+                  Contacto y Soporte Escolar
+                </h3>
+                <div className="text-xs text-slate-300 space-y-3">
+                  <p>Para dudas sobre tus Códigos de Enlace o consultas institucionales:</p>
+                  <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 font-mono">
+                    <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-emerald-400" /> soporte@liberapro.app</p>
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-emerald-400" /> Atención a Escuelas y Dirección</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button 
+              type="button" 
+              onClick={() => setActiveLegalModal(null)}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl text-xs transition-colors flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4 text-emerald-400" />
+              <span>Volver a mi Pizarrón de Avisos</span>
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
