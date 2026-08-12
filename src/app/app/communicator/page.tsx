@@ -144,21 +144,31 @@ export default function CommunicatorPage() {
     setStudentAddedMsg(`¡${newStudent.studentName} agregado a ${newStudent.gradeGroup}! Código: ${newStudent.linkCode}`);
     setTimeout(() => setStudentAddedMsg(''), 8000);
 
-    // Intentar guardar en Supabase si hay sesión
+    // Guardar en Supabase vía API y cliente
+    fetch('/api/communicator/link-codes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        schoolName: newStudent.schoolName,
+        gradeGroup: newStudent.gradeGroup,
+        shift: newStudent.shift,
+        studentName: newStudent.studentName,
+        parentName: newStudent.parentName,
+        linkCode: newStudent.linkCode
+      })
+    }).catch(err => console.error('Error enviando a API link-codes:', err));
+
     try {
       const supabase = createClient();
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user) {
-          supabase.from('family_link_codes').insert({
-            teacher_id: user.id,
-            school_name: newStudent.schoolName,
-            grade_group: newStudent.gradeGroup,
-            shift: newStudent.shift,
-            student_name: newStudent.studentName,
-            parent_name: newStudent.parentName,
-            link_code: newStudent.linkCode
-          });
-        }
+      supabase.from('family_link_codes').insert({
+        school_name: newStudent.schoolName,
+        grade_group: newStudent.gradeGroup,
+        shift: newStudent.shift,
+        student_name: newStudent.studentName,
+        parent_name: newStudent.parentName,
+        link_code: newStudent.linkCode
+      }).then(({ error }) => {
+        if (error) console.log('Client insert family_link_codes result:', error);
       });
     } catch (e) {}
 

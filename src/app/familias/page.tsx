@@ -118,33 +118,49 @@ export default function FamiliasPortalPage() {
     setRealtimeStatus('connecting');
     const supabase = createClient();
 
-    // 1. Cargar mensajes iniciales
+    // 1. Cargar mensajes iniciales en Supabase
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('parent_messages')
         .select('*')
-        .or(`grade_group.eq."${info.gradeGroup}",student_link_code.eq."${info.linkCode}"`)
         .order('created_at', { ascending: false });
 
       if (data && data.length > 0) {
-        const formatted: ParentMessage[] = data.map(m => ({
-          id: m.id,
-          category: m.category,
-          title: m.title,
-          due_date: m.due_date,
-          details: m.details,
-          formatted_content: m.formatted_content,
-          created_at: m.created_at
-        }));
-        setMessages(formatted);
+        // Filtrar por salón o por código de enlace específico
+        const matched = data.filter(m => 
+          m.student_link_code === info.linkCode || 
+          m.grade_group === info.gradeGroup ||
+          m.school_name === info.schoolName
+        );
+
+        if (matched.length > 0) {
+          const formatted: ParentMessage[] = matched.map(m => ({
+            id: m.id,
+            category: m.category,
+            title: m.title,
+            due_date: m.due_date,
+            details: m.details,
+            formatted_content: m.formatted_content,
+            created_at: m.created_at
+          }));
+          setMessages(formatted);
+        } else {
+          setMessages([{
+            id: 'welcome-1',
+            category: 'recordatorio',
+            title: `¡Aula Vinculada: ${info.gradeGroup}!`,
+            details: `Tu dispositivo ha quedado vinculado al aula ${info.gradeGroup} (${info.shift}) de ${info.schoolName} para el alumno ${info.studentName}.`,
+            formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}*. Tan pronto como el docente publique una tarea o aviso para el grupo ${info.gradeGroup}, aparecerá de inmediato en esta pantalla.\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
+            created_at: new Date().toISOString()
+          }]);
+        }
       } else {
-        // Mensaje inicial de bienvenida
         setMessages([{
           id: 'welcome-1',
           category: 'recordatorio',
-          title: '¡Bienvenidos al Portal de Avisos en Tiempo Real!',
-          details: `Tu dispositivo ha quedado vinculado al aula ${info.gradeGroup} de ${info.schoolName}. Aquí recibirás al instante las tareas y comunicados de tu docente.`,
-          formatted_content: `📌 *AVISO DE BIENVENIDA*\n\nEstimado tutor de ${info.studentName}:\n\nTe damos la bienvenida al Portal Oficial. En esta pantalla recibirás en tiempo real todas las indicaciones, tareas y listas de materiales.\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
+          title: `¡Aula Vinculada: ${info.gradeGroup}!`,
+          details: `Tu dispositivo ha quedado vinculado al aula ${info.gradeGroup} de ${info.schoolName}.`,
+          formatted_content: `📌 *AULA CONECTADA EXITOSAMENTE*\n\nEstimado tutor de ${info.studentName}:\n\nTu dispositivo está enlazado con el código *${info.linkCode}*.\n\n*Atentamente,*\nDirección Escolar y Cuerpo Docente`,
           created_at: new Date().toISOString()
         }]);
       }
