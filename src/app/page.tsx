@@ -4,57 +4,54 @@ import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, GraduationCap,
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#070b12] text-slate-100 flex flex-col justify-between p-6 sm:p-12 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#060911] text-slate-100 flex flex-col justify-between p-6 sm:p-12 relative overflow-hidden font-sans">
       
-      {/* BACKGROUND VARIATION 1C: Cyber-Prehispánico Vector Accents & Glows */}
-      {/* Top Right Cyber Prehispanic Network Vector & Cyan Glow */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] pointer-events-none opacity-40">
-        <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <path d="M500 0H250L350 100L220 230L380 390L500 270V0Z" stroke="url(#cyan-grad)" strokeWidth="1.5" strokeDasharray="4 4" />
-          <path d="M500 120L400 220L480 300" stroke="#06b6d4" strokeWidth="1" opacity="0.6" />
-          <circle cx="350" cy="100" r="4" fill="#22d3ee" />
-          <circle cx="220" cy="230" r="4" fill="#a855f7" />
-          <circle cx="380" cy="390" r="4" fill="#06b6d4" />
+      {/* BACKGROUND VARIATION 1C: Enlarge Corner Glows & White Neon Parameters */}
+      {/* Top Right Cyber Prehispanic Network Vector & Enlarged Cyan/White Glow */}
+      <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none opacity-60">
+        <svg viewBox="0 0 700 700" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <path d="M700 0H350L480 140L300 320L520 540L700 360V0Z" stroke="url(#cyan-white-grad)" strokeWidth="2.5" strokeDasharray="6 6" />
+          <path d="M700 160L550 310L660 420" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8" />
+          <circle cx="480" cy="140" r="6" fill="#ffffff" />
+          <circle cx="300" cy="320" r="6" fill="#38bdf8" />
+          <circle cx="520" cy="540" r="6" fill="#c084fc" />
           <defs>
-            <linearGradient id="cyan-grad" x1="500" y1="0" x2="220" y2="390" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#22d3ee" />
-              <stop offset="1" stopColor="#a855f7" />
+            <linearGradient id="cyan-white-grad" x1="700" y1="0" x2="300" y2="540" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#ffffff" />
+              <stop offset="0.5" stopColor="#38bdf8" />
+              <stop offset="1" stopColor="#c084fc" />
             </linearGradient>
           </defs>
         </svg>
       </div>
-      <div className="absolute top-[-100px] right-[-100px] w-96 h-96 bg-cyan-500/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-150px] right-[-150px] w-[500px] h-[500px] bg-cyan-400/25 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-[-50px] right-[-50px] w-[300px] h-[300px] bg-white/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Bottom Left Cyber Vector & Violet Glow */}
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] pointer-events-none opacity-40">
-        <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <path d="M0 500H250L150 400L280 270L120 110L0 230V500Z" stroke="url(#purple-grad)" strokeWidth="1.5" strokeDasharray="4 4" />
-          <path d="M0 380L100 280L20 200" stroke="#a855f7" strokeWidth="1" opacity="0.6" />
-          <circle cx="150" cy="400" r="4" fill="#a855f7" />
-          <circle cx="280" cy="270" r="4" fill="#22d3ee" />
-          <circle cx="120" cy="110" r="4" fill="#a855f7" />
+      {/* Bottom Left Cyber Vector & Enlarged Violet/White Glow */}
+      <div className="absolute bottom-0 left-0 w-[700px] h-[700px] pointer-events-none opacity-60">
+        <svg viewBox="0 0 700 700" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <path d="M0 700H350L210 560L390 380L170 160L0 330V700Z" stroke="url(#purple-white-grad)" strokeWidth="2.5" strokeDasharray="6 6" />
+          <path d="M0 540L150 390L30 280" stroke="#c084fc" strokeWidth="1.5" opacity="0.8" />
+          <circle cx="210" cy="560" r="6" fill="#c084fc" />
+          <circle cx="390" cy="380" r="6" fill="#ffffff" />
+          <circle cx="170" cy="160" r="6" fill="#38bdf8" />
           <defs>
-            <linearGradient id="purple-grad" x1="0" y1="500" x2="280" y2="110" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#a855f7" />
-              <stop offset="1" stopColor="#06b6d4" />
+            <linearGradient id="purple-white-grad" x1="0" y1="700" x2="390" y2="160" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#c084fc" />
+              <stop offset="0.5" stopColor="#ffffff" />
+              <stop offset="1" stopColor="#38bdf8" />
             </linearGradient>
           </defs>
         </svg>
       </div>
-      <div className="absolute bottom-[-100px] left-[-100px] w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-150px] left-[-150px] w-[500px] h-[500px] bg-purple-600/25 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-[-50px] left-[-50px] w-[300px] h-[300px] bg-white/10 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Header Bar */}
       <header className="flex justify-between items-center max-w-6xl w-full mx-auto z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 p-0.5 shadow-lg shadow-cyan-500/20">
-            <div className="w-full h-full bg-[#090e1a] rounded-[14px] flex items-center justify-center font-extrabold text-cyan-400 text-xl">
-              L
-            </div>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Libera<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Pro</span>
-          </h1>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+          Libera<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-purple-400">Pro</span>
+        </h1>
 
         <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1.5 rounded-full shadow-inner">
           Plataforma Educativa NEM 2026
@@ -85,7 +82,7 @@ export default function Home() {
         {/* DUAL SELECTION CARDS - With Vector Icons from Mockup 1C */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 pt-4 max-w-4xl mx-auto text-left">
           
-          {/* Card 1: Acceso Docentes (Mockup 1C Vector Icon: Presentation / GraduationCap) */}
+          {/* Card 1: Acceso Docentes (Mockup 1C Vector Icon: Presentation) */}
           <Link 
             href="/login" 
             className="group relative bg-[#0d1424]/80 hover:bg-[#0f172a] backdrop-blur-2xl border border-cyan-500/30 hover:border-cyan-400 p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:shadow-cyan-500/20 flex flex-col justify-between space-y-6 transform hover:-translate-y-1.5 overflow-hidden"
@@ -128,7 +125,7 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Card 2: Acceso Familias / Padres (Mockup 1C Vector Icon: Users / HeartHandshake) */}
+          {/* Card 2: Acceso Familias / Padres (Mockup 1C Vector Icon: Users) */}
           <Link 
             href="/familias" 
             className="group relative bg-[#120d24]/80 hover:bg-[#160f2e] backdrop-blur-2xl border border-purple-500/30 hover:border-purple-400 p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:shadow-purple-500/20 flex flex-col justify-between space-y-6 transform hover:-translate-y-1.5 overflow-hidden"
@@ -177,7 +174,7 @@ export default function Home() {
 
       {/* Footer Info */}
       <footer className="max-w-6xl w-full mx-auto text-center text-xs text-slate-500 border-t border-slate-800/80 pt-6 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono">
-        <p>© 2026 LiberaPro — Plataforma Oficial Educativa</p>
+        <p>© 2026 LiberaPro</p>
         <div className="flex items-center gap-6 text-[11px]">
           <span className="flex items-center gap-1.5 text-cyan-400"><ShieldCheck className="w-4 h-4" /> Privacidad Docente 100%</span>
           <span className="flex items-center gap-1.5 text-purple-400"><Zap className="w-4 h-4" /> Realtime Active</span>

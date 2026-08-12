@@ -80,7 +80,9 @@ export default function CommunicatorPage() {
     }
   }, []);
 
-  const selectedSchoolInfo = savedSchools[selectedSchoolIndex] || {
+  const [studentAddedMsg, setStudentAddedMsg] = useState('');
+
+  const selectedSchoolInfo = (savedSchools && savedSchools[selectedSchoolIndex]) ? savedSchools[selectedSchoolIndex] : {
     school: 'Escuela Primaria Justo Sierra',
     group: '2º A',
     cct: '02DPRXXXXX',
@@ -95,15 +97,15 @@ export default function CommunicatorPage() {
 
   // Función para generar Código de Enlace por Salón (Escuela, Grado, Grupo, Turno, PIN)
   const generateSalonLinkCode = (school: string, group: string, shift: string) => {
-    const schoolInitials = school
+    const schoolInitials = (school || 'JUSTOSIERRA')
       .split(' ')
       .filter(w => w.length > 2)
       .map(w => w[0])
       .join('')
       .toUpperCase() || 'LIBERA';
 
-    const cleanGroup = group.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || '1A';
-    const cleanShift = shift.slice(0, 4).toUpperCase() || 'MAT';
+    const cleanGroup = (group || '2A').replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || '2A';
+    const cleanShift = (shift || 'VESP').slice(0, 4).toUpperCase() || 'VESP';
     const pin = Math.floor(1000 + Math.random() * 9000);
 
     return `${schoolInitials}-${cleanGroup}-${cleanShift}-${pin}`;
@@ -113,25 +115,28 @@ export default function CommunicatorPage() {
     e.preventDefault();
     if (!studentNameInput.trim()) return;
 
-    const code = generateSalonLinkCode(
-      selectedSchoolInfo.school || 'Justo Sierra',
-      selectedSchoolInfo.group || '2º A',
-      selectedSchoolInfo.turno || 'Vespertino'
-    );
+    const schoolNameStr = selectedSchoolInfo?.school || 'Escuela Primaria';
+    const gradeGroupStr = selectedSchoolInfo?.group || '2º A';
+    const shiftStr = selectedSchoolInfo?.turno || 'Vespertino';
+
+    const code = generateSalonLinkCode(schoolNameStr, gradeGroupStr, shiftStr);
 
     const newStudent: StudentContact = {
       id: Date.now().toString(),
       studentName: studentNameInput.trim(),
       parentName: parentNameInput.trim() || 'Padre de Familia',
-      schoolName: selectedSchoolInfo.school || 'Escuela Primaria',
-      gradeGroup: selectedSchoolInfo.group || '2º A',
-      shift: selectedSchoolInfo.turno || 'Vespertino',
+      schoolName: schoolNameStr,
+      gradeGroup: gradeGroupStr,
+      shift: shiftStr,
       linkCode: code
     };
 
-    // Guardar localmente
-    const updated = [...students, newStudent];
+    // Guardar localmente inmediatamente
+    const updated = [newStudent, ...students];
     saveStudentsToStorage(updated);
+
+    setStudentAddedMsg(`¡${newStudent.studentName} fue agregado exitosamente a ${newStudent.gradeGroup}! Código: ${newStudent.linkCode}`);
+    setTimeout(() => setStudentAddedMsg(''), 6000);
 
     // Intentar guardar en Supabase si hay sesión
     try {
@@ -445,18 +450,19 @@ export default function CommunicatorPage() {
                 />
               </div>
 
-              <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 space-y-1">
-                <span className="font-bold block">Aula de Asignación:</span>
-                <p>🏫 {selectedSchoolInfo.school || 'Escuela'}</p>
-                <p>📍 {selectedSchoolInfo.group || '2º A'} — Turno: {selectedSchoolInfo.turno || 'Vespertino'}</p>
-              </div>
+              {studentAddedMsg && (
+                <div className="bg-emerald-100 border border-emerald-300 p-2.5 rounded-xl text-xs text-emerald-800 font-semibold text-center flex items-center justify-center gap-1.5 animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>{studentAddedMsg}</span>
+                </div>
+              )}
 
               <button 
                 type="submit" 
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg"
               >
                 <KeyRound className="w-4 h-4 text-emerald-400" />
-                Generar Código por Salón
+                Agregar Alumno y Generar Código
               </button>
             </form>
           </div>
