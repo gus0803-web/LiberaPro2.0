@@ -33,9 +33,9 @@ const nemPlanningSchema = z.object({
     dia: z.string().describe("Día o Sesión (ej. 'Día 1', 'Día 2')"),
     campoFormativo: z.string(),
     temaActividad: z.string(),
-    inicio: z.string().describe("Activación de conocimientos previos y preguntas generadoras"),
-    desarrollo: z.string().describe("Acción, construcción y manipulación material"),
-    cierre: z.string().describe("Metacognición y diálogo reflexivo colectivo"),
+    activacion: z.string().describe("Activación de conocimientos previos y preguntas generadoras"),
+    construccion: z.string().describe("Acción, construcción y manipulación material"),
+    metacognicion: z.string().describe("Metacognición y diálogo reflexivo colectivo"),
     materialesYRecursos: z.string()
   })),
   estrategiaEvaluacion: z.string().describe("Estrategia de evaluación cualitativa y formativa, diarios de campo, análisis de producciones y uso del error."),
@@ -80,6 +80,20 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Rate Limit: 3 per minute
+    if (user) {
+      const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+      const { count } = await supabase
+        .from('user_generations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', oneMinuteAgo);
+        
+      if (count && count >= 3) {
+        return new Response(JSON.stringify({ error: 'Límite de generaciones alcanzado. Por favor espera un minuto antes de volver a intentar.' }), { status: 429, headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
     const { fase, tema, notasMaestro, metodologia, duracion, hasTEA, schoolGroup, fechaInicio, fechaTermino, profileData } = await req.json();
 
     let expectedSessions = 5;
@@ -109,10 +123,10 @@ LAS 6 SECCIONES OBLIGATORIAS DE LA PLANEACIÓN:
 2. JUSTIFICACIÓN PEDAGÓGICA Y DIAGNÓSTICO INICIAL: Justificación pedagógica integral (socioemocional y académica). DEBES incluir explícitamente la CONCEPCIÓN DEL ERROR como insumo didáctico y oportunidad de aprendizaje no punitiva.
 3. PROYECTO INTEGRADOR: Título del proyecto, Metodología sociocrítica (${metodologia}) y Propósito pedagógico del proyecto.
 4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los 4 Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
-5. SECUENCIAS DIDÁCTICAS DETALLADAS (DÍA A DÍA): EXACTAMENTE ${expectedSessions} días de actividades. Para cada día/sesión, redacta explícitamente los 3 momentos:
-   - INICIO (Activación): Preguntas generadoras, recuperación de saberes previos y problematización de la realidad.
-   - DESARROLLO (Acción y Construcción): Actividades lúdicas, interacción social, manipulación de materiales, dinámicas colaborativas (alfabeto móvil, conteo, croquis, rol).
-   - CIERRE (Metacognición): Reflexión colectiva, evaluación formativa grupal (qué se dificultó, cómo se resolvió, qué aprendimos).
+5. SECUENCIAS DIDÁCTICAS DETALLADAS (DÍA A DÍA): EXACTAMENTE ${expectedSessions} días de actividades. Para cada día/sesión, redacta explícitamente los 3 momentos. PROHIBIDO usar las palabras Inicio, Desarrollo y Cierre. Usa en su lugar Activación, Acción y Construcción, y Reflexión:
+   - ACTIVACIÓN: Preguntas generadoras, recuperación de saberes previos y problematización de la realidad.
+   - ACCIÓN Y CONSTRUCCIÓN: Actividades lúdicas, interacción social, manipulación de materiales, dinámicas colaborativas (alfabeto móvil, conteo, croquis, rol).
+   - REFLEXIÓN / METACOGNICIÓN: Reflexión colectiva, evaluación formativa grupal (qué se dificultó, cómo se resolvió, qué aprendimos).
    - Materiales y Recursos específicos.
    ${hasTEA ? 'Incluye adaptaciones específicas para alumnos con TEA en cada sesión.' : ''}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:

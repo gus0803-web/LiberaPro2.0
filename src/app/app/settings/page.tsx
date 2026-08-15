@@ -273,6 +273,56 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Custom Word Template Upload */}
+        <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm md:col-span-3">
+          <div className="flex items-center space-x-3 mb-6">
+            <Type className="w-6 h-6 text-emerald-500" />
+            <h2 className="text-xl font-bold text-[var(--app-font-color)]">
+              {isEs ? 'Formato de Planeación Personalizado' : 'Custom Planner Format'}
+            </h2>
+          </div>
+          <div className="flex flex-col space-y-4">
+            <p className="text-sm text-slate-600 font-medium">
+              {isEs 
+                ? 'Puedes subir un documento Word (.docx) con el formato oficial de tu escuela. El sistema rellenará las etiquetas que coloques en el documento al momento de descargar. Ejemplos de etiquetas: {{tema}}, {{fase}}, {{metodologia}}.' 
+                : 'Upload a Word document (.docx) with your school\'s official format. The system will fill in the tags you place in the document when downloading. Example tags: {{tema}}, {{fase}}, {{metodologia}}.'}
+            </p>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-start gap-4">
+              <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl cursor-pointer transition-colors">
+                {isEs ? 'Subir Formato (.docx)' : 'Upload Format (.docx)'}
+                <input 
+                  type="file" 
+                  accept=".docx" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        const base64 = evt.target?.result;
+                        if (typeof base64 === 'string') {
+                          localStorage.setItem('liberapro_custom_template', base64);
+                          alert(isEs ? 'Formato guardado exitosamente.' : 'Format saved successfully.');
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                />
+              </label>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('liberapro_custom_template');
+                  alert(isEs ? 'Formato eliminado. Se usará el predeterminado.' : 'Format removed. Default will be used.');
+                }}
+                className="text-xs text-red-600 hover:text-red-700 font-bold underline"
+              >
+                {isEs ? 'Eliminar formato personalizado' : 'Remove custom format'}
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

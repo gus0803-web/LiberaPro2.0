@@ -192,6 +192,64 @@ export function downloadAgendaItem(item: AgendaItem) {
     return stripMarkdown(JSON.stringify(val));
   };
 
+  const templateBase64 = localStorage.getItem('liberapro_custom_template');
+  if (templateBase64 && item.metadata?.object) {
+    try {
+      const PizZip = require('pizzip');
+      const Docxtemplater = require('docxtemplater');
+
+      const binary_string = window.atob(templateBase64.split(',')[1]);
+      const len = binary_string.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+      }
+      
+      const zip = new PizZip(bytes.buffer);
+      const docTemplater = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+      
+      const obj = item.metadata.object;
+      const datos = obj.datosIdentificacion || {};
+      
+      const data = {
+        tema: obj.proyectoIntegrador?.titulo || '',
+        metodologia: obj.proyectoIntegrador?.metodologia || '',
+        proposito: obj.proyectoIntegrador?.proposito || '',
+        fase: datos.fase || '',
+        docente: datos.nombreDocente || '',
+        escuela: datos.escuela || '',
+        cct: datos.cct || '',
+        turno: datos.turno || '',
+        director: datos.director || '',
+        grado: datos.gradoYGrupo || '',
+        periodo: datos.periodoAplicacion || '',
+        mes: datos.mesPlan || '',
+        justificacion: obj.justificacionYDiagnostico || '',
+        evaluacion: obj.estrategiaEvaluacion || '',
+        secuencias: obj.secuenciasDidacticas || [],
+        estructura: obj.estructuraCurricular || []
+      };
+
+      docTemplater.render(data);
+      const out = docTemplater.getZip().generate({
+          type: "blob",
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+      const url = URL.createObjectURL(out);
+      const fileDownload = document.createElement("a");
+      document.body.appendChild(fileDownload);
+      fileDownload.href = url;
+      fileDownload.download = `${safeFilename(item.title)}-${item.date}.docx`;
+      fileDownload.click();
+      document.body.removeChild(fileDownload);
+      URL.revokeObjectURL(url);
+      return; 
+    } catch (error) {
+      console.error("Error generating custom document:", error);
+      alert("Error con tu formato personalizado. Generando formato estándar...");
+    }
+  }
+
   let doc;
 
   if (item.metadata?.object?.datosIdentificacion || item.metadata?.object?.secuenciasDidacticas) {

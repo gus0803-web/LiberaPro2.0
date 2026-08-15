@@ -8,6 +8,7 @@ import { TopNav } from '@/components/TopNav';
 import { AppFooter } from '@/components/AppFooter';
 import { TopBarActions } from '@/components/TopBarActions';
 import { createClient } from '@/lib/supabase/server';
+import { AutoLogout } from '@/components/AutoLogout';
 
 export default async function AppLayout({
   children,
@@ -25,6 +26,7 @@ export default async function AppLayout({
 
   return (
     <ThemeProvider>
+      <AutoLogout />
       <div className="flex min-h-screen text-[var(--app-font-color)] font-[family-name:var(--font-geist-sans)] p-4 md:p-8 overflow-hidden items-center justify-center">
         
         {/* Main Glass Panel */}

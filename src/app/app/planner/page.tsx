@@ -35,9 +35,9 @@ const nemPlanningSchema = z.object({
     dia: z.string(),
     campoFormativo: z.string(),
     temaActividad: z.string(),
-    inicio: z.string(),
-    desarrollo: z.string(),
-    cierre: z.string(),
+    activacion: z.string(),
+    construccion: z.string(),
+    metacognicion: z.string(),
     materialesYRecursos: z.string()
   })),
   estrategiaEvaluacion: z.string(),
@@ -255,7 +255,7 @@ export default function PlannerPage() {
     <div className="space-y-8">
       <section className="space-y-1">
         <h2 className="text-2xl sm:text-3xl font-light text-slate-900 tracking-tight">
-          Estructurador <span className="font-bold text-blue-600">Académico NEM (6 Secciones)</span>
+          Estructurador <span className="font-bold text-blue-600">Académico NEM</span>
         </h2>
         <p className="text-sm text-slate-500 font-light max-w-2xl">
           Genera planeaciones didácticas completas y rigurosas alineadas a la Nueva Escuela Mexicana con el formato oficial de 6 secciones.
@@ -518,9 +518,9 @@ export default function PlannerPage() {
                       <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{sec?.campoFormativo}</span>
                     </div>
                     <div className="space-y-2 text-sm">
-                      <p><strong className="text-emerald-700">• Inicio (Activación):</strong> {sec?.inicio}</p>
-                      <p><strong className="text-blue-700">• Desarrollo (Acción y Construcción):</strong> {sec?.desarrollo}</p>
-                      <p><strong className="text-purple-700">• Cierre (Metacognición):</strong> {sec?.cierre}</p>
+                      <p><strong className="text-emerald-700">• Activación:</strong> {sec?.activacion || sec?.inicio}</p>
+                      <p><strong className="text-blue-700">• Acción y Construcción:</strong> {sec?.construccion || sec?.desarrollo}</p>
+                      <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {sec?.metacognicion || sec?.cierre}</p>
                       <p className="text-slate-600 pt-1 text-xs"><strong>Materiales y Recursos:</strong> {sec?.materialesYRecursos}</p>
                     </div>
                   </div>
