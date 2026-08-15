@@ -518,9 +518,9 @@ export default function PlannerPage() {
                       <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{sec?.campoFormativo}</span>
                     </div>
                     <div className="space-y-2 text-sm">
-                      <p><strong className="text-emerald-700">• Activación:</strong> {sec?.activacion || sec?.inicio}</p>
-                      <p><strong className="text-blue-700">• Acción y Construcción:</strong> {sec?.construccion || sec?.desarrollo}</p>
-                      <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {sec?.metacognicion || sec?.cierre}</p>
+                      <p><strong className="text-emerald-700">• Activación:</strong> {sec?.activacion}</p>
+                      <p><strong className="text-blue-700">• Acción y Construcción:</strong> {sec?.construccion}</p>
+                      <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {sec?.metacognicion}</p>
                       <p className="text-slate-600 pt-1 text-xs"><strong>Materiales y Recursos:</strong> {sec?.materialesYRecursos}</p>
                     </div>
                   </div>
