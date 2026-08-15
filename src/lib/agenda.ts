@@ -637,3 +637,94 @@ export function printAgendaItem(item: AgendaItem) {
   printWindow.focus();
   printWindow.print();
 }
+
+export function downloadCustomFormatGuide() {
+  if (typeof window === 'undefined') return;
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = require('docx');
+
+  const doc = new Document({
+    sections: [{
+      properties: {},
+      children: [
+        new Paragraph({
+          text: "Guía de Etiquetas para Formatos Personalizados",
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Instrucciones de Uso:", bold: true, size: 24 }),
+          ],
+          spacing: { before: 200, after: 120 }
+        }),
+        new Paragraph({
+          text: "1. Abre el documento oficial de planeación que usa tu escuela.",
+          spacing: { after: 120 }
+        }),
+        new Paragraph({
+          text: "2. Busca los espacios en blanco donde normalmente escribes la información.",
+          spacing: { after: 120 }
+        }),
+        new Paragraph({
+          text: "3. Reemplaza esos espacios vacíos copiando y pegando las etiquetas exactas de la lista de abajo (incluyendo las llaves dobles {{ }}).",
+          spacing: { after: 120 }
+        }),
+        new Paragraph({
+          text: "4. Guarda tu documento y súbelo en la sección de Ajustes de LiberaPro.",
+          spacing: { after: 400 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Etiquetas Disponibles:", bold: true, size: 24 }),
+          ],
+          spacing: { before: 200, after: 120 }
+        }),
+        new Paragraph({ text: "{{docente}} - Nombre del maestro", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{escuela}} - Nombre de la escuela", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{cct}} - Clave del Centro de Trabajo", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{turno}} - Matutino / Vespertino", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{director}} - Nombre del director(a)", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{grado}} - Grado y Grupo (Ej. 2° A)", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{fase}} - Fase NEM", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{periodo}} - Periodo de aplicación", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{mes}} - Mes del plan", spacing: { after: 300 } }),
+        new Paragraph({ text: "{{tema}} - Título del Proyecto", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{metodologia}} - Metodología elegida", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{proposito}} - Propósito del proyecto", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{justificacion}} - Justificación y Diagnóstico", spacing: { after: 100 } }),
+        new Paragraph({ text: "{{evaluacion}} - Estrategia de Evaluación", spacing: { after: 400 } }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: "Para listar los días y secuencias didácticas:", bold: true, size: 24 }),
+          ],
+          spacing: { before: 200, after: 120 }
+        }),
+        new Paragraph({
+          text: "Debes envolver la sección de actividades entre las etiquetas {#secuencias} y {/secuencias}. El sistema repetirá todo lo que esté adentro por cada día de clase.",
+          spacing: { after: 120 }
+        }),
+        new Paragraph({ text: "{#secuencias}", bold: true }),
+        new Paragraph({ text: "Día: {{dia}}" }),
+        new Paragraph({ text: "Campo Formativo: {{campoFormativo}}" }),
+        new Paragraph({ text: "Tema/Actividad: {{temaActividad}}" }),
+        new Paragraph({ text: "Activación: {{activacion}}" }),
+        new Paragraph({ text: "Acción y Construcción: {{construccion}}" }),
+        new Paragraph({ text: "Reflexión / Metacognición: {{metacognicion}}" }),
+        new Paragraph({ text: "Materiales y Recursos: {{materialesYRecursos}}" }),
+        new Paragraph({ text: "{/secuencias}", bold: true, spacing: { after: 400 } }),
+      ]
+    }]
+  });
+
+  Packer.toBlob(doc).then((blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    const fileDownload = document.createElement("a");
+    document.body.appendChild(fileDownload);
+    fileDownload.href = url;
+    fileDownload.download = `Guia_Formatos_Personalizados_LiberaPro.docx`;
+    fileDownload.click();
+    document.body.removeChild(fileDownload);
+    URL.revokeObjectURL(url);
+  });
+}

@@ -287,38 +287,58 @@ export default function SettingsPage() {
                 ? 'Puedes subir un documento Word (.docx) con el formato oficial de tu escuela. El sistema rellenará las etiquetas que coloques en el documento al momento de descargar. Ejemplos de etiquetas: {{tema}}, {{fase}}, {{metodologia}}.' 
                 : 'Upload a Word document (.docx) with your school\'s official format. The system will fill in the tags you place in the document when downloading. Example tags: {{tema}}, {{fase}}, {{metodologia}}.'}
             </p>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-start gap-4">
-              <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl cursor-pointer transition-colors">
-                {isEs ? 'Subir Formato (.docx)' : 'Upload Format (.docx)'}
-                <input 
-                  type="file" 
-                  accept=".docx" 
-                  className="hidden" 
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (evt) => {
-                        const base64 = evt.target?.result;
-                        if (typeof base64 === 'string') {
-                          localStorage.setItem('liberapro_custom_template', base64);
-                          alert(isEs ? 'Formato guardado exitosamente.' : 'Format saved successfully.');
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} 
-                />
-              </label>
-              <button 
-                onClick={() => {
-                  localStorage.removeItem('liberapro_custom_template');
-                  alert(isEs ? 'Formato eliminado. Se usará el predeterminado.' : 'Format removed. Default will be used.');
-                }}
-                className="text-xs text-red-600 hover:text-red-700 font-bold underline"
-              >
-                {isEs ? 'Eliminar formato personalizado' : 'Remove custom format'}
-              </button>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="flex flex-col items-center sm:items-start gap-3 w-full sm:w-auto">
+                <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl cursor-pointer transition-colors shadow-md text-center w-full sm:w-auto">
+                  {isEs ? 'Subir Formato (.docx)' : 'Upload Format (.docx)'}
+                  <input 
+                    type="file" 
+                    accept=".docx" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (evt) => {
+                          const base64 = evt.target?.result;
+                          if (typeof base64 === 'string') {
+                            localStorage.setItem('liberapro_custom_template', base64);
+                            alert(isEs ? 'Formato guardado exitosamente.' : 'Format saved successfully.');
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                  />
+                </label>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('liberapro_custom_template');
+                    alert(isEs ? 'Formato eliminado. Se usará el predeterminado.' : 'Format removed. Default will be used.');
+                  }}
+                  className="text-xs text-red-600 hover:text-red-700 font-bold underline"
+                >
+                  {isEs ? 'Eliminar formato personalizado' : 'Remove custom format'}
+                </button>
+              </div>
+
+              <div className="border-l border-slate-200 hidden sm:block h-16 mx-2"></div>
+              
+              <div className="flex flex-col items-center sm:items-start gap-2 w-full sm:w-auto">
+                <button 
+                  onClick={async () => {
+                    const { downloadCustomFormatGuide } = await import('@/lib/agenda');
+                    downloadCustomFormatGuide();
+                  }}
+                  className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm text-center w-full sm:w-auto flex items-center justify-center gap-2"
+                >
+                  <Type className="w-4 h-4" />
+                  {isEs ? 'Descargar Guía de Etiquetas' : 'Download Tags Guide'}
+                </button>
+                <p className="text-xs text-slate-500 text-center sm:text-left max-w-xs">
+                  {isEs ? 'Descarga este archivo para ver la lista de etiquetas disponibles y cómo usarlas en tu documento.' : 'Download this file to see the list of available tags and how to use them.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
