@@ -21,57 +21,37 @@ export default function JoinBetaPage() {
     setError(null);
 
     const normalizedEmail = formData.email.trim().toLowerCase();
+    
+    // Opcional: Impedir que el admin se una a la lista
     if (normalizedEmail === 'gus0803@gmail.com') {
-      setError('No uses el correo administrador para la beta. Usa otro email o inicia sesión con tu cuenta de administrador.');
+      setError('Usa tu cuenta de administrador en la página de Login.');
       setIsLoading(false);
       return;
     }
 
-    const tempPassword = generateTempPassword();
     const supabase = createClient();
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password: tempPassword,
-        options: {
-          data: {
-            full_name: formData.name,
-            school: formData.school,
-            beta_tester: true,
-          },
-        },
-      });
+      const { error: insertError } = await supabase
+        .from('beta_waitlist')
+        .insert({
+          full_name: formData.name,
+          email: normalizedEmail,
+          school: formData.school,
+          status: 'pending'
+        });
 
-      if (signUpError) {
-        const message = signUpError.message?.toString() || '';
-        if (/already registered|already exists|duplicate/i.test(message)) {
-          setError('An account already exists for that email. Please log in or use Forgot Password.');
+      if (insertError) {
+        if (insertError.code === '23505' || /duplicate/i.test(insertError.message)) {
+          setError('Este correo ya está en la lista de espera.');
           return;
         }
-        if (signUpError.status === 429) {
-          setError('Too many requests. Please wait a few minutes and try again.');
-          return;
-        }
-        throw signUpError;
+        throw insertError;
       }
 
-      if (data?.user?.id) {
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ beta_tester: true, beta_expires_at: expiresAt })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          throw profileError;
-        }
-      }
-
-      setTemporaryPassword(tempPassword);
       setIsSubmitted(true);
     } catch (err: any) {
-      setError(err.message || 'Unable to create beta access. Please try again.');
+      setError(err.message || 'No se pudo enviar la solicitud. Intenta de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -90,37 +70,26 @@ export default function JoinBetaPage() {
             <Image src="/logo-512.png" alt="LiberaPro Logo" fill sizes="6rem" className="object-contain object-center scale-[1.15]" />
           </div>
 
-          <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Join the Beta Test</h1>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Únete a la Lista de Espera</h1>
           <p className="text-sm font-medium text-slate-400 text-center mb-8">
-            Ingresa tus datos para crear un acceso temporal. Esta contraseña expira en 7 días.
+            El acceso a LiberaPro es únicamente por invitación. Déjanos tus datos y te contactaremos en cuanto se libere un lugar.
           </p>
 
           {isSubmitted ? (
             <div className="w-full space-y-4 text-center">
-              <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-3xl mx-auto">
+              <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
                 ✓
               </div>
-              <h2 className="text-xl font-bold text-white">Temporary Access Created</h2>
-              <p className="text-sm text-slate-400">
-                Your account was created successfully. Use the email below and the generated password to sign in.
-              </p>
-
-              <div className="rounded-3xl border border-slate-700/80 bg-slate-950/80 p-5 text-left">
-                <p className="text-sm text-slate-400 mb-3">Email</p>
-                <div className="text-white font-semibold break-all">{formData.email}</div>
-                <p className="text-sm text-slate-400 mt-4 mb-3">Temporary password</p>
-                <div className="text-white font-semibold break-all">{temporaryPassword}</div>
-              </div>
-
-              <p className="text-sm text-slate-400">
-                After logging in, go to your account settings to change your password.
+              <h2 className="text-xl font-bold text-white mb-2">¡Gracias por tu interés!</h2>
+              <p className="text-sm text-slate-400 mb-6">
+                Te hemos añadido a nuestra lista de espera. Revisa tu correo electrónico, nos pondremos en contacto contigo pronto.
               </p>
 
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-all"
+                className="inline-flex items-center justify-center w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-all mt-4"
               >
-                Go to Login
+                Volver a Iniciar Sesión
               </Link>
             </div>
           ) : (
@@ -130,9 +99,6 @@ export default function JoinBetaPage() {
                   {error}
                 </div>
               )}
-              <div className="w-full bg-slate-900/70 border border-slate-700/80 p-4 rounded-3xl text-sm text-slate-300">
-                Esta contraseña temporal es válida por 7 días. Después de iniciar sesión, cámbiala lo antes posible.
-              </div>
 
               <div>
                 <label className="block text-sm font-bold text-slate-300 mb-2">Full Name</label>
@@ -172,7 +138,7 @@ export default function JoinBetaPage() {
                 disabled={isLoading}
                 className="w-full py-4 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Creating access...' : 'Request Access'}
+                {isLoading ? 'Enviando...' : 'Unirse a la Lista de Espera'}
               </button>
             </form>
           )}
