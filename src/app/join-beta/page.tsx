@@ -105,6 +105,7 @@ export default function JoinBetaPage() {
                 <input
                   type="text"
                   required
+                  maxLength={100}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white font-medium placeholder:text-slate-500"
@@ -116,6 +117,7 @@ export default function JoinBetaPage() {
                 <input
                   type="email"
                   required
+                  maxLength={100}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white font-medium placeholder:text-slate-500"
@@ -127,6 +129,7 @@ export default function JoinBetaPage() {
                 <input
                   type="text"
                   required
+                  maxLength={150}
                   value={formData.school}
                   onChange={(e) => setFormData({ ...formData, school: e.target.value })}
                   className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white font-medium placeholder:text-slate-500"
