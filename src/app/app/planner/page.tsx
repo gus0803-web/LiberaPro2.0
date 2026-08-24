@@ -31,10 +31,9 @@ const nemPlanningSchema = z.object({
     pda: z.string(),
     ejesArticuladores: z.string()
   })),
-  secuenciasDidacticas: z.array(z.object({
-    dia: z.string(),
-    campoFormativo: z.string(),
-    temaActividad: z.string(),
+  fasesMetodologia: z.array(z.object({
+    pasoMetodologia: z.string(),
+    camposFormativosInvolucrados: z.string(),
     activacion: z.string(),
     construccion: z.string(),
     metacognicion: z.string(),
@@ -57,6 +56,21 @@ const nemPlanningSchema = z.object({
   })
 });
 
+function isMexicanHoliday(d: Date) {
+  const month = d.getMonth() + 1; // 1-12
+  const day = d.getDate();
+  const dayOfWeek = d.getDay();
+
+  if (month === 1 && day === 1) return true;
+  if (month === 5 && day === 1) return true;
+  if (month === 9 && day === 16) return true;
+  if (month === 12 && day === 25) return true;
+  if (month === 2 && dayOfWeek === 1 && day <= 7) return true;
+  if (month === 3 && dayOfWeek === 1 && day >= 15 && day <= 21) return true;
+  if (month === 11 && dayOfWeek === 1 && day >= 15 && day <= 21) return true;
+  return false;
+}
+
 function getBusinessDays(startDateStr: string, count: number) {
   const dates = [];
   const [y, m, day] = startDateStr.split('-').map(Number);
@@ -64,7 +78,7 @@ function getBusinessDays(startDateStr: string, count: number) {
   
   while (dates.length < count) {
     const dayOfWeek = d.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isMexicanHoliday(d)) {
       const yy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
@@ -154,65 +168,66 @@ export default function PlannerPage() {
     director: 'Directora de la Escuela'
   };
 
-  useEffect(() => {
-    if ((object?.secuenciasDidacticas || (object as any)?.fases) && !isLoading && selectedDate && !hasSavedPlan) {
-      let expectedSessions = 5;
-      if (duracion === 'Quincenal') expectedSessions = 10;
-      if (duracion === 'Mensual') expectedSessions = 20;
-      
-      const datesToCover = getBusinessDays(selectedDate, expectedSessions);
+  const [isAnchoring, setIsAnchoring] = useState(false);
 
-      const savePlans = async () => {
-        const fullPlanObject = {
-          datosIdentificacion: {
-            ...object?.datosIdentificacion,
-            nombreDocente: docenteName || selectedSchoolInfo.school || 'N/A',
-            periodoAplicacion: `Del ${selectedDate} al ${getEndDateStr(selectedDate, expectedSessions)}`
-          },
-          justificacionYDiagnostico: object?.justificacionYDiagnostico,
-          proyectoIntegrador: object?.proyectoIntegrador,
-          estructuraCurricular: object?.estructuraCurricular,
-          secuenciasDidacticas: object?.secuenciasDidacticas,
-          estrategiaEvaluacion: object?.estrategiaEvaluacion,
-          anexosListasCotejo: object?.anexosListasCotejo,
-          firmas: object?.firmas
-        };
+  const handleAnchorToCalendar = async () => {
+    if (!object || !selectedDate) return;
+    setIsAnchoring(true);
+    let expectedSessions = 5;
+    if (duracion === 'Quincenal') expectedSessions = 10;
+    if (duracion === 'Mensual') expectedSessions = 20;
+    
+    const datesToCover = getBusinessDays(selectedDate, expectedSessions);
+    const manualEndInput = document.getElementById('manual-end-date') as HTMLInputElement;
+    const finalEndDate = manualEndInput?.value || getEndDateStr(selectedDate, expectedSessions);
+    
+    const fullPlanObject = {
+      datosIdentificacion: {
+        ...object?.datosIdentificacion,
+        nombreDocente: docenteName || selectedSchoolInfo.school || 'N/A',
+        periodoAplicacion: `Del ${selectedDate} al ${finalEndDate}`
+      },
+      justificacionYDiagnostico: object?.justificacionYDiagnostico,
+      proyectoIntegrador: object?.proyectoIntegrador,
+      estructuraCurricular: object?.estructuraCurricular,
+      fasesMetodologia: object?.fasesMetodologia,
+      estrategiaEvaluacion: object?.estrategiaEvaluacion,
+      anexosListasCotejo: object?.anexosListasCotejo,
+      firmas: object?.firmas
+    };
 
-        const promises = datesToCover.map((dateStr, index) => {
-          const newPlan: AgendaItem = {
-            id: `${Date.now()}-${dateStr}-${index}`,
-            date: dateStr,
-            type: 'planeacion',
-            title: tema || 'Planeación Oficial NEM',
-            description: `Proyecto: ${tema} (${fase} - ${metodologia})`,
-            metadata: {
-              fase,
-              tema,
-              metodologia,
-              schoolGroup: selectedSchoolInfo.group || '2º A',
-              duracion,
-              hasTEA,
-              object: fullPlanObject,
-            },
-            createdAt: new Date().toISOString(),
-          };
-          return addAgendaItem(newPlan);
-        });
-
-        setSaveMessage('Guardando planeación oficial en el calendario...');
-        const results = await Promise.all(promises);
-        if (results.every(r => r)) {
-          setSaveMessage('Planeación distribuida y guardada en el calendario.');
-        } else {
-          setSaveMessage('Error parcial al guardar en la nube.');
-        }
-        setHasSavedPlan(true);
-        router.refresh();
-        window.setTimeout(() => setSaveMessage(''), 5000);
+    const promises = datesToCover.map((dateStr, index) => {
+      const newPlan: AgendaItem = {
+        id: `${Date.now()}-${dateStr}-${index}`,
+        date: dateStr,
+        type: 'planeacion',
+        title: tema || 'Planeación Oficial NEM',
+        description: `Proyecto: ${tema} (${fase} - ${metodologia})`,
+        metadata: {
+          fase,
+          tema,
+          metodologia,
+          schoolGroup: selectedSchoolInfo.group || '2º A',
+          duracion,
+          hasTEA,
+          object: fullPlanObject,
+        },
+        createdAt: new Date().toISOString(),
       };
-      savePlans();
+      return addAgendaItem(newPlan);
+    });
+
+    setSaveMessage('Guardando planeación oficial en el calendario...');
+    const results = await Promise.all(promises);
+    if (results.every(r => r)) {
+      setSaveMessage('Planeación distribuida y guardada en el calendario.');
+    } else {
+      setSaveMessage('Error parcial al guardar en la nube.');
     }
-  }, [object, isLoading, selectedDate, hasSavedPlan, fase, tema, metodologia, duracion, hasTEA, docenteName, selectedSchoolInfo]);
+    setHasSavedPlan(true);
+    router.refresh();
+    setIsAnchoring(false);
+  };
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -438,7 +453,23 @@ export default function PlannerPage() {
                 <div><span className="text-slate-500 block text-xs uppercase font-semibold">Turno</span><span className="font-semibold">{object.datosIdentificacion.turno}</span></div>
                 <div><span className="text-slate-500 block text-xs uppercase font-semibold">Fase</span><span className="font-semibold">{object.datosIdentificacion.fase}</span></div>
                 <div><span className="text-slate-500 block text-xs uppercase font-semibold">Director(a)</span><span className="font-semibold">{object.datosIdentificacion.director}</span></div>
-                <div className="sm:col-span-2"><span className="text-slate-500 block text-xs uppercase font-semibold">Periodo</span><span className="font-semibold">{object.datosIdentificacion.periodoAplicacion}</span></div>
+                <div className="sm:col-span-2">
+                  <span className="text-slate-500 block text-xs uppercase font-semibold">Periodo</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-semibold">Del {selectedDate} al</span>
+                    <input 
+                      type="date" 
+                      title="Fecha de Término Real"
+                      className="text-sm font-semibold bg-white border border-slate-300 rounded px-2 py-1 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      onChange={(e) => {
+                        const newEnd = e.target.value;
+                        // We will update the DOM visually, but to be robust, we need to ensure this gets picked up by the download/anchor handlers.
+                        // We can add an id to read it, or use a state. Let's use a standard input with id.
+                      }}
+                      id="manual-end-date"
+                    />
+                  </div>
+                </div>
               </div>
             </section>
           )}
@@ -504,24 +535,24 @@ export default function PlannerPage() {
           )}
 
           {/* Sección 4: Secuencias Didácticas Detalladas */}
-          {object.secuenciasDidacticas && object.secuenciasDidacticas.length > 0 && (
+          {object.fasesMetodologia && object.fasesMetodologia.length > 0 && (
             <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
               <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-emerald-600" />
-                4. Secuencias Didácticas Detalladas (Día a Día)
+                4. Desarrollo del Proyecto por Fases Metodológicas
               </h4>
               <div className="space-y-6">
-                {object.secuenciasDidacticas.map((sec, idx) => (
+                {object.fasesMetodologia.map((faseItem, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-2xl p-5 bg-slate-50/50 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
-                      <span className="font-bold text-blue-700 text-base">{sec?.dia} - {sec?.temaActividad}</span>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{sec?.campoFormativo}</span>
+                      <span className="font-bold text-blue-700 text-base">{faseItem?.pasoMetodologia}</span>
+                      <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{faseItem?.camposFormativosInvolucrados}</span>
                     </div>
                     <div className="space-y-2 text-sm">
-                      <p><strong className="text-emerald-700">• Activación:</strong> {sec?.activacion}</p>
-                      <p><strong className="text-blue-700">• Acción y Construcción:</strong> {sec?.construccion}</p>
-                      <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {sec?.metacognicion}</p>
-                      <p className="text-slate-600 pt-1 text-xs"><strong>Materiales y Recursos:</strong> {sec?.materialesYRecursos}</p>
+                      <p><strong className="text-emerald-700">• Activación:</strong> {faseItem?.activacion}</p>
+                      <p><strong className="text-blue-700">• Acción y Construcción:</strong> {faseItem?.construccion}</p>
+                      <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {faseItem?.metacognicion}</p>
+                      <p className="text-slate-600 pt-1 text-xs"><strong>Materiales y Recursos:</strong> {faseItem?.materialesYRecursos}</p>
                     </div>
                   </div>
                 ))}
@@ -579,11 +610,33 @@ export default function PlannerPage() {
             </section>
           )}
 
-          {/* Botón Descargar Word */}
-          <div className="pt-4 flex justify-end">
+          {/* Warning Message */}
+          {!hasSavedPlan && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium mt-8">
+              ⚠️ Atención: Si abandonas esta página sin descargar la planeación o anclarla al calendario, tu información se perderá y tendrás que gastar créditos para generar una nueva.
+            </div>
+          )}
+
+          {/* Botones Descargar y Anclar */}
+          <div className="pt-4 flex flex-col sm:flex-row justify-end gap-4">
+            <button
+              type="button"
+              onClick={handleAnchorToCalendar}
+              disabled={isAnchoring || hasSavedPlan}
+              className="bg-emerald-600 text-white font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-lg text-base disabled:opacity-50"
+            >
+              <Calendar className="w-5 h-5" />
+              {isAnchoring ? 'Anclando...' : hasSavedPlan ? 'Anclado al Calendario' : 'Anclar al Calendario'}
+            </button>
             <button 
               type="button"
               onClick={() => {
+                let expectedSessions = 5;
+                if (duracion === 'Quincenal') expectedSessions = 10;
+                if (duracion === 'Mensual') expectedSessions = 20;
+                const manualEndInput = document.getElementById('manual-end-date') as HTMLInputElement;
+                const finalEndDate = manualEndInput?.value || getEndDateStr(selectedDate, expectedSessions);
+
                 const masterItem: AgendaItem = {
                   id: `master-download-${Date.now()}`,
                   date: selectedDate || new Date().toISOString().slice(0, 10),
@@ -600,7 +653,8 @@ export default function PlannerPage() {
                         cct: selectedSchoolInfo.cct,
                         turno: selectedSchoolInfo.turno,
                         director: selectedSchoolInfo.director,
-                        gradoYGrupo: selectedSchoolInfo.group
+                        gradoYGrupo: selectedSchoolInfo.group,
+                        periodoAplicacion: `Del ${selectedDate} al ${finalEndDate}`
                       }
                     }, 
                     selectedDate 
@@ -608,8 +662,9 @@ export default function PlannerPage() {
                   createdAt: new Date().toISOString()
                 };
                 downloadAgendaItem(masterItem);
+                setHasSavedPlan(true); // Treat download as a save to dismiss warning
               }} 
-              className="bg-blue-600 text-white font-bold px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-blue-700 transition-all shadow-lg text-base"
+              className="bg-blue-600 text-white font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-lg text-base"
             >
               <Download className="w-5 h-5" />
               Descargar Planeación Oficial (.docx)

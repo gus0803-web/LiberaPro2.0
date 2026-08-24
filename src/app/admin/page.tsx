@@ -45,9 +45,9 @@ export default async function AdminDashboardPage({
             <Link href="/login" className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-colors">
               Go to Login Page
             </Link>
-            <Link href="/app/dashboard" className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition-colors">
+            <a href="/app/dashboard" className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold transition-colors block text-center">
               Return to Dashboard
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -89,10 +89,10 @@ export default async function AdminDashboardPage({
 
         <nav className="flex-1 space-y-2">
           <div className="px-4">
-            <Link href="/app/dashboard" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10">
+            <a href="/app/dashboard" className="flex items-center space-x-4 px-4 py-3 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10">
               <LayoutDashboard className="w-5 h-5" />
               <span className="font-medium text-sm">Return to App</span>
-            </Link>
+            </a>
             <Link href="/admin?tab=users" className={`flex items-center space-x-4 px-4 py-3 mt-2 rounded-lg relative overflow-hidden transition-colors ${activeTab === 'users' ? 'bg-[#1a1814] border border-[#d4af37]/20 text-[#d4af37] shadow-[inset_4px_0_0_0_#d4af37]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
               <Users className="w-5 h-5" />
               <span className="font-bold text-sm">Users</span>

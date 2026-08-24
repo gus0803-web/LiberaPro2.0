@@ -29,13 +29,12 @@ const nemPlanningSchema = z.object({
     pda: z.string().describe("Proceso de Desarrollo de Aprendizaje oficial según la Fase"),
     ejesArticuladores: z.string()
   })),
-  secuenciasDidacticas: z.array(z.object({
-    dia: z.string().describe("Día o Sesión (ej. 'Día 1', 'Día 2')"),
-    campoFormativo: z.string(),
-    temaActividad: z.string(),
-    activacion: z.string().describe("Activación de conocimientos previos y preguntas generadoras"),
-    construccion: z.string().describe("Acción, construcción y manipulación material"),
-    metacognicion: z.string().describe("Metacognición y diálogo reflexivo colectivo"),
+  fasesMetodologia: z.array(z.object({
+    pasoMetodologia: z.string().describe("Nombre del paso o fase de la metodología (Ej. 'Fase 1: Presentación', 'Paso 1: Identificación del problema')"),
+    camposFormativosInvolucrados: z.string().describe("Lista de los campos formativos que se abordan integradamente en esta fase"),
+    activacion: z.string().describe("Activación de conocimientos previos, integrando saberes de forma natural"),
+    construccion: z.string().describe("Actividades de acción y construcción integrando armónicamente los campos formativos"),
+    metacognicion: z.string().describe("Reflexión colectiva y diálogo reflexivo"),
     materialesYRecursos: z.string()
   })),
   estrategiaEvaluacion: z.string().describe("Estrategia de evaluación cualitativa y formativa, diarios de campo, análisis de producciones y uso del error."),
@@ -123,10 +122,11 @@ LAS 6 SECCIONES OBLIGATORIAS DE LA PLANEACIÓN:
 2. JUSTIFICACIÓN PEDAGÓGICA Y DIAGNÓSTICO INICIAL: Justificación pedagógica integral (socioemocional y académica). DEBES incluir explícitamente la CONCEPCIÓN DEL ERROR como insumo didáctico y oportunidad de aprendizaje no punitiva.
 3. PROYECTO INTEGRADOR: Título del proyecto, Metodología sociocrítica (${metodologia}) y Propósito pedagógico del proyecto.
 4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los 4 Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
-5. SECUENCIAS DIDÁCTICAS DETALLADAS (DÍA A DÍA): EXACTAMENTE ${expectedSessions} días de actividades. Para cada día/sesión, redacta explícitamente los 3 momentos. PROHIBIDO usar las palabras Inicio, Desarrollo y Cierre. Usa en su lugar Activación, Acción y Construcción, y Reflexión:
-   - ACTIVACIÓN: Preguntas generadoras, recuperación de saberes previos y problematización de la realidad.
-   - ACCIÓN Y CONSTRUCCIÓN: Actividades lúdicas, interacción social, manipulación de materiales, dinámicas colaborativas (alfabeto móvil, conteo, croquis, rol).
-   - REFLEXIÓN / METACOGNICIÓN: Reflexión colectiva, evaluación formativa grupal (qué se dificultó, cómo se resolvió, qué aprendimos).
+5. DESARROLLO POR FASES DE LA METODOLOGÍA: NO SEPARES POR DÍAS. NO SEPARES POR CAMPOS FORMATIVOS EN ACTIVIDADES INDEPENDIENTES. Estructura el proyecto en los pasos o fases oficiales de la Metodología elegida (${metodologia}). En cada fase, DEBES MEZCLAR de forma natural los campos formativos dentro de una misma secuencia fluida, para que el alumno no sienta saltos bruscos entre materias. Aunque las actividades estén mezcladas, deberás listar qué campos formativos están involucrados en esa fase.
+   Para cada Fase, redacta explícitamente los 3 momentos. PROHIBIDO usar las palabras Inicio, Desarrollo y Cierre. Usa en su lugar Activación, Acción y Construcción, y Reflexión:
+   - ACTIVACIÓN: Preguntas generadoras y problematización de la realidad, integrando saberes.
+   - ACCIÓN Y CONSTRUCCIÓN: Actividades lúdicas, manipulación material y dinámicas colaborativas donde los campos formativos se entrelazan de manera práctica.
+   - REFLEXIÓN / METACOGNICIÓN: Reflexión colectiva (qué se dificultó, cómo se resolvió).
    - Materiales y Recursos específicos.
    ${hasTEA ? 'Incluye adaptaciones específicas para alumnos con TEA en cada sesión.' : ''}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:

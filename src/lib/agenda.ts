@@ -226,7 +226,7 @@ export function downloadAgendaItem(item: AgendaItem) {
         mes: datos.mesPlan || '',
         justificacion: obj.justificacionYDiagnostico || '',
         evaluacion: obj.estrategiaEvaluacion || '',
-        secuencias: obj.secuenciasDidacticas || [],
+        fases: obj.fasesMetodologia || [],
         estructura: obj.estructuraCurricular || []
       };
 
@@ -258,7 +258,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     const justificacion = obj.justificacionYDiagnostico || obj.justificacion || '';
     const proyecto = obj.proyectoIntegrador || {};
     const currList = Array.isArray(obj.estructuraCurricular) ? obj.estructuraCurricular : [];
-    const secuencias = Array.isArray(obj.secuenciasDidacticas) ? obj.secuenciasDidacticas : (Array.isArray(obj.fases) ? obj.fases : []);
+    const fasesMetodologia = Array.isArray(obj.fasesMetodologia) ? obj.fasesMetodologia : [];
     const evaluacion = obj.estrategiaEvaluacion || '';
     const anexos = Array.isArray(obj.anexosListasCotejo) ? obj.anexosListasCotejo : [];
     const firmas = obj.firmas || {};
@@ -414,10 +414,10 @@ export function downloadAgendaItem(item: AgendaItem) {
       children.push(new Paragraph({ spacing: { after: 240 } }));
     }
 
-    // Sección 4: Secuencias Didácticas Detalladas
-    if (secuencias.length > 0) {
+    // Sección 4: Fases Metodológicas
+    if (fasesMetodologia.length > 0) {
       children.push(new Paragraph({
-        text: "4. Secuencias Didácticas Detalladas (Día a Día)",
+        text: "4. Desarrollo del Proyecto por Fases Metodológicas",
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 200, after: 120 }
       }));
@@ -425,27 +425,27 @@ export function downloadAgendaItem(item: AgendaItem) {
       const secRows = [
         new TableRow({
           children: [
-            createCell('Día / Campo', true, "0f172a", 1, "ffffff"),
-            createCell('Descripción de Actividades (Inicio, Desarrollo y Cierre)', true, "0f172a", 1, "ffffff"),
+            createCell('Fase de Metodología y Campos Formativos', true, "0f172a", 1, "ffffff"),
+            createCell('Descripción de Actividades Integradas', true, "0f172a", 1, "ffffff"),
             createCell('Materiales y Recursos', true, "0f172a", 1, "ffffff"),
           ]
         })
       ];
 
-      secuencias.forEach((s: any) => {
-        const diaCampo = `${renderValue(s.dia || s.titulo)}\n${renderValue(s.campoFormativo || '')}`;
+      fasesMetodologia.forEach((f: any) => {
+        const faseCampo = `${renderValue(f.pasoMetodologia)}\n${renderValue(f.camposFormativosInvolucrados)}`;
         let actText = '';
-        if (s.inicio || s.desarrollo || s.cierre) {
-          actText = `${renderValue(s.temaActividad || '')}\n• Inicio: ${renderValue(s.inicio)}\n• Desarrollo: ${renderValue(s.desarrollo)}\n• Cierre: ${renderValue(s.cierre)}`;
+        if (f.activacion || f.construccion || f.metacognicion) {
+          actText = `• Activación: ${renderValue(f.activacion)}\n\n• Acción y Construcción: ${renderValue(f.construccion)}\n\n• Reflexión / Metacognición: ${renderValue(f.metacognicion)}`;
         } else {
-          actText = renderValue(s.actividades || s.fasesMetodologicas || '');
+          actText = renderValue(f.actividades || f.fasesMetodologicas || '');
         }
 
         secRows.push(new TableRow({
           children: [
-            createCell(diaCampo, true, "f8fafc"),
+            createCell(faseCampo, true, "f8fafc"),
             createCell(actText),
-            createCell(renderValue(s.materialesYRecursos || s.recursos || 'N/A')),
+            createCell(renderValue(f.materialesYRecursos || f.recursos || 'N/A')),
           ]
         }));
       });
@@ -696,23 +696,22 @@ export function downloadCustomFormatGuide() {
         new Paragraph({ text: "{{evaluacion}} - Estrategia de Evaluación", spacing: { after: 400 } }),
         new Paragraph({
           children: [
-            new TextRun({ text: "Para listar los días y secuencias didácticas:", bold: true, size: 24 }),
+            new TextRun({ text: "Para listar las Fases de la Metodología (Secuencia Integrada):", bold: true, size: 24 }),
           ],
           spacing: { before: 200, after: 120 }
         }),
         new Paragraph({
-          text: "Debes envolver la sección de actividades entre las etiquetas {#secuencias} y {/secuencias}. El sistema repetirá todo lo que esté adentro por cada día de clase.",
+          text: "Debes envolver la sección de actividades entre las etiquetas {#fases} y {/fases}. El sistema repetirá todo lo que esté adentro por cada fase del proyecto.",
           spacing: { after: 120 }
         }),
-        new Paragraph({ text: "{#secuencias}", bold: true }),
-        new Paragraph({ text: "Día: {{dia}}" }),
-        new Paragraph({ text: "Campo Formativo: {{campoFormativo}}" }),
-        new Paragraph({ text: "Tema/Actividad: {{temaActividad}}" }),
+        new Paragraph({ text: "{#fases}", bold: true }),
+        new Paragraph({ text: "Paso/Fase: {{pasoMetodologia}}" }),
+        new Paragraph({ text: "Campos Formativos Involucrados: {{camposFormativosInvolucrados}}" }),
         new Paragraph({ text: "Activación: {{activacion}}" }),
         new Paragraph({ text: "Acción y Construcción: {{construccion}}" }),
         new Paragraph({ text: "Reflexión / Metacognición: {{metacognicion}}" }),
         new Paragraph({ text: "Materiales y Recursos: {{materialesYRecursos}}" }),
-        new Paragraph({ text: "{/secuencias}", bold: true, spacing: { after: 400 } }),
+        new Paragraph({ text: "{/fases}", bold: true, spacing: { after: 400 } }),
       ]
     }]
   });
