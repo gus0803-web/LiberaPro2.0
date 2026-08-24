@@ -526,6 +526,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     children.push(new Paragraph({ spacing: { before: 400 } }));
     children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      columnWidths: [5400, 5400], // 50%, 50%
+      layout: TableLayoutType.FIXED,
       rows: [
         new TableRow({
           children: [
