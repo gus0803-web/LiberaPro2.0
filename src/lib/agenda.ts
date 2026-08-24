@@ -172,7 +172,7 @@ export function buildAgendaItemText(item: AgendaItem) {
 
 export function downloadAgendaItem(item: AgendaItem) {
   if (typeof window === 'undefined') return;
-  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel, AlignmentType } = require('docx');
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel, AlignmentType, TableLayoutType } = require('docx');
   
   const stripMarkdown = (text: string) => {
     if (!text) return '';
@@ -263,7 +263,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     const anexos = Array.isArray(obj.anexosListasCotejo) ? obj.anexosListasCotejo : [];
     const firmas = obj.firmas || {};
     
-    const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1, textColor?: string) => {
+    const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1, textColor?: string, widthPercent?: number) => {
       const lines = String(text || '').split('\n');
       const paragraphs = lines.map(line => 
         new Paragraph({ 
@@ -273,6 +273,7 @@ export function downloadAgendaItem(item: AgendaItem) {
       );
       return new TableCell({
         columnSpan: colSpan,
+        width: widthPercent ? { size: widthPercent, type: WidthType.PERCENTAGE } : undefined,
         shading: bgColor ? { fill: bgColor } : undefined,
         margins: { top: 120, bottom: 120, left: 150, right: 150 },
         children: paragraphs,
@@ -301,13 +302,14 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Info Table
     children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      layout: TableLayoutType.FIXED,
       rows: [
         new TableRow({
           children: [
-            createCell('Docente Titular:', true, "f1f5f9"),
-            createCell(renderValue(datos.nombreDocente)),
-            createCell('Grado y Grupo:', true, "f1f5f9"),
-            createCell(renderValue(datos.gradoYGrupo)),
+            createCell('Docente Titular:', true, "f1f5f9", 1, undefined, 20),
+            createCell(renderValue(datos.nombreDocente), false, undefined, 1, undefined, 30),
+            createCell('Grado y Grupo:', true, "f1f5f9", 1, undefined, 20),
+            createCell(renderValue(datos.gradoYGrupo), false, undefined, 1, undefined, 30),
           ]
         }),
         new TableRow({
@@ -388,10 +390,10 @@ export function downloadAgendaItem(item: AgendaItem) {
       const currRows = [
         new TableRow({
           children: [
-            createCell('Campo Formativo', true, "1e293b", 1, "ffffff"),
-            createCell('Contenido Contextualizado', true, "1e293b", 1, "ffffff"),
-            createCell('Proceso de Desarrollo de Aprendizaje (PDA)', true, "1e293b", 1, "ffffff"),
-            createCell('Ejes Articuladores', true, "1e293b", 1, "ffffff"),
+            createCell('Campo Formativo', true, "1e293b", 1, "ffffff", 20),
+            createCell('Contenido Contextualizado', true, "1e293b", 1, "ffffff", 30),
+            createCell('Proceso de Desarrollo de Aprendizaje (PDA)', true, "1e293b", 1, "ffffff", 30),
+            createCell('Ejes Articuladores', true, "1e293b", 1, "ffffff", 20),
           ]
         })
       ];
@@ -409,6 +411,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
+        layout: TableLayoutType.FIXED,
         rows: currRows
       }));
       children.push(new Paragraph({ spacing: { after: 240 } }));
@@ -425,9 +428,9 @@ export function downloadAgendaItem(item: AgendaItem) {
       const secRows = [
         new TableRow({
           children: [
-            createCell('Fase de Metodología y Campos Formativos', true, "0f172a", 1, "ffffff"),
-            createCell('Descripción de Actividades Integradas', true, "0f172a", 1, "ffffff"),
-            createCell('Materiales y Recursos', true, "0f172a", 1, "ffffff"),
+            createCell('Fase de Metodología y Campos Formativos', true, "0f172a", 1, "ffffff", 25),
+            createCell('Descripción de Actividades Integradas', true, "0f172a", 1, "ffffff", 50),
+            createCell('Materiales y Recursos', true, "0f172a", 1, "ffffff", 25),
           ]
         })
       ];
@@ -452,6 +455,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
+        layout: TableLayoutType.FIXED,
         rows: secRows
       }));
       children.push(new Paragraph({ spacing: { after: 240 } }));
@@ -487,10 +491,10 @@ export function downloadAgendaItem(item: AgendaItem) {
         const anexoRows = [
           new TableRow({
             children: [
-              createCell('Indicador de Aprendizaje (PDA Relacionado)', true, "334155", 1, "ffffff"),
-              createCell('Logrado (SÍ)', true, "334155", 1, "ffffff"),
-              createCell('En Proceso (NO)', true, "334155", 1, "ffffff"),
-              createCell('Observaciones / Evidencia', true, "334155", 1, "ffffff"),
+              createCell('Indicador de Aprendizaje (PDA Relacionado)', true, "334155", 1, "ffffff", 40),
+              createCell('Logrado (SÍ)', true, "334155", 1, "ffffff", 15),
+              createCell('En Proceso (NO)', true, "334155", 1, "ffffff", 15),
+              createCell('Observaciones / Evidencia', true, "334155", 1, "ffffff", 30),
             ]
           })
         ];
@@ -508,6 +512,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
         children.push(new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
+          layout: TableLayoutType.FIXED,
           rows: anexoRows
         }));
         children.push(new Paragraph({ spacing: { after: 180 } }));
