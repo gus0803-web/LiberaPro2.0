@@ -61,6 +61,8 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
 
     const apiKey =
       process.env.OPENAI_API_KEY ||
@@ -182,17 +184,24 @@ Notas, contexto y requerimientos del maestro:
       system: systemPrompt,
       prompt: userPrompt,
       async onFinish({ object }) {
-        if (object && user) {
+        if (object && user && accessToken) {
           try {
-            await supabase.from('user_generations').insert({
+            const { createClient: createRawClient } = require('@supabase/supabase-js');
+            const supabaseAsync = createRawClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+            );
+
+            await supabaseAsync.from('user_generations').insert({
               user_id: user.id,
               type: 'planeacion',
               content: object
             });
             
-            const { data: profile } = await supabase.from('profiles').select('credits').eq('id', user.id).single();
+            const { data: profile } = await supabaseAsync.from('profiles').select('credits').eq('id', user.id).single();
             if (profile && typeof profile.credits === 'number') {
-              await supabase.from('profiles').update({ credits: Math.max(0, profile.credits - 1) }).eq('id', user.id);
+              await supabaseAsync.from('profiles').update({ credits: Math.max(0, profile.credits - 1) }).eq('id', user.id);
             }
           } catch (e) {
             console.error('Error saving generation to db or decrementing credits', e);

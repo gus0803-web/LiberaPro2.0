@@ -27,6 +27,8 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
 
     if (!user) {
       return new Response('Unauthorized', { status: 401 });
@@ -69,9 +71,16 @@ export async function POST(req: Request) {
       system: systemPrompt,
       prompt: `Genera la evaluación en el formato: ${formato}.`,
       async onFinish({ object }) {
-        if (object) {
+        if (object && user && accessToken) {
           try {
-            await supabase.from('user_generations').insert({
+            const { createClient: createRawClient } = require('@supabase/supabase-js');
+            const supabaseAsync = createRawClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+            );
+
+            await supabaseAsync.from('user_generations').insert({
               user_id: user.id,
               type: 'examen',
               content: object
