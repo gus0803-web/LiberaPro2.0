@@ -315,8 +315,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Info Table
     children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [2160, 3240, 2160, 3240], // 20%, 30%, 20%, 30%
-      layout: TableLayoutType.FIXED,
+      layout: TableLayoutType.AUTOFIT,
       rows: [
         new TableRow({
           children: [
@@ -425,8 +424,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
-        columnWidths: [2160, 3240, 3240, 2160], // 20%, 30%, 30%, 20%
-        layout: TableLayoutType.FIXED,
+        layout: TableLayoutType.AUTOFIT,
         rows: currRows
       }));
       children.push(new Paragraph({ spacing: { after: 240 } }));
@@ -477,8 +475,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
-        columnWidths: [2700, 5400, 2700], // 25%, 50%, 25%
-        layout: TableLayoutType.FIXED,
+        layout: TableLayoutType.AUTOFIT,
         rows: secRows
       }));
       children.push(new Paragraph({ spacing: { after: 240 } }));
@@ -535,8 +532,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
         children.push(new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
-          columnWidths: [4320, 1620, 1620, 3240], // 40%, 15%, 15%, 30%
-          layout: TableLayoutType.FIXED,
+          layout: TableLayoutType.AUTOFIT,
           rows: anexoRows
         }));
         children.push(new Paragraph({ spacing: { after: 180 } }));
@@ -547,8 +543,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     children.push(new Paragraph({ spacing: { before: 400 } }));
     children.push(new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      columnWidths: [5400, 5400], // 50%, 50%
-      layout: TableLayoutType.FIXED,
+      layout: TableLayoutType.AUTOFIT,
       rows: [
         new TableRow({
           children: [
