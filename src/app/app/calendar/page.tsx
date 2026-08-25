@@ -102,7 +102,18 @@ export default function CalendarPage() {
 
   useEffect(() => {
     setFormDate(getTodayDate());
+    const savedMonth = localStorage.getItem('liberapro_calendar_month');
+    if (savedMonth) {
+      const parsedDate = new Date(savedMonth);
+      if (!isNaN(parsedDate.getTime())) {
+        setCalendarMonth(parsedDate);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('liberapro_calendar_month', calendarMonth.toISOString());
+  }, [calendarMonth]);
 
   useEffect(() => {
     setMonthLabel(
