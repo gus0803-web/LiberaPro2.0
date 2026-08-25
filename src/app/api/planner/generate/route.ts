@@ -30,11 +30,11 @@ const nemPlanningSchema = z.object({
     ejesArticuladores: z.string()
   })),
   fasesMetodologia: z.array(z.object({
-    pasoMetodologia: z.string().describe("Nombre del paso o fase de la metodología (Ej. 'Fase 1: Presentación', 'Paso 1: Identificación del problema')"),
-    camposFormativosInvolucrados: z.string().describe("Lista de los campos formativos que se abordan integradamente en esta fase"),
-    activacion: z.string().describe("Activación de conocimientos previos, integrando saberes de forma natural"),
-    construccion: z.string().describe("Actividades de acción y construcción integrando armónicamente los campos formativos"),
-    metacognicion: z.string().describe("Reflexión colectiva y diálogo reflexivo"),
+    fase: z.string().describe("Solo el título de la Fase metodológica (Ej. 'Fase 1: Planeación'). Prohibido mencionar campos formativos."),
+    momentos: z.array(z.object({
+      nombreMomento: z.string().describe("Nombre oficial del Momento (Ej. 'Momento 1: Identificación')"),
+      actividadesIntegradas: z.string().describe("Narrativa lógica conectando actividades de TODOS los campos formativos. Al final de la actividad, mencionar entre paréntesis el campo (Ej. '...recolectar datos (Saberes y Pensamiento Científico).')")
+    })),
     materialesYRecursos: z.string()
   })),
   estrategiaEvaluacion: z.string().describe("Estrategia de evaluación cualitativa y formativa, diarios de campo, análisis de producciones y uso del error."),
@@ -124,12 +124,12 @@ LAS 6 SECCIONES OBLIGATORIAS DE LA PLANEACIÓN:
 2. JUSTIFICACIÓN PEDAGÓGICA Y DIAGNÓSTICO INICIAL: Justificación pedagógica integral (socioemocional y académica). DEBES incluir explícitamente la CONCEPCIÓN DEL ERROR como insumo didáctico y oportunidad de aprendizaje no punitiva.
 3. PROYECTO INTEGRADOR: Título del proyecto, Metodología sociocrítica (${metodologia}) y Propósito pedagógico del proyecto.
 4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los 4 Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
-5. DESARROLLO POR FASES DE LA METODOLOGÍA: NO SEPARES POR DÍAS. NO SEPARES POR CAMPOS FORMATIVOS EN ACTIVIDADES INDEPENDIENTES. Estructura el proyecto en los pasos o fases oficiales de la Metodología elegida (${metodologia}). En cada fase, DEBES MEZCLAR de forma natural los campos formativos dentro de una misma secuencia fluida, para que el alumno no sienta saltos bruscos entre materias. Aunque las actividades estén mezcladas, deberás listar qué campos formativos están involucrados en esa fase.
-   Para cada Fase, redacta explícitamente los 3 momentos. PROHIBIDO usar las palabras Inicio, Desarrollo y Cierre. Usa en su lugar Activación, Acción y Construcción, y Reflexión:
-   - ACTIVACIÓN: Preguntas generadoras y problematización de la realidad, integrando saberes.
-   - ACCIÓN Y CONSTRUCCIÓN: Actividades lúdicas, manipulación material y dinámicas colaborativas donde los campos formativos se entrelazan de manera práctica.
-   - REFLEXIÓN / METACOGNICIÓN: Reflexión colectiva (qué se dificultó, cómo se resolvió).
-   - Materiales y Recursos específicos.
+5. DESARROLLO POR FASES Y MOMENTOS DE LA METODOLOGÍA: Estructura el proyecto EXACTAMENTE en las Fases y Momentos oficiales de la Metodología elegida (${metodologia}).
+   - COLUMNA 1 (Fase): SOLO lleva el título de la Fase. Prohibido mencionar Campos Formativos en este nivel.
+   - COLUMNA 2 (Actividades por Momentos): Desglosa las actividades FORZOSAMENTE por Momentos metodológicos. 
+     * Regla de Integración Transversal: Dentro de cada Momento, redacta actividades narrativas y lógicas (flujo didáctico) donde se interconecten los campos formativos en la misma escena (ej. plática grupal -> salir al patio a contar cosas). NO separes por días ni por materias aisladas.
+     * Mención Explícita: Al final de CADA oración o actividad, debes indicar obligatoriamente entre paréntesis el Campo Formativo que se está trabajando (ej. '...recolectar datos (Saberes y Pensamiento Científico).').
+   - Materiales y Recursos específicos y estrategia de evaluación formativa de la fase.
    ${hasTEA ? 'Incluye adaptaciones específicas para alumnos con TEA en cada sesión.' : ''}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.

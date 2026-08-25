@@ -226,7 +226,21 @@ export function downloadAgendaItem(item: AgendaItem) {
         mes: datos.mesPlan || '',
         justificacion: obj.justificacionYDiagnostico || '',
         evaluacion: obj.estrategiaEvaluacion || '',
-        fases: obj.fasesMetodologia || [],
+        fases: (obj.fasesMetodologia || []).map((f: any) => {
+          let actividadesStr = '';
+          if (f.fase && Array.isArray(f.momentos)) {
+            actividadesStr = f.momentos.map((m: any) => `• ${m.nombreMomento}\n${m.actividadesIntegradas}`).join('\n\n');
+          } else if (f.activacion || f.construccion || f.metacognicion) {
+            actividadesStr = `• Activación: ${f.activacion}\n\n• Acción y Construcción: ${f.construccion}\n\n• Reflexión / Metacognición: ${f.metacognicion}`;
+          } else {
+            actividadesStr = f.actividades || f.fasesMetodologicas || '';
+          }
+          return {
+            ...f,
+            actividades: actividadesStr,
+            faseNormalizada: f.fase || f.pasoMetodologia || ''
+          };
+        }),
         estructura: obj.estructuraCurricular || []
       };
 
@@ -429,7 +443,7 @@ export function downloadAgendaItem(item: AgendaItem) {
       const secRows = [
         new TableRow({
           children: [
-            createCell('Fase de Metodología y Campos Formativos', true, "0f172a", 1, "ffffff"),
+            createCell('Fases de la Metodología', true, "0f172a", 1, "ffffff"),
             createCell('Descripción de Actividades Integradas', true, "0f172a", 1, "ffffff"),
             createCell('Materiales y Recursos', true, "0f172a", 1, "ffffff"),
           ]
@@ -437,12 +451,19 @@ export function downloadAgendaItem(item: AgendaItem) {
       ];
 
       fasesMetodologia.forEach((f: any) => {
-        const faseCampo = `${renderValue(f.pasoMetodologia)}\n${renderValue(f.camposFormativosInvolucrados)}`;
+        let faseCampo = '';
         let actText = '';
-        if (f.activacion || f.construccion || f.metacognicion) {
-          actText = `• Activación: ${renderValue(f.activacion)}\n\n• Acción y Construcción: ${renderValue(f.construccion)}\n\n• Reflexión / Metacognición: ${renderValue(f.metacognicion)}`;
+        
+        if (f.fase && Array.isArray(f.momentos)) {
+          faseCampo = renderValue(f.fase);
+          actText = f.momentos.map((m: any) => `• ${renderValue(m.nombreMomento)}\n${renderValue(m.actividadesIntegradas)}`).join('\n\n');
         } else {
-          actText = renderValue(f.actividades || f.fasesMetodologicas || '');
+          faseCampo = `${renderValue(f.pasoMetodologia)}\n${renderValue(f.camposFormativosInvolucrados)}`;
+          if (f.activacion || f.construccion || f.metacognicion) {
+            actText = `• Activación: ${renderValue(f.activacion)}\n\n• Acción y Construcción: ${renderValue(f.construccion)}\n\n• Reflexión / Metacognición: ${renderValue(f.metacognicion)}`;
+          } else {
+            actText = renderValue(f.actividades || f.fasesMetodologicas || '');
+          }
         }
 
         secRows.push(new TableRow({
