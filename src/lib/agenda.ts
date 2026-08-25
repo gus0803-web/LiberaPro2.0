@@ -315,7 +315,8 @@ export function downloadAgendaItem(item: AgendaItem) {
 
     // Info Table
     children.push(new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
+      width: { size: 10800, type: WidthType.DXA },
+      columnWidths: [2160, 3240, 2160, 3240],
       layout: TableLayoutType.AUTOFIT,
       rows: [
         new TableRow({
@@ -424,7 +425,8 @@ export function downloadAgendaItem(item: AgendaItem) {
       });
 
       children.push(new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
+        width: { size: 10800, type: WidthType.DXA },
+        columnWidths: [2160, 3240, 3240, 2160],
         layout: TableLayoutType.AUTOFIT,
         rows: currRows
       }));
@@ -475,7 +477,8 @@ export function downloadAgendaItem(item: AgendaItem) {
       });
 
       children.push(new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
+        width: { size: 10800, type: WidthType.DXA },
+        columnWidths: [2700, 5400, 2700],
         layout: TableLayoutType.AUTOFIT,
         rows: secRows
       }));
@@ -532,7 +535,8 @@ export function downloadAgendaItem(item: AgendaItem) {
         });
 
         children.push(new Table({
-          width: { size: 100, type: WidthType.PERCENTAGE },
+          width: { size: 10800, type: WidthType.DXA },
+          columnWidths: [4320, 1620, 1620, 3240],
           layout: TableLayoutType.AUTOFIT,
           rows: anexoRows
         }));
@@ -543,7 +547,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Firmas Oficiales
     children.push(new Paragraph({ spacing: { before: 400 } }));
     children.push(new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
+      width: { size: 10800, type: WidthType.DXA },
+      columnWidths: [5400, 5400],
       layout: TableLayoutType.AUTOFIT,
       rows: [
         new TableRow({
