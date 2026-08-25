@@ -545,14 +545,29 @@ export default function PlannerPage() {
                 {object.fasesMetodologia.map((faseItem, idx) => (
                   <div key={idx} className="border border-slate-200 rounded-2xl p-5 bg-slate-50/50 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
-                      <span className="font-bold text-blue-700 text-base">{faseItem?.pasoMetodologia}</span>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{faseItem?.camposFormativosInvolucrados}</span>
+                      <span className="font-bold text-blue-700 text-base">{faseItem?.fase || faseItem?.pasoMetodologia}</span>
+                      {faseItem?.camposFormativosInvolucrados && (
+                        <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{faseItem.camposFormativosInvolucrados}</span>
+                      )}
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <p><strong className="text-emerald-700">• Activación:</strong> {faseItem?.activacion}</p>
-                      <p><strong className="text-blue-700">• Acción y Construcción:</strong> {faseItem?.construccion}</p>
-                      <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {faseItem?.metacognicion}</p>
-                      <p className="text-slate-600 pt-1 text-xs"><strong>Materiales y Recursos:</strong> {faseItem?.materialesYRecursos}</p>
+                    <div className="space-y-3 text-sm pt-2">
+                      {faseItem?.momentos && Array.isArray(faseItem.momentos) ? (
+                        faseItem.momentos.map((momento: any, mIdx: number) => (
+                          <div key={mIdx}>
+                            <strong className="text-blue-800 block mb-1">• {momento.nombreMomento}</strong>
+                            <p className="text-slate-700 leading-relaxed">{momento.actividadesIntegradas}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <p><strong className="text-emerald-700">• Activación:</strong> {faseItem?.activacion}</p>
+                          <p><strong className="text-blue-700">• Acción y Construcción:</strong> {faseItem?.construccion}</p>
+                          <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {faseItem?.metacognicion}</p>
+                        </>
+                      )}
+                      <div className="bg-slate-50 p-2 rounded-lg mt-3">
+                        <p className="text-slate-700 text-xs"><strong>Materiales y Recursos:</strong> {faseItem?.materialesYRecursos}</p>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -172,8 +172,8 @@ ${methodologyGuide}
    - COLUMNA 2 (Actividades por Momentos): Desglosa las actividades FORZOSAMENTE por Momentos metodológicos. 
      * Regla de Integración Transversal: Dentro de CADA Momento, redacta actividades narrativas y lógicas (flujo didáctico) donde se interconecten los campos formativos en la misma escena (ej. plática grupal -> salir al patio a contar cosas). NO separes por días ni por materias aisladas. Cada momento DEBE contener obligatoriamente al menos una actividad conectada para CADA campo formativo seleccionado.
      * Mención Explícita: Al final de CADA oración o actividad, debes indicar obligatoriamente entre paréntesis el Campo Formativo que se está trabajando (ej. '...recolectar datos (Saberes y Pensamiento Científico).').
+     ${hasTEA ? '* Adaptaciones TEA: Agrega obligatoriamente un párrafo extra al final de cada Momento que inicie con "🧩 Adaptaciones TEA:" detallando cómo adaptar estas actividades para alumnos en el espectro.' : ''}
    - Materiales y Recursos específicos y estrategia de evaluación formativa de la fase. IMPORTANTE: En los materiales DEBES incluir siempre una opción de "🌿 Material ECO:" (ej. uso de material reciclado o recursos naturales).
-   ${hasTEA ? 'Incluye adaptaciones específicas para alumnos con TEA en cada sesión.' : ''}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
    - ANEXOS: Mínimo 2 Listas de Cotejo Cualitativas estructuradas por Campo Formativo con Indicadores de Aprendizaje directamente basados en los PDA oficiales, con columnas para Logrado (SÍ), En Proceso (NO) y Observaciones/Evidencias.
