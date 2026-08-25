@@ -107,6 +107,47 @@ export async function POST(req: Request) {
     const turno = profileData?.turno || 'Matutino';
     const directorName = profileData?.directorName || 'Directora de la Escuela';
 
+    let methodologyGuide = '';
+    if (metodologia === 'Aprendizaje Basado en Proyectos Comunitarios') {
+      methodologyGuide = `
+        Fase 1: Planeación (Se enfoca en identificar un problema y proponer una ruta de acción).
+          - Momento 1: Identificación. (Proponer planteamientos para identificar la problemática general y específica).
+          - Momento 2: Recuperación. (Vincular el problema con los saberes previos de los alumnos).
+          - Momento 3: Planificación. (Negociar los pasos a seguir, los productos y los tiempos).
+        Fase 2: Acción (Es el desarrollo del proyecto, la investigación y la producción).
+          - Momento 4: Acercamiento. (Explorar el problema de manera más directa).
+          - Momento 5: Comprensión y producción. (Ofrecer explicaciones, investigar y empezar a elaborar productos).
+          - Momento 6: Reconocimiento. (Identificar avances y dificultades; realizar ajustes al proyecto).
+          - Momento 7: Concreción. (Generar la primera versión del producto propuesto).
+        Fase 3: Intervención (Se difunde el producto y se evalúa el impacto).
+          - Momento 8: Integración. (Exposición y explicación de soluciones preliminares, recibir retroalimentación).
+          - Momento 9: Difusión. (Presentar el producto final al aula o la comunidad).
+          - Momento 10: Consideraciones. (Dar seguimiento y evaluación al impacto del proyecto).
+          - Momento 11: Avances. (Tomar decisiones sobre cómo mejorar en futuros proyectos).`;
+    } else if (metodologia === 'Aprendizaje Basado en Indagación (STEAM)') {
+      methodologyGuide = `
+        Fase 1: Introducción al tema / Uso de conocimientos previos / Reconocimiento del problema.
+        Fase 2: Diseño de investigación / Desarrollo de la indagación.
+        Fase 3: Organizar y estructurar las respuestas a las preguntas específicas de indagación.
+        Fase 4: Presentación de los resultados de indagación / Aplicación.
+        Fase 5: Metacognición.`;
+    } else if (metodologia === 'Aprendizaje Basado en Problemas (ABP)') {
+      methodologyGuide = `
+        Fase 1: Presentemos.
+        Fase 2: Recolectemos.
+        Fase 3: Formulemos el problema.
+        Fase 4: Organicemos la experiencia.
+        Fase 5: Vivamos la experiencia.
+        Fase 6: Resultados y análisis.`;
+    } else {
+      methodologyGuide = `
+        Etapa 1: Punto de partida.
+        Etapa 2: Lo que sé y lo que quiero saber.
+        Etapa 3: Organicemos las actividades.
+        Etapa 4: Creatividad en marcha.
+        Etapa 5: Compartimos y evaluamos lo aprendido.`;
+    }
+
     const systemPrompt = `
 Eres un experto pedagógico y diseñador curricular especializado en la Nueva Escuela Mexicana (NEM).
 Tu misión es construir una planeación didáctica formal, rigurosa, completa y estructurada exactamente en 6 SECCIONES PEDAGÓGICAS siguiendo el modelo del documento oficial 'planeacion_agosto_2026'.
@@ -124,12 +165,14 @@ LAS 6 SECCIONES OBLIGATORIAS DE LA PLANEACIÓN:
 2. JUSTIFICACIÓN PEDAGÓGICA Y DIAGNÓSTICO INICIAL: Justificación pedagógica integral (socioemocional y académica). DEBES incluir explícitamente la CONCEPCIÓN DEL ERROR como insumo didáctico y oportunidad de aprendizaje no punitiva.
 3. PROYECTO INTEGRADOR: Título del proyecto, Metodología sociocrítica (${metodologia}) y Propósito pedagógico del proyecto.
 4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los 4 Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
-5. DESARROLLO POR FASES Y MOMENTOS DE LA METODOLOGÍA: Estructura el proyecto EXACTAMENTE en las Fases y Momentos oficiales de la Metodología elegida (${metodologia}).
+5. DESARROLLO POR FASES Y MOMENTOS DE LA METODOLOGÍA: Estructura el proyecto EXACTAMENTE en las siguientes Fases y Momentos oficiales de la metodología ${metodologia}:
+${methodologyGuide}
+
    - COLUMNA 1 (Fase): SOLO lleva el título de la Fase. Prohibido mencionar Campos Formativos en este nivel.
    - COLUMNA 2 (Actividades por Momentos): Desglosa las actividades FORZOSAMENTE por Momentos metodológicos. 
-     * Regla de Integración Transversal: Dentro de cada Momento, redacta actividades narrativas y lógicas (flujo didáctico) donde se interconecten los campos formativos en la misma escena (ej. plática grupal -> salir al patio a contar cosas). NO separes por días ni por materias aisladas.
+     * Regla de Integración Transversal: Dentro de CADA Momento, redacta actividades narrativas y lógicas (flujo didáctico) donde se interconecten los campos formativos en la misma escena (ej. plática grupal -> salir al patio a contar cosas). NO separes por días ni por materias aisladas. Cada momento DEBE contener obligatoriamente al menos una actividad conectada para CADA campo formativo seleccionado.
      * Mención Explícita: Al final de CADA oración o actividad, debes indicar obligatoriamente entre paréntesis el Campo Formativo que se está trabajando (ej. '...recolectar datos (Saberes y Pensamiento Científico).').
-   - Materiales y Recursos específicos y estrategia de evaluación formativa de la fase.
+   - Materiales y Recursos específicos y estrategia de evaluación formativa de la fase. IMPORTANTE: En los materiales DEBES incluir siempre una opción de "🌿 Material ECO:" (ej. uso de material reciclado o recursos naturales).
    ${hasTEA ? 'Incluye adaptaciones específicas para alumnos con TEA en cada sesión.' : ''}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
