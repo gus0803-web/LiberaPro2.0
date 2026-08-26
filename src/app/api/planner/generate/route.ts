@@ -95,7 +95,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const { fase, tema, notasMaestro, metodologia, duracion, hasTEA, schoolGroup, fechaInicio, fechaTermino, profileData } = await req.json();
+    const { fase, tema, notasMaestro, ejesArticuladores, metodologia, duracion, hasTEA, schoolGroup, fechaInicio, fechaTermino, profileData } = await req.json();
 
     let expectedSessions = 5;
     if (duracion === 'Quincenal') expectedSessions = 10;
@@ -164,7 +164,18 @@ LAS 6 SECCIONES OBLIGATORIAS DE LA PLANEACIÓN:
 1. DATOS DE IDENTIFICACIÓN: Nombre docente: ${teacherName}, Escuela: ${schoolName}, CCT: ${cct}, Turno: ${turno}, Director: ${directorName}, Grado y Grupo: ${schoolGroup || '2° A'}, Fase: ${fase}, Periodo: Del ${fechaInicio} al ${fechaTermino}, Mes de plan: Diagnóstico e Integración / Planeación Didáctica.
 2. JUSTIFICACIÓN PEDAGÓGICA Y DIAGNÓSTICO INICIAL: Justificación pedagógica integral (socioemocional y académica). DEBES incluir explícitamente la CONCEPCIÓN DEL ERROR como insumo didáctico y oportunidad de aprendizaje no punitiva.
 3. PROYECTO INTEGRADOR: Título del proyecto, Metodología sociocrítica (${metodologia}) y Propósito pedagógico del proyecto.
-4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los 4 Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
+4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
+IMPORTANTE: Para la columna "ejesArticuladores", DEBES USAR EXCLUSIVAMENTE los ejes que el maestro ha seleccionado: ${Array.isArray(ejesArticuladores) && ejesArticuladores.length > 0 ? ejesArticuladores.join(', ') : 'Ninguno seleccionado'}.
+No inventes otros ejes. Escribe únicamente los seleccionados por el maestro que encajen con este contenido.
+
+Toma en cuenta las siguientes definiciones de los Ejes Articuladores para justificar su integración en las actividades y contenidos:
+- Inclusión: Perspectiva decolonial, formando espacios comunitarios para todos y todas sin exclusión.
+- Pensamiento crítico: Capacidad de los estudiantes para entender y analizar la complejidad de su mundo.
+- Interculturalidad crítica: Interacción y coexistencia en la diversidad en un marco de relaciones asimétricas.
+- Igualdad de género: Comprender la igualdad como condición histórica y erradicar la violencia y discriminación.
+- Vida saludable: Comprender que salud humana y medio ambiente son organismos vivos interdependientes.
+- Apropiación de las culturas a través de la lectura y la escritura: Acercamiento a los textos para comprender el mundo cotidiano y otras formas de vida.
+- Artes y experiencias estéticas: Exploración sensible del mundo y reconocimiento de las artes como expresión cultural.
 5. DESARROLLO POR FASES Y MOMENTOS DE LA METODOLOGÍA: Estructura el proyecto EXACTAMENTE en las siguientes Fases y Momentos oficiales de la metodología ${metodologia}:
 ${methodologyGuide}
 

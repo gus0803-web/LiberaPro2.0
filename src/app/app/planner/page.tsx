@@ -121,6 +121,7 @@ export default function PlannerPage() {
 
   const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
   const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes', 'Saberes y Pensamiento Científico']);
+  const [ejesArticuladores, setEjesArticuladores] = useState<string[]>([]);
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [notasMaestro, setNotasMaestro] = useState('');
@@ -244,12 +245,13 @@ export default function PlannerPage() {
     if (duracion === 'Mensual') expectedSessions = 20;
     const fechaTermino = getEndDateStr(selectedDate, expectedSessions);
 
-    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\n\nNotas e indicaciones del docente:\n${notasMaestro}`;
+    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\nEjes Articuladores Seleccionados: ${ejesArticuladores.join(', ')}\n\nNotas e indicaciones del docente:\n${notasMaestro}`;
     
     submit({ 
       fase, 
       tema, 
-      notasMaestro: notasCompletas, 
+      notasMaestro: notasCompletas,
+      ejesArticuladores, 
       metodologia, 
       duracion, 
       hasTEA, 
@@ -329,6 +331,29 @@ export default function PlannerPage() {
                   className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                 />
                 <span className="text-xs sm:text-sm text-slate-700 group-hover:text-slate-900 font-medium">{campo}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Ejes Articuladores</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-white border border-slate-200 rounded-xl p-3">
+            {['Inclusión', 'Pensamiento Crítico', 'Interculturalidad Crítica', 'Igualdad de Género', 'Vida Saludable', 'Apropiación de las culturas a través de la lectura y la escritura', 'Artes y experiencias estéticas'].map(eje => (
+              <label key={eje} className="flex items-center gap-2 cursor-pointer group">
+                <input 
+                  type="checkbox"
+                  checked={ejesArticuladores.includes(eje)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setEjesArticuladores(prev => [...prev, eje]);
+                    } else {
+                      setEjesArticuladores(prev => prev.filter(c => c !== eje));
+                    }
+                  }}
+                  className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                />
+                <span className="text-xs sm:text-sm text-slate-700 group-hover:text-slate-900 font-medium leading-tight">{eje}</span>
               </label>
             ))}
           </div>
