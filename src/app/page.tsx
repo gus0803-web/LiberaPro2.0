@@ -39,8 +39,11 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#060911] text-slate-100 flex flex-col justify-between p-6 sm:p-12 relative overflow-hidden font-sans">
+    <div className="bg-[#060911] text-slate-100 font-sans relative overflow-x-hidden">
       
+      {/* SECTION 1: HERO (Original) */}
+      <div className="min-h-screen flex flex-col justify-between p-6 sm:p-12 relative overflow-hidden">
+
       {/* BACKGROUND VARIATION 1C: Enlarge Corner Glows & White Neon Parameters */}
       {/* Top Right Cyber Prehispanic Network Vector & Enlarged Cyan/White Glow */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none opacity-60">
@@ -207,10 +210,95 @@ export default function Home() {
 
         </div>
 
-      </main>
+      </div>
+      
+      {/* SECTION 2: TRANSITION (Fade-In Text) */}
+      <section className="relative z-20 max-w-4xl mx-auto py-32 px-6 text-center">
+        <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+          La Nueva Escuela Mexicana no tiene que significar <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">menos tiempo libre.</span>
+        </h2>
+        <p className="mt-6 text-slate-400 text-lg max-w-2xl mx-auto">
+          Descubre cómo LiberaPro transforma tu labor docente eliminando la burocracia, para que vuelvas a enfocarte en lo que realmente importa: enseñar.
+        </p>
+      </section>
+
+      {/* SECTION 3: STICKY SCROLL WORKFLOW */}
+      <section className="relative z-20 max-w-6xl mx-auto py-24 px-6">
+        <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
+          
+          {/* Left Column: Sticky Icon */}
+          <div className="hidden md:block w-1/3 relative">
+            <div className="sticky top-1/2 -translate-y-1/2 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl">
+              <Sparkles className="w-20 h-20 text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+            </div>
+          </div>
+
+          {/* Right Column: Scrolling Cards */}
+          <div className="w-full md:w-2/3 space-y-24 py-12">
+            
+            {/* Card 1 */}
+            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-cyan-500/20 p-8 sm:p-10 rounded-3xl hover:border-cyan-500/50 transition-colors">
+              <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6">
+                <BookOpen className="w-6 h-6 text-cyan-400" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">Traductor Académico</h3>
+              <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
+                Convierte tus notas libres y contexto de grupo en planeaciones estructuradas con Ejes Articuladores y PDA oficiales. Nuestra inteligencia didáctica respeta tu autonomía mientras garantiza la alineación técnica.
+              </p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-purple-500/20 p-8 sm:p-10 rounded-3xl hover:border-purple-500/50 transition-colors">
+              <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6">
+                <Presentation className="w-6 h-6 text-purple-400" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">Evaluación Formativa</h3>
+              <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
+                Generación de rúbricas y exámenes contextualizados a tu comunidad. Olvídate de buscar formatos; genera instrumentos de evaluación precisos en segundos, adaptados al nivel y campo formativo.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-blue-500/20 p-8 sm:p-10 rounded-3xl hover:border-blue-500/50 transition-colors">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6">
+                <ShieldCheck className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">Muro Escolar Realtime</h3>
+              <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
+                Avisos a padres de familia sin necesidad de grupos de WhatsApp ni compartir tu número personal. Una plataforma unidireccional, segura y profesional para mantener a la comunidad conectada.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: IMPACT PARALLAX */}
+      <section className="relative z-20 border-t border-slate-800/80 bg-gradient-to-b from-[#060911] to-[#0a0f1c] py-32 overflow-hidden">
+        {/* Decorative Grid */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+        
+        <div className="max-w-6xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
+          <div className="flex-1">
+            <h3 className="text-5xl sm:text-7xl font-black text-white tracking-tighter">0<span className="text-cyan-500 text-3xl sm:text-5xl"> Horas</span></h3>
+            <p className="text-slate-400 mt-2 text-lg font-medium">perdidas en formatos burocráticos.</p>
+          </div>
+          <div className="hidden md:block w-px h-24 bg-slate-800"></div>
+          <div className="flex-1">
+            <h3 className="text-5xl sm:text-7xl font-black text-white tracking-tighter">100<span className="text-purple-500 text-3xl sm:text-5xl">%</span></h3>
+            <p className="text-slate-400 mt-2 text-lg font-medium">Alineado a las 6 Fases de la NEM.</p>
+          </div>
+          <div className="hidden md:block w-px h-24 bg-slate-800"></div>
+          <div className="flex-1">
+            <h3 className="text-4xl sm:text-5xl font-black text-white tracking-tighter">Privacidad</h3>
+            <p className="text-slate-400 mt-2 text-lg font-medium">Total para ti y tus estudiantes.</p>
+          </div>
+        </div>
+      </section>
 
       {/* Footer Info */}
-      <footer className="max-w-6xl w-full mx-auto text-center text-xs text-slate-500 border-t border-slate-800/80 pt-6 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono">
+      <footer className="relative z-20 max-w-6xl w-full mx-auto text-center text-xs text-slate-500 border-t border-slate-800/80 p-6 flex flex-col sm:flex-row justify-between items-center gap-4 font-mono bg-[#060911]/80 backdrop-blur-md">
         <p>© 2026 LiberaPro</p>
         <div className="flex items-center gap-6 text-[11px]">
           <span className="flex items-center gap-1.5 text-cyan-400"><ShieldCheck className="w-4 h-4" /> Privacidad Docente 100%</span>
