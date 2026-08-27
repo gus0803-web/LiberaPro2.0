@@ -210,6 +210,7 @@ export default function Home() {
 
         </div>
 
+      </main>
       </div>
       
       {/* SECTION 2: TRANSITION (Fade-In Text) */}
