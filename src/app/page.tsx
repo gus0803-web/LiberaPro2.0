@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award, Brain } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -230,13 +230,17 @@ export default function Home() {
           
           {/* Left Column: Sticky Icon */}
           <div className="hidden md:block w-1/3 relative">
-            <div className="sticky top-32 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl p-8">
-              {/* Native img tag with CSS filters to force Cyan neon color on the silhouette */}
-              <img 
-                src="/logo-pluma-transparente.png" 
-                alt="LiberaPro"
-                className="w-full h-full object-contain brightness-0 [filter:invert(72%)_sepia(45%)_saturate(5497%)_hue-rotate(149deg)_brightness(103%)_contrast(92%)] drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]"
-              />
+            <div className="sticky top-32 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl overflow-hidden group">
+              {/* Animated Background */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-blue-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="absolute w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl animate-pulse"></div>
+              
+              {/* Icon Composition */}
+              <div className="relative z-10 flex items-center justify-center">
+                <Brain className="w-16 h-16 text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+                <Sparkles className="absolute -top-4 -right-4 w-8 h-8 text-blue-400 animate-pulse drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]" style={{ animationDuration: '3s' }} />
+                <Zap className="absolute -bottom-2 -left-4 w-6 h-6 text-purple-400 animate-bounce drop-shadow-[0_0_10px_rgba(192,132,252,0.8)]" />
+              </div>
             </div>
           </div>
 
