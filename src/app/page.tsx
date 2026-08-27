@@ -124,7 +124,7 @@ export default function Home() {
           <Link 
             href="/login" 
             onClick={setTeacherUserType}
-            className="group relative bg-[#0d1424]/80 hover:bg-[#0f172a] backdrop-blur-2xl border border-cyan-500/30 hover:border-cyan-400 p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:shadow-cyan-500/20 flex flex-col justify-between space-y-6 transform hover:-translate-y-1.5 overflow-hidden"
+            className="group relative bg-[#0d1424]/80 hover:bg-[#0f172a] backdrop-blur-2xl border border-cyan-500/30 hover:border-yellow-400 p-8 rounded-3xl transition-all duration-300 shadow-[0_0_40px_-15px_rgba(234,179,8,0.4)] hover:shadow-[0_0_60px_-10px_rgba(234,179,8,0.6)] flex flex-col justify-between space-y-6 transform hover:-translate-y-1.5 overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all pointer-events-none" />
             
@@ -137,8 +137,9 @@ export default function Home() {
                 <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-bold block mb-1">
                   Panel para Maestros
                 </span>
-                <h3 className="text-2xl font-black text-white group-hover:text-cyan-300 transition-colors">
+                <h3 className="text-2xl font-black text-white group-hover:text-cyan-300 transition-colors flex items-center">
                   Acceso Docentes
+                  <span className="ml-3 text-[10px] bg-yellow-500 text-yellow-950 font-black px-2 py-0.5 rounded-full animate-bounce shadow-[0_0_10px_rgba(234,179,8,0.8)]">¡Únete ya!</span>
                 </h3>
               </div>
 
@@ -229,16 +230,28 @@ export default function Home() {
           
           {/* Left Column: Sticky Icon */}
           <div className="hidden md:block w-1/3 relative">
-            <div className="sticky top-1/2 -translate-y-1/2 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl">
-              <Sparkles className="w-20 h-20 text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+            <div className="sticky top-1/2 -translate-y-1/2 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl p-8">
+              <div 
+                className="w-full h-full bg-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]"
+                style={{
+                  WebkitMaskImage: 'url(/logo-pluma-transparente.png)',
+                  WebkitMaskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskImage: 'url(/logo-pluma-transparente.png)',
+                  maskSize: 'contain',
+                  maskRepeat: 'no-repeat',
+                  maskPosition: 'center'
+                }}
+              />
             </div>
           </div>
 
           {/* Right Column: Scrolling Cards */}
-          <div className="w-full md:w-2/3 space-y-24 py-12">
+          <div className="w-full md:w-2/3 space-y-24 py-12 group">
             
             {/* Card 1 */}
-            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-cyan-500/20 p-8 sm:p-10 rounded-3xl hover:border-cyan-500/50 transition-colors">
+            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-cyan-500/20 p-8 sm:p-10 rounded-3xl hover:border-cyan-500/50 transition-all duration-500 opacity-100 group-hover:opacity-30 hover:!opacity-100 hover:scale-[1.02]">
               <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6">
                 <BookOpen className="w-6 h-6 text-cyan-400" />
               </div>
@@ -249,7 +262,7 @@ export default function Home() {
             </div>
 
             {/* Card 2 */}
-            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-purple-500/20 p-8 sm:p-10 rounded-3xl hover:border-purple-500/50 transition-colors">
+            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-purple-500/20 p-8 sm:p-10 rounded-3xl hover:border-purple-500/50 transition-all duration-500 opacity-100 group-hover:opacity-30 hover:!opacity-100 hover:scale-[1.02]">
               <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6">
                 <Presentation className="w-6 h-6 text-purple-400" />
               </div>
@@ -260,7 +273,7 @@ export default function Home() {
             </div>
 
             {/* Card 3 */}
-            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-blue-500/20 p-8 sm:p-10 rounded-3xl hover:border-blue-500/50 transition-colors">
+            <div className="bg-[#120d24]/60 backdrop-blur-xl border border-blue-500/20 p-8 sm:p-10 rounded-3xl hover:border-blue-500/50 transition-all duration-500 opacity-100 group-hover:opacity-30 hover:!opacity-100 hover:scale-[1.02]">
               <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6">
                 <ShieldCheck className="w-6 h-6 text-blue-400" />
               </div>
