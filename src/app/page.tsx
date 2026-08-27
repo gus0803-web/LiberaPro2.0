@@ -230,19 +230,12 @@ export default function Home() {
           
           {/* Left Column: Sticky Icon */}
           <div className="hidden md:block w-1/3 relative">
-            <div className="sticky top-1/2 -translate-y-1/2 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl p-8">
-              <div 
-                className="w-full h-full bg-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]"
-                style={{
-                  WebkitMaskImage: 'url(/logo-pluma-transparente.png)',
-                  WebkitMaskSize: 'contain',
-                  WebkitMaskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskImage: 'url(/logo-pluma-transparente.png)',
-                  maskSize: 'contain',
-                  maskRepeat: 'no-repeat',
-                  maskPosition: 'center'
-                }}
+            <div className="sticky top-32 w-48 h-48 bg-cyan-950/30 border border-cyan-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_60px_-15px_rgba(6,182,212,0.3)] backdrop-blur-xl p-8">
+              {/* Native img tag with CSS filters to force Cyan neon color on the silhouette */}
+              <img 
+                src="/logo-pluma-transparente.png" 
+                alt="LiberaPro"
+                className="w-full h-full object-contain brightness-0 [filter:invert(72%)_sepia(45%)_saturate(5497%)_hue-rotate(149deg)_brightness(103%)_contrast(92%)] drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]"
               />
             </div>
           </div>
