@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BookOpen, Presentation, ShieldCheck, GraduationCap, Users, Bot, Code, FileText } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -110,9 +111,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat bg-[#111111] bg-[url('/login-bg.png')]"
-    >
+    <div className="bg-[#111111] text-slate-100 font-sans relative overflow-clip">
+      
+      {/* SECTION 1: HERO (Original Login) */}
+      <div className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat bg-[url('/login-bg.png')] relative">
       {/* Animated golden background patterns (Desktop Only) */}
       <div className="absolute inset-0 pointer-events-none -z-10 hidden md:block">
         <div className={"absolute top-16 left-10 w-28 h-28 rounded-full bg-amber-400/10 blur-2xl " + (isLoading ? 'pattern-dark-1' : 'opacity-40')} />
@@ -196,7 +198,7 @@ export default function LoginPage() {
 
             <div className="flex items-center space-x-4 pt-4">
               {/* Link para Facebook - Grupo */}
-              <a href="https://www.facebook.com/share/g/1BTRBr2xXv/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800/80 md:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/50 md:border-slate-700">
+              <a href="https://www.facebook.com/profile.php?id=61593446267076" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800/80 md:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/50 md:border-slate-700">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
               </a>
               {/* Link para Instagram - Reemplaza el href con tu enlace real */}
@@ -220,6 +222,153 @@ export default function LoginPage() {
 
         </div>
       </div>
+      </div>
+
+      {/* SECTION 2: HERRAMIENTAS */}
+      <section className="relative z-20 bg-[#111111] border-t border-slate-800/80 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500 mb-6">
+              El único asistente virtual para tu ciclo escolar
+            </h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Descubre las herramientas diseñadas específicamente para agilizar y enriquecer tu labor diaria.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-slate-900/50 border border-amber-500/20 p-8 rounded-3xl hover:border-amber-400/50 transition-all">
+              <BookOpen className="w-10 h-10 text-amber-400 mb-6" />
+              <h3 className="text-xl font-bold text-white mb-3">Planeación</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">Generación de planeaciones estructuradas con ejes articuladores y PDA oficiales.</p>
+            </div>
+            <div className="bg-slate-900/50 border border-emerald-500/20 p-8 rounded-3xl hover:border-emerald-400/50 transition-all">
+              <Presentation className="w-10 h-10 text-emerald-400 mb-6" />
+              <h3 className="text-xl font-bold text-white mb-3">Evaluación</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">Rúbricas e instrumentos precisos y contextualizados a tu comunidad escolar.</p>
+            </div>
+            <div className="bg-slate-900/50 border border-blue-500/20 p-8 rounded-3xl hover:border-blue-400/50 transition-all">
+              <ShieldCheck className="w-10 h-10 text-blue-400 mb-6" />
+              <h3 className="text-xl font-bold text-white mb-3">Muro Escolar</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">Comunicación segura y unidireccional con padres de familia sin usar tu número personal.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3: EQUIPO */}
+      <section className="relative z-20 bg-slate-950 py-24 px-6">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-16">
+            Equipo que respaldan a LiberaPro
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center mb-6">
+                <GraduationCap className="w-10 h-10 text-emerald-400" />
+              </div>
+              <p className="text-slate-300 text-sm font-semibold leading-relaxed">
+                Especialistas de gestión pedagógica con más de 45 años de experiencia combinada
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center mb-6">
+                <Users className="w-10 h-10 text-amber-400" />
+              </div>
+              <p className="text-slate-300 text-sm font-semibold leading-relaxed">
+                Comité de planeación y gestión pedagógica
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center mb-6">
+                <Bot className="w-10 h-10 text-cyan-400" />
+              </div>
+              <p className="text-slate-300 text-sm font-semibold leading-relaxed">
+                Artificial intelligence experts and AI agent developers
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center mb-6">
+                <Code className="w-10 h-10 text-blue-400" />
+              </div>
+              <p className="text-slate-300 text-sm font-semibold leading-relaxed">
+                Equipo de codificación y web developers
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: DESARROLLO DEL PROYECTO BANNER */}
+      <section className="relative z-20 bg-gradient-to-r from-amber-900/40 to-emerald-900/40 border-y border-slate-800 py-16 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-black text-amber-200 mb-4">
+            Desarrollo del proyecto para líderes en educación
+          </h2>
+          <p className="text-slate-300 text-lg leading-relaxed font-medium">
+            El proceso contó con la dirección de un Cuerpo Docente de Alta Especialización, integrado por maestros y doctores en educación.
+          </p>
+        </div>
+      </section>
+
+      {/* SECTION 5: MISION Y VISION */}
+      <section className="relative z-20 bg-[#111111] py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-white">Misión y Visión</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="bg-slate-900/40 border border-emerald-500/20 p-10 rounded-[2rem]">
+              <h3 className="text-2xl font-bold text-emerald-400 mb-4">Nuestra Misión</h3>
+              <p className="text-slate-400 text-lg leading-relaxed">
+                Transformar y dignificar la labor docente mediante herramientas tecnológicas innovadoras que eliminen la burocracia administrativa, devolviendo a los maestros el tiempo para inspirar en el aula.
+              </p>
+            </div>
+            <div className="bg-slate-900/40 border border-amber-500/20 p-10 rounded-[2rem]">
+              <h3 className="text-2xl font-bold text-amber-400 mb-4">Nuestra Visión</h3>
+              <p className="text-slate-400 text-lg leading-relaxed">
+                Consolidarnos como el aliado tecnológico número uno de la Nueva Escuela Mexicana en todo México, empoderando a las comunidades escolares a través de inteligencia artificial ética y alineada pedagógicamente.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6: GALERIA DE PROYECTOS */}
+      <section className="relative z-20 bg-slate-950 py-24 px-6 border-t border-slate-800">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-6">Galería de Proyectos</h2>
+          <p className="text-slate-400 mb-12 max-w-2xl mx-auto">
+            Explora ejemplos reales de planeaciones didácticas generadas por nuestra Inteligencia Artificial para diferentes Fases.
+          </p>
+          
+          <div className="flex flex-wrap justify-center gap-4">
+            {/* Si deseas cambiar los nombres de los botones en el futuro, solo edita el texto dentro de la etiqueta <span> de cada botón */}
+            <button className="group bg-slate-900 border border-slate-700 hover:border-cyan-500 px-6 py-3 rounded-full flex items-center space-x-2 transition-all">
+              <FileText className="w-5 h-5 text-cyan-500 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 font-semibold group-hover:text-white">Ver Proyecto Fase 3</span>
+            </button>
+            <button className="group bg-slate-900 border border-slate-700 hover:border-cyan-500 px-6 py-3 rounded-full flex items-center space-x-2 transition-all">
+              <FileText className="w-5 h-5 text-cyan-500 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 font-semibold group-hover:text-white">Ver Proyecto Fase 4</span>
+            </button>
+            <button className="group bg-slate-900 border border-slate-700 hover:border-cyan-500 px-6 py-3 rounded-full flex items-center space-x-2 transition-all">
+              <FileText className="w-5 h-5 text-cyan-500 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 font-semibold group-hover:text-white">Ver Proyecto Fase 5</span>
+            </button>
+            <button className="group bg-slate-900 border border-slate-700 hover:border-cyan-500 px-6 py-3 rounded-full flex items-center space-x-2 transition-all">
+              <FileText className="w-5 h-5 text-cyan-500 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 font-semibold group-hover:text-white">Ver Proyecto Fase 6</span>
+            </button>
+            <button className="group bg-slate-900 border border-slate-700 hover:border-amber-500 px-6 py-3 rounded-full flex items-center space-x-2 transition-all">
+              <FileText className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-300 font-semibold group-hover:text-white">Formato de Evaluación</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
