@@ -39,7 +39,7 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-[#060911] text-slate-100 font-sans relative overflow-x-hidden">
+    <div className="bg-[#060911] text-slate-100 font-sans relative overflow-clip">
       
       {/* SECTION 1: HERO (Original) */}
       <div className="min-h-screen flex flex-col justify-between p-6 sm:p-12 relative overflow-hidden">
@@ -139,7 +139,7 @@ export default function Home() {
                 </span>
                 <h3 className="text-2xl font-black text-white group-hover:text-cyan-300 transition-colors flex items-center">
                   Acceso Docentes
-                  <span className="ml-3 text-[10px] bg-yellow-500 text-yellow-950 font-black px-2 py-0.5 rounded-full animate-bounce shadow-[0_0_10px_rgba(234,179,8,0.8)]">¡Únete ya!</span>
+                  <span className="ml-3 text-sm bg-yellow-500 text-yellow-950 font-black px-4 py-1 rounded-full animate-bounce shadow-[0_0_15px_rgba(234,179,8,0.9)]">¡Únete ya!</span>
                 </h3>
               </div>
 
