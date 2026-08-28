@@ -37,14 +37,6 @@ export function InteractiveTutorial() {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
-    // Check if the user has already seen the tutorial
-    const hasSeen = localStorage.getItem('liberapro_tutorial_completed');
-    if (!hasSeen) {
-      setTimeout(() => setIsActive(true), 1500); // Start after 1.5s delay
-    }
-  }, []);
-
-  useEffect(() => {
     if (isActive) {
       updateTargetRect();
       window.addEventListener('resize', updateTargetRect);
@@ -58,7 +50,6 @@ export function InteractiveTutorial() {
     if (targetEl) {
       setTargetRect(targetEl.getBoundingClientRect());
     } else {
-      // If target not found, we could skip it or just wait
       setTargetRect(null);
     }
   };
@@ -73,10 +64,21 @@ export function InteractiveTutorial() {
 
   const finishTutorial = () => {
     setIsActive(false);
+    setCurrentStep(0);
     localStorage.setItem('liberapro_tutorial_completed', 'true');
   };
 
-  if (!isActive) return null;
+  if (!isActive) {
+    return (
+      <button 
+        onClick={() => setIsActive(true)}
+        className="fixed bottom-6 right-6 z-[9000] w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center text-white hover:scale-110 transition-transform hover:shadow-xl"
+        title="Ver Tutorial"
+      >
+        <Sparkles className="w-6 h-6 animate-pulse" />
+      </button>
+    );
+  }
 
   const step = tutorialSteps[currentStep];
 

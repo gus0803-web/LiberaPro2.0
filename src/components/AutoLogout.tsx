@@ -13,9 +13,11 @@ export function AutoLogout() {
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
-      router.push('/login');
+      // Temporarily disabled to prevent random logouts
+      // const supabase = createClient();
+      // await supabase.auth.signOut();
+      // router.push('/login');
+      console.log('AutoLogout triggered, but disabled for debugging.');
     } catch (err) {
       console.error('Error logging out:', err);
     }
