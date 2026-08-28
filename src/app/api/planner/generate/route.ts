@@ -210,15 +210,14 @@ Notas, contexto y requerimientos del maestro:
 
     if (user) {
       try {
-        const { data: profile } = await supabase.from('profiles').select('credits, last_credit_reset, is_admin').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('credits, last_credit_reset').eq('id', user.id).single();
         if (profile) {
           let currentCredits = profile.credits ?? 15;
-          const isAdmin = profile.is_admin ?? false;
           let lastReset = profile.last_credit_reset ? new Date(profile.last_credit_reset) : new Date(0);
           const now = new Date();
 
           if (lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
-            currentCredits = isAdmin ? 150 : 100;
+            currentCredits = 100;
             await supabase.from('profiles').update({ 
               credits: currentCredits,
               last_credit_reset: now.toISOString()
@@ -230,6 +229,9 @@ Notas, contexto y requerimientos del maestro:
           if (currentCredits < requiredCredits) {
             return new Response(JSON.stringify({ error: `Créditos insuficientes. Necesitas ${requiredCredits} créditos para generar esta planeación. Tienes ${currentCredits}.` }), { status: 403, headers: { 'Content-Type': 'application/json' } });
           }
+
+          // Descontar créditos por adelantado para asegurar el cobro antes de que la función serverless muera
+          await supabase.from('profiles').update({ credits: currentCredits - requiredCredits }).eq('id', user.id);
         }
       } catch (err) {
         console.error('Error verificando créditos:', err);
@@ -256,14 +258,8 @@ Notas, contexto y requerimientos del maestro:
               type: 'planeacion',
               content: object
             });
-            
-            const { data: profile } = await supabaseAsync.from('profiles').select('credits').eq('id', user.id).single();
-            if (profile && typeof profile.credits === 'number') {
-              const requiredCredits = duracion === 'Mensual' ? 35 : 20;
-              await supabaseAsync.from('profiles').update({ credits: Math.max(0, profile.credits - requiredCredits) }).eq('id', user.id);
-            }
           } catch (e) {
-            console.error('Error saving generation to db or decrementing credits', e);
+            console.error('Error saving generation to db', e);
           }
         }
       }

@@ -19,6 +19,7 @@ export default function CommunicatorPage() {
   const [students, setStudents] = useState<StudentContact[]>([]);
   const [savedSchools, setSavedSchools] = useState<any[]>([]);
   const [selectedSchoolIndex, setSelectedSchoolIndex] = useState<number>(0);
+  const [parentReplies, setParentReplies] = useState<any[]>([]);
 
   const [studentNameInput, setStudentNameInput] = useState('');
   const [parentNameInput, setParentNameInput] = useState('');
@@ -55,6 +56,7 @@ export default function CommunicatorPage() {
         const parsed = JSON.parse(savedStudents);
         setStudents(parsed);
         fetchReactions(parsed);
+        fetchReplies(parsed);
       } catch (e) {}
     } else {
       // Alumnos iniciales de demostración
@@ -81,8 +83,24 @@ export default function CommunicatorPage() {
       setStudents(demoStudents);
       localStorage.setItem('liberapro_student_link_codes', JSON.stringify(demoStudents));
       fetchReactions(demoStudents);
+      fetchReplies(demoStudents);
     }
   }, []);
+
+  const fetchReplies = async (loadedStudents: StudentContact[]) => {
+    try {
+      const supabase = createClient();
+      const codes = loadedStudents.map(s => s.linkCode);
+      if (codes.length === 0) return;
+      const { data } = await supabase.from('parent_replies')
+        .select('*')
+        .in('student_link_code', codes)
+        .order('created_at', { ascending: false });
+      if (data) {
+        setParentReplies(data);
+      }
+    } catch(e) {}
+  };
 
   const fetchReactions = async (loadedStudents: StudentContact[]) => {
     try {
@@ -484,6 +502,37 @@ export default function CommunicatorPage() {
               </button>
             </div>
 
+          </div>
+
+          {/* Buzón de Respuestas de Padres */}
+          <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h3 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-emerald-600" />
+              Buzón de Mensajes de Familias
+            </h3>
+            
+            {parentReplies.length === 0 ? (
+              <p className="text-xs text-slate-400 py-4 text-center">No hay mensajes recientes de los padres de familia.</p>
+            ) : (
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                {parentReplies.map(reply => {
+                  const student = students.find(s => s.linkCode === reply.student_link_code);
+                  const dateStr = new Date(reply.created_at).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+                  return (
+                    <div key={reply.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <strong className="text-sm text-slate-900 block">{student?.parentName || 'Familiar'}</strong>
+                          <span className="text-xs text-emerald-600 font-semibold block">{student?.studentName || 'Alumno Desconocido'}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 bg-white px-2 py-1 rounded-lg border">{dateStr}</span>
+                      </div>
+                      <p className="text-sm text-slate-700 bg-white p-3 rounded-xl border border-slate-100">{reply.content}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
         </div>

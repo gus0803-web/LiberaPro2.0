@@ -19,11 +19,11 @@ export default async function AppLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email || '';
-  const { data: profile } = await supabase.from('profiles').select('full_name, credits, is_admin, created_at, subscription_status').eq('id', user?.id).single();
+  const { data: profile } = await supabase.from('profiles').select('full_name, credits, created_at, subscription_status').eq('id', user?.id).single();
   const nameToUse = profile?.full_name || userEmail;
   const creditsAvailable = profile?.credits ?? 120;
   const initial = nameToUse ? nameToUse.charAt(0).toUpperCase() : 'U';
-  const isAdmin = userEmail === 'gus0803@gmail.com' || profile?.is_admin === true;
+  const isAdmin = userEmail === 'gus0803@gmail.com'; // Fallback to email-based admin only
 
   const createdAt = profile?.created_at ? new Date(profile.created_at) : new Date();
   const diffDays = (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
