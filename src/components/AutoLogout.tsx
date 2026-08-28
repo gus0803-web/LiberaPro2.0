@@ -29,23 +29,6 @@ export function AutoLogout() {
   };
 
   useEffect(() => {
-    // Strict window lock: logout if this is a fresh browser window/tab (sessionStorage is empty)
-    // Note: duplicated tabs inherit sessionStorage, so they won't trigger this.
-    const isNewWindow = !sessionStorage.getItem('liberapro_session_active');
-    if (isNewWindow) {
-      sessionStorage.setItem('liberapro_session_active', '1');
-      const supabase = createClient();
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          supabase.auth.signOut().then(() => {
-            router.push('/login');
-          });
-        }
-      });
-    }
-  }, [router]);
-
-  useEffect(() => {
     // Initial setup
     resetTimer();
 

@@ -57,7 +57,6 @@ export function InteractiveTutorial() {
     const targetEl = document.getElementById(step.targetId);
     if (targetEl) {
       setTargetRect(targetEl.getBoundingClientRect());
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       // If target not found, we could skip it or just wait
       setTargetRect(null);
