@@ -9,14 +9,14 @@ import { Users, MapPin, Search } from 'lucide-react';
 // Simplemente agrega un nuevo objeto a esta lista siguiendo el mismo formato.
 // 
 // Plantilla a copiar:
-// { id: 6, name: 'Nombre Apellido', state: 'Estado', phase: 'Fase X', method: 'Nombre Metodología' },
+// { id: 6, name: 'Nombre Apellido', state: 'Estado', title: 'Director', collaborationType: 'Administrativa' },
 // ==========================================
 const mockTeachers = [
-  { id: 1, name: 'Erendira Mendez Macias', state: 'Aguascalientes', phase: 'Fase 4', method: 'Proyectos Comunitarios' },
-  { id: 2, name: 'Erika Mendez Macias', state: 'Aguascalientes', phase: 'Fase 5', method: 'STEAM' },
-  { id: 3, name: 'Alejandra Mendez Macias', state: 'Aguascalientes', phase: 'Fase 5', method: 'Diseno' },
-  { id: 4, name: 'TBD', state: 'Jalisco', phase: 'Fase 6', method: 'Proyectos Comunitarios' },
-  { id: 5, name: 'Gustavo Arellano', state: 'CDMX', phase: 'CEO', method: 'Director' },
+  { id: 1, name: 'Erendira Mendez Macias', state: 'Aguascalientes', title: 'Maestra Titular', collaborationType: 'Proyectos Comunitarios' },
+  { id: 2, name: 'Erika Mendez Macias', state: 'Aguascalientes', title: 'Especialista', collaborationType: 'STEAM' },
+  { id: 3, name: 'Alejandra Mendez Macias', state: 'Aguascalientes', title: 'Apoyo Pedagógico', collaborationType: 'Diseño Curricular' },
+  { id: 4, name: 'TBD', state: 'Jalisco', title: 'Docente de Grupo', collaborationType: 'Proyectos Comunitarios' },
+  { id: 5, name: 'Gustavo Arellano', state: 'CDMX', title: 'CEO', collaborationType: 'Dirección General' },
   // ⬇️ PEGA TUS NUEVOS MAESTROS AQUÍ ABAJO ⬇️
   
 ];
@@ -82,12 +82,9 @@ export default function CollaborationsPage() {
             </div>
             <h3 className="font-bold text-slate-900 text-lg">{teacher.name}</h3>
             <div className="mt-3 space-y-1">
-              <p className="text-sm text-slate-500"><strong>Fase:</strong> {teacher.phase}</p>
-              <p className="text-sm text-slate-500"><strong>Metodología:</strong> {teacher.method}</p>
+              <p className="text-sm text-slate-500"><strong>Título:</strong> {teacher.title}</p>
+              <p className="text-sm text-slate-500"><strong>Tipo de colaboración:</strong> {teacher.collaborationType}</p>
             </div>
-            <button className="w-full mt-5 bg-indigo-50 text-indigo-700 font-semibold py-2 rounded-xl hover:bg-indigo-100 transition-colors">
-              Conectar
-            </button>
           </div>
         ))}
         {filteredTeachers.length === 0 && (

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award, Brain } from 'lucide-react';
+import { AppFooter } from '@/components/AppFooter';
 
 export default function Home() {
   const router = useRouter();
@@ -317,6 +318,7 @@ export default function Home() {
         </div>
       </footer>
 
+      <AppFooter dark />
     </div>
   );
 }

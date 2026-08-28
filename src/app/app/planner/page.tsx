@@ -32,11 +32,11 @@ const nemPlanningSchema = z.object({
     ejesArticuladores: z.string()
   })),
   fasesMetodologia: z.array(z.object({
-    pasoMetodologia: z.string(),
-    camposFormativosInvolucrados: z.string(),
-    activacion: z.string(),
-    construccion: z.string(),
-    metacognicion: z.string(),
+    fase: z.string(),
+    momentos: z.array(z.object({
+      nombreMomento: z.string(),
+      actividadesIntegradas: z.string()
+    })),
     materialesYRecursos: z.string()
   })),
   estrategiaEvaluacion: z.string(),
@@ -50,6 +50,7 @@ const nemPlanningSchema = z.object({
       observaciones: z.string()
     }))
   })),
+  referenciasPedagogicas: z.string(),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -194,6 +195,7 @@ export default function PlannerPage() {
       fasesMetodologia: object?.fasesMetodologia,
       estrategiaEvaluacion: object?.estrategiaEvaluacion,
       anexosListasCotejo: object?.anexosListasCotejo,
+      referenciasPedagogicas: object?.referenciasPedagogicas,
       firmas: object?.firmas
     };
 
@@ -371,10 +373,9 @@ export default function PlannerPage() {
 
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Duración del Proyecto</label>
-          <select value={duracion} onChange={e => setDuracion(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-500 transition-all">
-            <option value="Semanal">Semanal (5 Días Hábiles)</option>
-            <option value="Quincenal">Quincenal (10 Días Hábiles)</option>
-            <option value="Mensual">Mensual (20 Días Hábiles)</option>
+          <select className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 font-medium" value={duracion} onChange={(e) => setDuracion(e.target.value)}>
+            <option value="Quincenal">Quincenal (10 Días Hábiles) - 20 Créditos</option>
+            <option value="Mensual">Mensual (20 Días Hábiles) - 35 Créditos</option>
           </select>
         </div>
 
@@ -566,33 +567,24 @@ export default function PlannerPage() {
                 <Calendar className="w-5 h-5 text-emerald-600" />
                 4. Desarrollo del Proyecto por Fases Metodológicas
               </h4>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {object.fasesMetodologia.map((faseItemRaw, idx) => {
                   const faseItem = faseItemRaw as any;
                   return (
-                    <div key={idx} className="border border-slate-200 rounded-2xl p-5 bg-slate-50/50 space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
-                        <span className="font-bold text-blue-700 text-base">{faseItem?.fase || faseItem?.pasoMetodologia}</span>
-                        {faseItem?.camposFormativosInvolucrados && (
-                          <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">{faseItem.camposFormativosInvolucrados}</span>
-                        )}
+                    <div key={idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-1">
+                        <span className="font-bold text-blue-700 text-sm">{faseItem?.fase || faseItem?.pasoMetodologia}</span>
                       </div>
-                      <div className="space-y-3 text-sm pt-2">
+                      <div className="space-y-2 text-sm pt-1">
                         {faseItem?.momentos && Array.isArray(faseItem.momentos) ? (
                           faseItem.momentos.map((momento: any, mIdx: number) => (
                             <div key={mIdx}>
-                              <strong className="text-blue-800 block mb-1">• {momento.nombreMomento}</strong>
-                              <p className="text-slate-700 leading-relaxed">{momento.actividadesIntegradas}</p>
+                              <strong className="text-blue-800 block mb-0.5">• {momento.nombreMomento}</strong>
+                              <p className="text-slate-700 leading-snug">{momento.actividadesIntegradas}</p>
                             </div>
                           ))
-                        ) : (
-                          <>
-                            <p><strong className="text-emerald-700">• Activación:</strong> {faseItem?.activacion}</p>
-                            <p><strong className="text-blue-700">• Acción y Construcción:</strong> {faseItem?.construccion}</p>
-                            <p><strong className="text-purple-700">• Reflexión / Metacognición:</strong> {faseItem?.metacognicion}</p>
-                          </>
-                        )}
-                        <div className="bg-slate-50 p-2 rounded-lg mt-3">
+                        ) : null}
+                        <div className="bg-slate-50 p-2 rounded-md mt-2">
                           <p className="text-slate-700 text-xs"><strong>Materiales y Recursos:</strong> {faseItem?.materialesYRecursos}</p>
                         </div>
                       </div>
@@ -650,6 +642,19 @@ export default function PlannerPage() {
                   </div>
                 </div>
               ))}
+            </section>
+          )}
+
+          {/* Sección 7: Referencias Pedagógicas */}
+          {object.referenciasPedagogicas && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3 mt-6">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-indigo-600" />
+                7. Referencias Pedagógicas (SEP)
+              </h4>
+              <p className="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
+                {object.referenciasPedagogicas}
+              </p>
             </section>
           )}
 

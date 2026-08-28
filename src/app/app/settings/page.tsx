@@ -166,7 +166,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex flex-col space-y-4">
             <p className="text-sm text-slate-600 font-medium">
-              {isEs ? 'Agrega tu nombre y hasta 4 escuelas donde impartes clases. Estos datos se usarán en el encabezado de tus planeaciones.' : 'Add your name and up to 4 schools where you teach. This data will be used in the header of your lesson plans.'}
+              {isEs ? 'Agrega tu nombre y configura tu escuela. Para agregar escuelas adicionales, adquiere el paquete multi-escuela.' : 'Add your name and configure your school. To add more schools, purchase the multi-school package.'}
             </p>
             <div className="mb-2 bg-slate-50 border border-slate-200 rounded-xl p-4">
               <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? 'Nombre del Docente' : 'Teacher Name'}</label>
@@ -180,7 +180,9 @@ export default function SettingsPage() {
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[0, 1, 2, 3].map((index) => {
+              {/* Escuela 1 - Activa */}
+              {(() => {
+                const index = 0;
                 const schoolGroup = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liberapro_schools') || '[]')[index] || { school: '', group: '', cct: '', turno: 'Matutino', director: '' } : { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
                 return (
                   <div key={index} className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
@@ -268,7 +270,38 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 );
-              })}
+              })()}
+
+              {/* Escuela 2 - Bloqueada */}
+              <div className="bg-slate-100 border border-slate-300 rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden opacity-80">
+                <div className="absolute inset-0 bg-slate-200/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') window.location.href = '/app/billing';
+                    }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transform transition hover:scale-105 pointer-events-auto"
+                  >
+                    {isEs ? 'Desbloquear Multi-Escuela' : 'Unlock Multi-School'}
+                  </button>
+                </div>
+                <div className="pointer-events-none filter grayscale">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? 'Escuela 2' : 'School 2'}</label>
+                    <input disabled type="text" placeholder={isEs ? 'Nombre de la escuela...' : 'School name...'} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-100" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? 'Grupo / Grado' : 'Group / Grade'}</label>
+                      <input disabled type="text" placeholder={isEs ? 'Ej. 2°A' : 'e.g. 2nd Grade A'} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-100" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">CCT</label>
+                      <input disabled type="text" placeholder="Ej. 02DPR1234X" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-100" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

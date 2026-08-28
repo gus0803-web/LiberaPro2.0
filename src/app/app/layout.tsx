@@ -9,6 +9,8 @@ import { AppFooter } from '@/components/AppFooter';
 import { TopBarActions } from '@/components/TopBarActions';
 import { createClient } from '@/lib/supabase/server';
 import { AutoLogout } from '@/components/AutoLogout';
+import { BetaFeedback } from '@/components/BetaFeedback';
+import { InteractiveTutorial } from '@/components/InteractiveTutorial';
 
 export default async function AppLayout({
   children,
@@ -18,15 +20,29 @@ export default async function AppLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email || '';
-  const { data: profile } = await supabase.from('profiles').select('full_name, credits').eq('id', user?.id).single();
+  const { data: profile } = await supabase.from('profiles').select('full_name, credits, is_admin, created_at, subscription_status').eq('id', user?.id).single();
   const nameToUse = profile?.full_name || userEmail;
   const creditsAvailable = profile?.credits ?? 120;
   const initial = nameToUse ? nameToUse.charAt(0).toUpperCase() : 'U';
-  const isAdmin = userEmail === 'gus0803@gmail.com';
+  const isAdmin = userEmail === 'gus0803@gmail.com' || profile?.is_admin === true;
+
+  const createdAt = profile?.created_at ? new Date(profile.created_at) : new Date();
+  const diffDays = (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+  const isBetaBlocked = !isAdmin && profile?.subscription_status !== 'active' && diffDays >= 7;
+
+  if (isBetaBlocked) {
+    return (
+      <ThemeProvider>
+        <AutoLogout />
+        <BetaFeedback />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider>
       <AutoLogout />
+      <InteractiveTutorial />
       <div className="flex min-h-screen text-[var(--app-font-color)] font-[family-name:var(--font-geist-sans)] p-4 md:p-8 overflow-hidden items-center justify-center">
         
         {/* Main Glass Panel */}

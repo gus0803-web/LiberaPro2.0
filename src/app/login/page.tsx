@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BookOpen, Presentation, ShieldCheck, GraduationCap, Users, Bot, Code, FileText } from 'lucide-react';
+import { BookOpen, Presentation, ShieldCheck, GraduationCap, Users, Bot, Code, FileText, Play, Sparkles, Clock, CheckCircle, Lightbulb, PenTool, LayoutTemplate, Shield, Brain } from 'lucide-react';
+import { AppFooter } from '@/components/AppFooter';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -369,6 +370,7 @@ export default function LoginPage() {
         </div>
       </section>
 
+      <AppFooter dark />
     </div>
   );
 }

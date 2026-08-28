@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { KeyRound, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2, Clock, Calendar, AlertCircle, Volume2, X, Phone, Mail, FileText, Share2, QrCode, Plus } from 'lucide-react';
+import { KeyRound, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2, Clock, Calendar, AlertCircle, Volume2, X, Phone, Mail, FileText, Share2, QrCode, Plus, Send } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface SalonInfo {
@@ -39,6 +39,8 @@ export default function FamiliasPortalPage() {
   
   const [activeLegalModal, setActiveLegalModal] = useState<'privacy' | 'terms' | 'contact' | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [replyText, setReplyText] = useState<Record<string, string>>({});
+  const [isReplying, setIsReplying] = useState<Record<string, boolean>>({});
 
   const activeSalonInfo = linkedSalons[activeSalonIndex] || null;
 
@@ -277,41 +279,61 @@ export default function FamiliasPortalPage() {
     }
   };
 
-  const handleReaction = async (messageId: string, emoji: string) => {
-    if (localReactions[messageId]) return; // El usuario ya reaccionó a este mensaje
+  const handleReaction = async (msgId: string, type: string) => {
+    if (localReactions[msgId] || msgId.startsWith('welcome-')) return;
+    
+    setLocalReactions(prev => ({ ...prev, [msgId]: type }));
+    localStorage.setItem('liberapro_parent_reactions', JSON.stringify({ ...localReactions, [msgId]: type }));
 
-    const newLocal = { ...localReactions, [messageId]: emoji };
-    setLocalReactions(newLocal);
-    localStorage.setItem('liberapro_parent_reactions', JSON.stringify(newLocal));
-
-    // 1. Optimistic update
     setMessages(prev => prev.map(m => {
-      if (m.id === messageId && !m.id.startsWith('welcome-')) {
-        const current = m.reactions || {};
-        return {
-          ...m,
-          reactions: { ...current, [emoji]: (current[emoji] || 0) + 1 }
-        };
+      if (m.id === msgId) {
+        const r = { ...(m.reactions || {}) };
+        r[type] = (r[type] || 0) + 1;
+        return { ...m, reactions: r };
       }
       return m;
     }));
 
-    if (messageId.startsWith('welcome-')) return; // No guardar reacciones de mensajes locales
-
-    // 2. Base de datos
     try {
       const supabase = createClient();
-      const { data } = await supabase.from('parent_messages').select('reactions').eq('id', messageId).single();
+      const { data } = await supabase.from('parent_messages').select('reactions').eq('id', msgId).single();
       const current = data?.reactions || {};
-      const newReactions = { ...current, [emoji]: (current[emoji] || 0) + 1 };
-      
-      
-      await supabase.from('parent_messages').update({ reactions: newReactions }).eq('id', messageId);
-      
-      // Actualizar el emoji enviado por el padre en el código de enlace (perfil del alumno)
-      await supabase.from('family_link_codes').update({ last_reaction: emoji }).eq('link_code', activeSalonInfo.linkCode);
+      const newReactions = { ...current, [type]: (current[type] || 0) + 1 };
+      await supabase.from('parent_messages').update({ reactions: newReactions }).eq('id', msgId);
+      if (activeSalonInfo) {
+        await supabase.from('family_link_codes').update({ last_reaction: type }).eq('link_code', activeSalonInfo.linkCode);
+      }
     } catch (e) {
       console.error('Error al enviar reacción');
+    }
+  };
+
+  const handleReply = async (msgId: string) => {
+    const text = replyText[msgId]?.trim();
+    if (!text || !activeSalonInfo) return;
+    if (text.length > 100) {
+      alert('La respuesta no puede exceder los 100 caracteres.');
+      return;
+    }
+
+    setIsReplying(prev => ({ ...prev, [msgId]: true }));
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.from('parent_replies').insert({
+        message_id: msgId,
+        student_link_code: activeSalonInfo.linkCode,
+        content: text
+      });
+
+      if (error) throw error;
+      
+      alert('Respuesta enviada exitosamente al maestro.');
+      setReplyText(prev => ({ ...prev, [msgId]: '' }));
+    } catch (e: any) {
+      console.error(e);
+      alert('Error al enviar la respuesta. Intenta de nuevo.');
+    } finally {
+      setIsReplying(prev => ({ ...prev, [msgId]: false }));
     }
   };
 
@@ -554,6 +576,27 @@ export default function FamiliasPortalPage() {
                     })}
                   </div>
 
+                  {/* Reply Input */}
+                  {!msg.id.startsWith('welcome-') && (
+                    <div className="pt-3 border-t border-slate-800/50 mt-3 flex items-center gap-2">
+                      <input 
+                        type="text"
+                        maxLength={100}
+                        placeholder="Escribe una respuesta breve al maestro (máx 100 carácteres)..."
+                        value={replyText[msg.id] || ''}
+                        onChange={(e) => setReplyText(prev => ({ ...prev, [msg.id]: e.target.value }))}
+                        className="flex-1 bg-slate-900 border border-slate-700 text-sm text-white px-3 py-2 rounded-xl focus:ring-1 focus:ring-emerald-500 outline-none"
+                      />
+                      <button 
+                        onClick={() => handleReply(msg.id)}
+                        disabled={isReplying[msg.id] || !replyText[msg.id]?.trim()}
+                        className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white p-2.5 rounded-xl transition-colors"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
                 </article>
               ))}
               
@@ -568,15 +611,20 @@ export default function FamiliasPortalPage() {
       </main>
 
       {/* Footer Info */}
-      <footer className="max-w-3xl w-full mx-auto text-center text-[11px] text-slate-400 border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <span>© 2026 LiberaPro Familias</span>
-        <div className="flex items-center gap-4 text-[11px] text-slate-400">
-          <button onClick={() => setActiveLegalModal('privacy')} className="hover:text-emerald-400 transition-colors underline">Política Privacidad</button>
-          <span>•</span>
-          <button onClick={() => setActiveLegalModal('terms')} className="hover:text-emerald-400 transition-colors underline">Términos</button>
-          <span>•</span>
-          <button onClick={() => setActiveLegalModal('contact')} className="hover:text-emerald-400 transition-colors underline">Contacto</button>
+      <footer className="max-w-3xl w-full mx-auto text-center border-t border-slate-800/80 pt-4 pb-8 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-slate-400">
+          <span>© 2026 LiberaPro Familias</span>
+          <div className="flex items-center gap-4 text-[11px] text-slate-400">
+            <button onClick={() => setActiveLegalModal('privacy')} className="hover:text-emerald-400 transition-colors underline">Política Privacidad</button>
+            <span>•</span>
+            <button onClick={() => setActiveLegalModal('terms')} className="hover:text-emerald-400 transition-colors underline">Términos</button>
+            <span>•</span>
+            <button onClick={() => setActiveLegalModal('contact')} className="hover:text-emerald-400 transition-colors underline">Contacto</button>
+          </div>
         </div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          Owned and operated by LINC-SUITE HOLDINGS
+        </p>
       </footer>
 
       {/* MODAL INVITACIÓN MAESTROS */}

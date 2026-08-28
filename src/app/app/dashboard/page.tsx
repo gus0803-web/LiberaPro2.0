@@ -389,7 +389,7 @@ export default function DashboardPage() {
   const hoursSavedYear = itemsThisYear.length * 2;
 
   return (
-    <div className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div id="tutorial-step-1" className="h-full flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header with Greeting */}
       <div className="flex flex-col md:flex-row md:items-end justify-between space-y-4 md:space-y-0">
         <div className="space-y-2">
@@ -435,7 +435,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <button onClick={() => router.push('/app/planner')} className="group rounded-3xl border border-emerald-200 bg-emerald-50 p-6 flex flex-col items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm relative overflow-hidden">
+          <button id="tutorial-step-2" onClick={() => router.push('/app/planner')} className="group rounded-3xl border border-emerald-200 bg-emerald-50 p-6 flex flex-col items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm relative overflow-hidden">
             <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors"></div>
             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 z-10 border border-emerald-100 group-hover:scale-110 transition-transform">
               <Plus className="w-6 h-6 text-emerald-500" />

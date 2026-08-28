@@ -35,7 +35,7 @@ export function TopBarActions({ initial, isAdmin, creditsAvailable = 120 }: { in
   return (
     <div className="flex items-center space-x-2 sm:space-x-4">
       {/* Credits Counter */}
-      <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/50 border border-white/60 shadow-sm">
+      <div id="tutorial-step-3" className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/50 border border-white/60 shadow-sm">
         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{isEs ? 'Créditos' : 'Credits'}</span>
         <span className="text-sm font-bold text-indigo-600">{creditsAvailable} <span className="text-slate-400 font-medium">/ 120</span></span>
       </div>

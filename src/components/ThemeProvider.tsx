@@ -75,7 +75,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme() {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    return {
+      theme: 'dawn',
+      setTheme: () => {},
+      language: 'es',
+      setLanguage: () => {},
+      fontColor: '#1d4ed8',
+      setFontColor: () => {}
+    } as AppContextType;
   }
   return context;
 }
