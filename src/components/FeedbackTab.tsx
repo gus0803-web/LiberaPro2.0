@@ -14,16 +14,18 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const isEs = language === 'es';
   const [feedback, setFeedback] = useState('');
   const [rating, setRating] = useState<number | null>(null);
+  const [category, setCategory] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Feedback submitted:', { rating, feedback });
+    console.log('Feedback submitted:', { rating, category, feedback });
     setSent(true);
     setTimeout(() => {
       setSent(false);
       setFeedback('');
       setRating(null);
+      setCategory(null);
       onClose();
     }, 2500);
   };
@@ -83,7 +85,16 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                 ? ['Error / Bug', 'Sugerencia', 'Planeaciones', 'Materiales', 'Interfaz', 'Otro']
                 : ['Bug / Error', 'Suggestion', 'Lesson Plans', 'Materials', 'Interface', 'Other']
               ).map((cat) => (
-                <button key={cat} type="button" className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors border border-transparent hover:border-blue-200">
+                <button 
+                  key={cat} 
+                  type="button" 
+                  onClick={() => setCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    category === cat
+                      ? 'bg-blue-100 text-blue-800 border-blue-300'
+                      : 'bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700 border-transparent hover:border-blue-200'
+                  }`}
+                >
                   {cat}
                 </button>
               ))}

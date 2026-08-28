@@ -85,7 +85,7 @@ export function InteractiveTutorial() {
   return (
     <>
       {/* Overlay Backdrop */}
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9998] transition-opacity" />
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-none z-[9998] transition-opacity" />
 
       {/* Target Highlight */}
       {targetRect && (

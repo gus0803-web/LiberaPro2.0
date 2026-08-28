@@ -34,6 +34,17 @@ export function AutoLogout() {
     // Initial setup
     resetTimer();
 
+    // Clean up extra schools for users (restrict to 1 school)
+    try {
+      const schools = localStorage.getItem('liberapro_schools');
+      if (schools) {
+        const parsed = JSON.parse(schools);
+        if (Array.isArray(parsed) && parsed.length > 1) {
+          localStorage.setItem('liberapro_schools', JSON.stringify([parsed[0]]));
+        }
+      }
+    } catch (e) {}
+
     // Events to track user activity
     const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
 
