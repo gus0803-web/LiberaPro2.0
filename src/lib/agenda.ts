@@ -478,7 +478,7 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       children.push(new Table({
         width: { size: 10800, type: WidthType.DXA },
-        columnWidths: [2700, 5400, 2700],
+        columnWidths: [1620, 7560, 1620],
         layout: TableLayoutType.AUTOFIT,
         rows: secRows
       }));
@@ -542,6 +542,19 @@ export function downloadAgendaItem(item: AgendaItem) {
         }));
         children.push(new Paragraph({ spacing: { after: 180 } }));
       });
+    }
+
+    // Sección 7: Referencias Pedagógicas
+    if (datos.referenciasPedagogicas) {
+      children.push(new Paragraph({
+        text: "7. Referencias Pedagógicas y Libros de Texto",
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 200, after: 120 }
+      }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: renderValue(datos.referenciasPedagogicas), size: 21 })],
+        spacing: { after: 240 }
+      }));
     }
 
     // Firmas Oficiales

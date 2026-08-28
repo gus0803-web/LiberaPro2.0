@@ -48,7 +48,7 @@ const nemPlanningSchema = z.object({
       observaciones: z.string().describe("Espacio para observaciones o evidencias")
     }))
   })),
-  referenciasPedagogicas: z.string().describe("Lista de bibliografía y referencias pedagógicas oficiales de la SEP que sustenten metodológicamente el proyecto."),
+  referenciasPedagogicas: z.string().describe("Lista de bibliografía, referencias pedagógicas oficiales de la SEP y mención de Libros de Texto Gratuitos acordes a la Fase/Grado que sustenten el proyecto."),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -189,10 +189,9 @@ ${methodologyGuide}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
    - ANEXOS: Mínimo 2 Listas de Cotejo Cualitativas estructuradas por Campo Formativo con Indicadores de Aprendizaje directamente basados en los PDA oficiales, con columnas para Logrado (SÍ), En Proceso (NO) y Observaciones/Evidencias.
-   - REFERENCIAS PEDAGÓGICAS: Incluye una sección final con bibliografía y referencias pedagógicas oficiales de la SEP.
+   - REFERENCIAS PEDAGÓGICAS: Incluye una sección final con bibliografía, enlaces y referencias de Libros de Texto Gratuitos (SEP) acordes a la Fase (grado). Señala proyectos o páginas sugeridas si aplican.
    - FIRMAS OFICIALES: Firma del Docente Titular y Firma del Director(a).
 
-CERO LIBROS DE TEXTO (No refieras páginas congeladas).
 NO OMITAS NINGUNA DE LAS SECCIONES.
 `;
 
