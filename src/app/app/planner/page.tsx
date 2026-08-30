@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { z } from 'zod';
 import { AgendaItem, addAgendaItem, loadSelectedPlanDate, downloadAgendaItem } from '@/lib/agenda';
-import { Download, Sparkles, CheckCircle2, FileText, Calendar, BookOpen, Layers, Award } from 'lucide-react';
+import { Download, Sparkles, CheckCircle2, FileText, Calendar, BookOpen, Layers, Award, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const nemPlanningSchema = z.object({
