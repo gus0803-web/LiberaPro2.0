@@ -660,7 +660,7 @@ export default function PlannerPage() {
                         <td className="p-3 border border-slate-200 font-medium text-slate-800">{ref?.paginas}</td>
                         <td className="p-3 border border-slate-200 text-center">
                           <a 
-                            href={`https://libros.conaliteg.gob.mx/busqueda?q=${encodeURIComponent(ref?.actividadRelacionada || tema)}`} 
+                            href={`https://www.google.com/search?q=${encodeURIComponent('site:libros.conaliteg.gob.mx ' + ref?.libro)}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors border border-indigo-200"

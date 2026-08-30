@@ -581,7 +581,7 @@ export function downloadAgendaItem(item: AgendaItem) {
       ];
       
       referenciasLibrosSEP.forEach((ref: any) => {
-        const searchUrl = `https://libros.conaliteg.gob.mx/busqueda?q=${encodeURIComponent(ref.actividadRelacionada || obj.proyectoIntegrador?.titulo || '')}`;
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent('site:libros.conaliteg.gob.mx ' + ref.libro)}`;
         refRows.push(new TableRow({
           children: [
             createCell(renderValue(ref.libro), true, "f8fafc"),
