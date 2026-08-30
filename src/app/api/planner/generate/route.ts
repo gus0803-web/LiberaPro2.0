@@ -55,10 +55,6 @@ const nemPlanningSchema = z.object({
     actividadRelacionada: z.string().describe("De qué trata la actividad o texto recomendado"),
     paginas: z.string().describe("Páginas sugeridas (Ej. 'Pág. 24-28')")
   })),
-  enlacesSEP: z.array(z.object({
-    titulo: z.string().describe("Ej. 'Enlace al libro Proyectos de Aula Fase 3'"),
-    url: z.string().describe("URL oficial de Conaliteg u otra fuente SEP")
-  })),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -199,8 +195,9 @@ ${methodologyGuide}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
    - ANEXOS: Mínimo 2 Listas de Cotejo. En cada lista incluye criterios de evaluación (con columnas Sí/No) y una tabla adicional que desciba los Niveles de Desempeño esperados para guiar al docente.
-7. REFERENCIAS A LIBROS DE LA SEP: Genera una lista estructurada con recomendaciones de libros de texto oficiales de la NEM (Proyectos de Aula, Nuestros Saberes, etc.) acordes a la Fase (grado), sugiriendo proyectos o páginas específicas que se relacionen con el tema.
-8. ENLACES: Proporciona los enlaces (URLs) oficiales de la SEP/Conaliteg para descargar o consultar los libros recomendados.
+7. REFERENCIAS A LIBROS DE LA SEP: Genera una lista estructurada con recomendaciones de libros de texto oficiales.
+   - REGLA ESTRICTA DE CATÁLOGO: Utiliza ÚNICAMENTE los nombres de la familia de libros de texto gratuitos de la NEM (Proyectos de Aula, Proyectos Escolares, Proyectos Comunitarios, Nuestros Saberes, Múltiples Lenguajes).
+   - REGLA ESTRICTA DE ASOCIACIÓN: Asegúrate de que el libro y la actividad sugerida coincidan directamente con los Campos Formativos seleccionados y el Proyecto principal de la secuencia didáctica generada.
    - FIRMAS OFICIALES: Firma del Docente Titular y Firma del Director(a).
 
 NO OMITAS NINGUNA DE LAS SECCIONES.

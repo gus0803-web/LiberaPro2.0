@@ -581,10 +581,18 @@ export function downloadAgendaItem(item: AgendaItem) {
       ];
       
       referenciasLibrosSEP.forEach((ref: any) => {
+        const searchUrl = `https://libros.conaliteg.gob.mx/busqueda?q=${encodeURIComponent(ref.actividadRelacionada || obj.proyectoIntegrador?.titulo || '')}`;
         refRows.push(new TableRow({
           children: [
             createCell(renderValue(ref.libro), true, "f8fafc"),
-            createCell(renderValue(ref.actividadRelacionada)),
+            new TableCell({
+              columnSpan: 1,
+              margins: { top: 120, bottom: 120, left: 150, right: 150 },
+              children: [
+                new Paragraph({ children: [new TextRun({ text: renderValue(ref.actividadRelacionada), size: 20 })], spacing: { after: 60 } }),
+                new Paragraph({ children: [new TextRun({ text: `Enlace de Búsqueda Conaliteg:\n${searchUrl}`, size: 18, color: "2563eb" })] })
+              ]
+            }),
             createCell(renderValue(ref.paginas))
           ]
         }));
@@ -597,25 +605,6 @@ export function downloadAgendaItem(item: AgendaItem) {
         rows: refRows
       }));
       children.push(new Paragraph({ spacing: { after: 240 } }));
-    }
-
-    // Sección 8: Enlaces SEP
-    const enlacesSEP = Array.isArray(obj.enlacesSEP) ? obj.enlacesSEP : [];
-    if (enlacesSEP.length > 0) {
-      children.push(new Paragraph({
-        children: [new TextRun({ text: "8. Enlaces a Recursos y Libros SEP", bold: true, size: 26, color: "0369a1" })],
-        spacing: { before: 300, after: 120 }
-      }));
-      enlacesSEP.forEach((enlace: any) => {
-        children.push(new Paragraph({
-          children: [
-            new TextRun({ text: "• " }),
-            new TextRun({ text: renderValue(enlace.titulo), bold: true, size: 22 }),
-            new TextRun({ text: `\n  ${renderValue(enlace.url)}`, size: 21, color: "2563eb" })
-          ],
-          spacing: { after: 120 }
-        }));
-      });
     }
 
     // Firmas Oficiales
