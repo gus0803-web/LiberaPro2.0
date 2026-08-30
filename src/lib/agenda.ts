@@ -299,7 +299,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     
     // Header Title
     children.push(new Paragraph({
-      children: [new TextRun({ text: "SECRETARÍA DE EDUCACIÓN PÚBLICA", bold: true, size: 24, color: "1e3a8a" })],
+      children: [new TextRun({ text: "SECRETARÍA DE EDUCACIÓN PÚBLICA", bold: true, size: 28, color: "1e3a8a" })],
       alignment: AlignmentType.CENTER,
       spacing: { after: 60 }
     }));
@@ -309,7 +309,7 @@ export function downloadAgendaItem(item: AgendaItem) {
       spacing: { after: 60 }
     }));
     children.push(new Paragraph({
-      children: [new TextRun({ text: `Planeación Didáctica - ${renderValue(datos.mesPlan || "Diagnóstico e Integración")}`, italic: true, size: 20, color: "475569" })],
+      children: [new TextRun({ text: `Planeación Didáctica - ${renderValue(datos.mesPlan || "Diagnóstico e Integración")}`, italic: true, size: 22, color: "0284c7" })],
       alignment: AlignmentType.CENTER,
       spacing: { after: 200 }
     }));
@@ -356,9 +356,8 @@ export function downloadAgendaItem(item: AgendaItem) {
 
     // Sección 1: Justificación Pedagógica y Diagnóstico Inicial
     children.push(new Paragraph({
-      text: "1. Justificación Pedagógica y Diagnóstico Inicial",
-      heading: HeadingLevel.HEADING_2,
-      spacing: { before: 200, after: 120 }
+      children: [new TextRun({ text: "1. Justificación Pedagógica y Diagnóstico Inicial", bold: true, size: 26, color: "0369a1" })],
+      spacing: { before: 300, after: 120 }
     }));
     children.push(new Paragraph({
       children: [new TextRun({ text: renderValue(justificacion), size: 21 })],
@@ -368,9 +367,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Sección 2: Proyecto Integrador
     if (proyecto.titulo || proyecto.metodologia) {
       children.push(new Paragraph({
-        text: "2. Proyecto Integrador de Diagnóstico e Integración",
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 120 }
+        children: [new TextRun({ text: "2. Proyecto Integrador", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
       }));
       children.push(new Paragraph({
         children: [
@@ -398,9 +396,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Sección 3: Estructura Curricular
     if (currList.length > 0) {
       children.push(new Paragraph({
-        text: "3. Estructura Curricular: Campos Formativos, Contenidos y PDA",
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 120 }
+        children: [new TextRun({ text: "3. Estructura Curricular: Campos Formativos, Contenidos y PDA", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
       }));
       
       const currRows = [
@@ -437,9 +434,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Sección 4: Fases Metodológicas
     if (fasesMetodologia.length > 0) {
       children.push(new Paragraph({
-        text: "4. Desarrollo del Proyecto por Fases Metodológicas",
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 120 }
+        children: [new TextRun({ text: "4. Desarrollo del Proyecto por Fases Metodológicas", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 200 }
       }));
 
       fasesMetodologia.forEach((f: any) => {
@@ -460,32 +456,34 @@ export function downloadAgendaItem(item: AgendaItem) {
 
         const recursos = renderValue(f.materialesYRecursos || f.recursos || 'N/A');
 
-        children.push(new Table({
-          width: { size: 10800, type: WidthType.DXA },
-          columnWidths: [10800],
-          layout: TableLayoutType.AUTOFIT,
-          rows: [
-            new TableRow({
-              children: [createCell(faseCampo, true, "f1f5f9")]
-            }),
-            new TableRow({
-              children: [createCell(actText)]
-            }),
-            new TableRow({
-              children: [createCell(`Materiales y Recursos:\n${recursos}`, true, "f8fafc")]
-            })
-          ]
+        children.push(new Paragraph({
+          children: [new TextRun({ text: faseCampo, bold: true, size: 24, color: "0f172a" })],
+          spacing: { before: 120, after: 120 }
         }));
-        children.push(new Paragraph({ spacing: { after: 240 } }));
+        
+        const actLines = actText.split('\n');
+        actLines.forEach(line => {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: line, size: 22 })],
+            spacing: { after: 60 }
+          }));
+        });
+        
+        children.push(new Paragraph({
+          children: [
+            new TextRun({ text: "Materiales y Recursos: ", bold: true, size: 22, color: "166534" }),
+            new TextRun({ text: recursos, size: 22 })
+          ],
+          spacing: { before: 120, after: 240 }
+        }));
       });
     }
 
     // Sección 5: Estrategia de Evaluación Formativa
     if (evaluacion) {
       children.push(new Paragraph({
-        text: "5. Estrategia de Evaluación Diagnóstica y Formativa",
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 120 }
+        children: [new TextRun({ text: "5. Estrategia de Evaluación Diagnóstica y Formativa", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
       }));
       children.push(new Paragraph({
         children: [new TextRun({ text: renderValue(evaluacion), size: 21 })],
@@ -496,9 +494,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Sección 6: Anexos - Listas de Cotejo
     if (anexos.length > 0) {
       children.push(new Paragraph({
-        text: "6. Anexos: Listas de Cotejo para la Evaluación Formativa",
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 120 }
+        children: [new TextRun({ text: "6. Anexos: Listas de Cotejo para la Evaluación Formativa", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
       }));
 
       anexos.forEach((anexo: any) => {
@@ -569,9 +566,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     // Sección 7: Referencias Pedagógicas y Libros SEP
     if (referenciasLibrosSEP.length > 0) {
       children.push(new Paragraph({
-        text: "7. Referencias a Libros de la SEP",
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 200, after: 120 }
+        children: [new TextRun({ text: "7. Referencias a Libros de la SEP", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
       }));
       
       const refRows = [
@@ -601,6 +597,25 @@ export function downloadAgendaItem(item: AgendaItem) {
         rows: refRows
       }));
       children.push(new Paragraph({ spacing: { after: 240 } }));
+    }
+
+    // Sección 8: Enlaces SEP
+    const enlacesSEP = Array.isArray(obj.enlacesSEP) ? obj.enlacesSEP : [];
+    if (enlacesSEP.length > 0) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: "8. Enlaces a Recursos y Libros SEP", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
+      }));
+      enlacesSEP.forEach((enlace: any) => {
+        children.push(new Paragraph({
+          children: [
+            new TextRun({ text: "• " }),
+            new TextRun({ text: renderValue(enlace.titulo), bold: true, size: 22 }),
+            new TextRun({ text: `\n  ${renderValue(enlace.url)}`, size: 21, color: "2563eb" })
+          ],
+          spacing: { after: 120 }
+        }));
+      });
     }
 
     // Firmas Oficiales
