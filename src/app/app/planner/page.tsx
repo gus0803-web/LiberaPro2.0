@@ -210,7 +210,7 @@ export default function PlannerPage() {
         date: dateStr,
         type: 'planeacion',
         title: tema || 'Planeación Oficial NEM',
-        description: `Proyecto: ${tema} (${fase} - ${metodologia})`,
+        description: `Proyecto: ${tema} (${selectedSchoolInfo.fase || 'Fase 3: Primaria (1º y 2º)'} - ${metodologia})`,
         metadata: {
           fase: selectedSchoolInfo.fase || 'Fase 3: Primaria (1º y 2º)',
           tema,
