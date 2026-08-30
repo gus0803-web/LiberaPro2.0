@@ -189,11 +189,12 @@ ${methodologyGuide}
    - COLUMNA 2 (Actividades por Momentos): Desglosa las actividades FORZOSAMENTE por Momentos metodológicos. 
      * Regla de Integración Transversal: Dentro de CADA Momento, redacta actividades narrativas y lógicas (flujo didáctico) donde se interconecten los campos formativos en la misma escena (ej. plática grupal -> salir al patio a contar cosas). NO separes por días ni por materias aisladas. Cada momento DEBE contener obligatoriamente al menos una actividad conectada para CADA campo formativo seleccionado.
      * Mención Explícita: Al final de CADA oración o actividad, debes indicar obligatoriamente entre paréntesis el Campo Formativo que se está trabajando (ej. '...recolectar datos (Saberes y Pensamiento Científico).').
+     * FASES Y ACTIVIDADES: Momentos específicos estructurados según la Metodología. Describe cada momento y actividad con GRAN DETALLE y amplitud (ofreciendo ejemplos específicos, dinámicas claras, guiones de preguntas y actividades profundas).
      ${hasTEA ? '* Adaptaciones TEA: Agrega obligatoriamente un párrafo extra al final de cada Momento que inicie con "🧩 Adaptaciones TEA:" detallando cómo adaptar estas actividades para alumnos en el espectro.' : ''}
    - Materiales y Recursos específicos y estrategia de evaluación formativa de la fase. IMPORTANTE: En los materiales DEBES incluir siempre una opción de "🌿 Material ECO:" (ej. uso de material reciclado o recursos naturales).
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
-   - ANEXOS: Mínimo 2 Listas de Cotejo. En cada lista incluye criterios de evaluación (con columnas Sí/No) y una tabla adicional que describa los Niveles de Desempeño esperados para guiar al docente.
+   - ANEXOS: Mínimo 2 Listas de Cotejo. En cada lista incluye criterios de evaluación (con columnas Sí/No) y una tabla adicional que desciba los Niveles de Desempeño esperados para guiar al docente.
    - REFERENCIAS A LIBROS DE LA SEP: Genera una lista estructurada con recomendaciones de libros de texto oficiales de la NEM (Proyectos de Aula, Nuestros Saberes, etc.) acordes a la Fase (grado), sugiriendo proyectos o páginas específicas que se relacionen con el tema.
    - FIRMAS OFICIALES: Firma del Docente Titular y Firma del Director(a).
 

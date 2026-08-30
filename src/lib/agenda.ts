@@ -275,6 +275,7 @@ export function downloadAgendaItem(item: AgendaItem) {
     const fasesMetodologia = Array.isArray(obj.fasesMetodologia) ? obj.fasesMetodologia : [];
     const evaluacion = obj.estrategiaEvaluacion || '';
     const anexos = Array.isArray(obj.anexosListasCotejo) ? obj.anexosListasCotejo : [];
+    const referenciasLibrosSEP = Array.isArray(obj.referenciasLibrosSEP) ? obj.referenciasLibrosSEP : [];
     const firmas = obj.firmas || {};
     
     const createCell = (text: string, isHeader: boolean = false, bgColor?: string, colSpan: number = 1, textColor?: string, widthPct?: number) => {
@@ -441,16 +442,6 @@ export function downloadAgendaItem(item: AgendaItem) {
         spacing: { before: 200, after: 120 }
       }));
 
-      const secRows = [
-        new TableRow({
-          children: [
-            createCell('Fases de la Metodología', true, "0f172a", 1, "ffffff", 25),
-            createCell('Descripción de Actividades Integradas', true, "0f172a", 1, "ffffff", 50),
-            createCell('Materiales y Recursos', true, "0f172a", 1, "ffffff", 25),
-          ]
-        })
-      ];
-
       fasesMetodologia.forEach((f: any) => {
         let faseCampo = '';
         let actText = '';
@@ -467,22 +458,26 @@ export function downloadAgendaItem(item: AgendaItem) {
           }
         }
 
-        secRows.push(new TableRow({
-          children: [
-            createCell(faseCampo, true, "f8fafc"),
-            createCell(actText),
-            createCell(renderValue(f.materialesYRecursos || f.recursos || 'N/A')),
+        const recursos = renderValue(f.materialesYRecursos || f.recursos || 'N/A');
+
+        children.push(new Table({
+          width: { size: 10800, type: WidthType.DXA },
+          columnWidths: [10800],
+          layout: TableLayoutType.AUTOFIT,
+          rows: [
+            new TableRow({
+              children: [createCell(faseCampo, true, "f1f5f9")]
+            }),
+            new TableRow({
+              children: [createCell(actText)]
+            }),
+            new TableRow({
+              children: [createCell(`Materiales y Recursos:\n${recursos}`, true, "f8fafc")]
+            })
           ]
         }));
+        children.push(new Paragraph({ spacing: { after: 240 } }));
       });
-
-      children.push(new Table({
-        width: { size: 10800, type: WidthType.DXA },
-        columnWidths: [1620, 7560, 1620],
-        layout: TableLayoutType.AUTOFIT,
-        rows: secRows
-      }));
-      children.push(new Paragraph({ spacing: { after: 240 } }));
     }
 
     // Sección 5: Estrategia de Evaluación Formativa
@@ -508,53 +503,104 @@ export function downloadAgendaItem(item: AgendaItem) {
 
       anexos.forEach((anexo: any) => {
         children.push(new Paragraph({
-          children: [new TextRun({ text: `${renderValue(anexo.tituloAnexo)} (${renderValue(anexo.campoFormativo)})`, bold: true, size: 21 })],
+          children: [new TextRun({ text: renderValue(anexo.tituloAnexo), bold: true, size: 21 })],
           spacing: { before: 120, after: 80 }
         }));
 
         const anexoRows = [
           new TableRow({
             children: [
-              createCell('Indicador de Aprendizaje (PDA Relacionado)', true, "334155", 1, "ffffff", 40),
-              createCell('Logrado (SÍ)', true, "334155", 1, "ffffff", 15),
-              createCell('En Proceso (NO)', true, "334155", 1, "ffffff", 15),
-              createCell('Observaciones / Evidencia', true, "334155", 1, "ffffff", 30),
+              createCell('Criterio de Evaluación', true, "334155", 1, "ffffff", 70),
+              createCell('Sí', true, "334155", 1, "ffffff", 15),
+              createCell('No', true, "334155", 1, "ffffff", 15),
             ]
           })
         ];
 
-        (anexo.indicadores || []).forEach((ind: any) => {
+        (anexo.criterios || []).forEach((crit: any) => {
           anexoRows.push(new TableRow({
             children: [
-              createCell(renderValue(ind.pdaIndicador)),
-              createCell(renderValue(ind.logrado || 'SÍ'), false, undefined, 1),
-              createCell(renderValue(ind.enProceso || 'NO'), false, undefined, 1),
-              createCell(renderValue(ind.observaciones || '')),
+              createCell(renderValue(crit.criterio)),
+              createCell(renderValue(crit.si || ''), false, undefined, 1, undefined, 15),
+              createCell(renderValue(crit.no || ''), false, undefined, 1, undefined, 15),
             ]
           }));
         });
 
         children.push(new Table({
           width: { size: 10800, type: WidthType.DXA },
-          columnWidths: [4320, 1620, 1620, 3240],
+          columnWidths: [7560, 1620, 1620],
           layout: TableLayoutType.AUTOFIT,
           rows: anexoRows
         }));
+        
+        if (anexo.nivelesDesempeno && anexo.nivelesDesempeno.length > 0) {
+          children.push(new Paragraph({ spacing: { before: 120, after: 60 } }));
+          const nivelesRows = [
+            new TableRow({
+              children: [
+                createCell('Nivel de Desempeño', true, "f1f5f9", 1, undefined, 30),
+                createCell('Descripción', true, "f1f5f9", 1, undefined, 70),
+              ]
+            })
+          ];
+          
+          anexo.nivelesDesempeno.forEach((nivel: any) => {
+            nivelesRows.push(new TableRow({
+              children: [
+                createCell(renderValue(nivel.nivel), true),
+                createCell(renderValue(nivel.descripcion))
+              ]
+            }));
+          });
+          
+          children.push(new Table({
+            width: { size: 10800, type: WidthType.DXA },
+            columnWidths: [3240, 7560],
+            layout: TableLayoutType.AUTOFIT,
+            rows: nivelesRows
+          }));
+        }
+        
         children.push(new Paragraph({ spacing: { after: 180 } }));
       });
     }
 
-    // Sección 7: Referencias Pedagógicas
-    if (datos.referenciasPedagogicas) {
+    // Sección 7: Referencias Pedagógicas y Libros SEP
+    if (referenciasLibrosSEP.length > 0) {
       children.push(new Paragraph({
-        text: "7. Referencias Pedagógicas y Libros de Texto",
+        text: "7. Referencias a Libros de la SEP",
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 200, after: 120 }
       }));
-      children.push(new Paragraph({
-        children: [new TextRun({ text: renderValue(datos.referenciasPedagogicas), size: 21 })],
-        spacing: { after: 240 }
+      
+      const refRows = [
+        new TableRow({
+          children: [
+            createCell('Libro', true, "1e293b", 1, "ffffff", 30),
+            createCell('Actividad / Proyecto Relacionado', true, "1e293b", 1, "ffffff", 45),
+            createCell('Páginas', true, "1e293b", 1, "ffffff", 25),
+          ]
+        })
+      ];
+      
+      referenciasLibrosSEP.forEach((ref: any) => {
+        refRows.push(new TableRow({
+          children: [
+            createCell(renderValue(ref.libro), true, "f8fafc"),
+            createCell(renderValue(ref.actividadRelacionada)),
+            createCell(renderValue(ref.paginas))
+          ]
+        }));
+      });
+
+      children.push(new Table({
+        width: { size: 10800, type: WidthType.DXA },
+        columnWidths: [3240, 4860, 2700],
+        layout: TableLayoutType.AUTOFIT,
+        rows: refRows
       }));
+      children.push(new Paragraph({ spacing: { after: 240 } }));
     }
 
     // Firmas Oficiales
