@@ -42,15 +42,21 @@ const nemPlanningSchema = z.object({
   estrategiaEvaluacion: z.string(),
   anexosListasCotejo: z.array(z.object({
     tituloAnexo: z.string(),
-    campoFormativo: z.string(),
-    indicadores: z.array(z.object({
-      pdaIndicador: z.string(),
-      logrado: z.string(),
-      enProceso: z.string(),
-      observaciones: z.string()
+    criterios: z.array(z.object({
+      criterio: z.string(),
+      si: z.string(),
+      no: z.string()
+    })),
+    nivelesDesempeno: z.array(z.object({
+      nivel: z.string(),
+      descripcion: z.string()
     }))
   })),
-  referenciasPedagogicas: z.string(),
+  referenciasLibrosSEP: z.array(z.object({
+    libro: z.string(),
+    actividadRelacionada: z.string(),
+    paginas: z.string()
+  })),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -120,9 +126,7 @@ export default function PlannerPage() {
     }
   }, []);
 
-  const [fase, setFase] = useState('Fase 3: Primaria (1º y 2º)');
   const [camposFormativos, setCamposFormativos] = useState<string[]>(['Lenguajes', 'Saberes y Pensamiento Científico']);
-  const [ejesArticuladores, setEjesArticuladores] = useState<string[]>([]);
   const [metodologia, setMetodologia] = useState('Aprendizaje Basado en Proyectos Comunitarios');
   const [tema, setTema] = useState('');
   const [notasMaestro, setNotasMaestro] = useState('');
@@ -167,7 +171,8 @@ export default function PlannerPage() {
     group: '2º Grado "A"',
     cct: '02DPRXXXXX',
     turno: 'Matutino',
-    director: 'Directora de la Escuela'
+    director: 'Directora de la Escuela',
+    fase: 'Fase 3: Primaria (1º y 2º)'
   };
 
   const [isAnchoring, setIsAnchoring] = useState(false);
@@ -207,7 +212,7 @@ export default function PlannerPage() {
         title: tema || 'Planeación Oficial NEM',
         description: `Proyecto: ${tema} (${fase} - ${metodologia})`,
         metadata: {
-          fase,
+          fase: selectedSchoolInfo.fase || 'Fase 3: Primaria (1º y 2º)',
           tema,
           metodologia,
           schoolGroup: selectedSchoolInfo.group || '2º A',
@@ -247,13 +252,12 @@ export default function PlannerPage() {
     if (duracion === 'Mensual') expectedSessions = 20;
     const fechaTermino = getEndDateStr(selectedDate, expectedSessions);
 
-    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\nEjes Articuladores Seleccionados: ${ejesArticuladores.join(', ')}\n\nNotas e indicaciones del docente:\n${notasMaestro}`;
+    const notasCompletas = `Campos Formativos Seleccionados: ${camposFormativos.join(', ')}\n\nNotas e indicaciones del docente:\n${notasMaestro}`;
     
     submit({ 
-      fase, 
+      fase: selectedSchoolInfo.fase || 'Fase 3: Primaria (1º y 2º)', 
       tema, 
       notasMaestro: notasCompletas,
-      ejesArticuladores, 
       metodologia, 
       duracion, 
       hasTEA, 
@@ -282,9 +286,21 @@ export default function PlannerPage() {
       </section>
 
       <form onSubmit={handleGenerate} className="bg-white/60 backdrop-blur-md p-4 sm:p-6 rounded-3xl border border-white/60 shadow-lg grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo (Perfil Docente)</label>
-          {savedSchools.length > 0 ? (
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema o Título del Proyecto</label>
+          <input 
+            type="text" 
+            required 
+            value={tema} 
+            onChange={e => setTema(e.target.value)} 
+            placeholder="Ej. Nuestra historia en el aula: organizando el regreso a clases" 
+            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" 
+          />
+        </div>
+
+        {savedSchools.length > 1 && (
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Escuela / Grupo (Perfil Docente)</label>
             <select 
               value={schoolGroupIndex} 
               onChange={e => setSchoolGroupIndex(Number(e.target.value))} 
@@ -296,24 +312,8 @@ export default function PlannerPage() {
                 </option>
               ))}
             </select>
-          ) : (
-            <div className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
-              Puedes configurar tus escuelas y CCT en la pestaña <strong>Settings</strong>. Se usarán datos predeterminados.
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Fase (Nivel Educativo)</label>
-          <select value={fase} onChange={e => setFase(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
-            <option>Fase 1: Inicial (Maternal)</option>
-            <option>Fase 2: Preescolar (1º a 3º)</option>
-            <option>Fase 3: Primaria (1º y 2º)</option>
-            <option>Fase 4: Primaria (3º y 4º)</option>
-            <option>Fase 5: Primaria (5º y 6º)</option>
-            <option>Fase 6: Secundaria (1º a 3º)</option>
-          </select>
-        </div>
+          </div>
+        )}
 
         <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Campos Formativos Involucrados</label>
@@ -338,28 +338,7 @@ export default function PlannerPage() {
           </div>
         </div>
 
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Ejes Articuladores</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-white border border-slate-200 rounded-xl p-3">
-            {['Inclusión', 'Pensamiento Crítico', 'Interculturalidad Crítica', 'Igualdad de Género', 'Vida Saludable', 'Apropiación de las culturas a través de la lectura y la escritura', 'Artes y experiencias estéticas'].map(eje => (
-              <label key={eje} className="flex items-center gap-2 cursor-pointer group">
-                <input 
-                  type="checkbox"
-                  checked={ejesArticuladores.includes(eje)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setEjesArticuladores(prev => [...prev, eje]);
-                    } else {
-                      setEjesArticuladores(prev => prev.filter(c => c !== eje));
-                    }
-                  }}
-                  className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
-                />
-                <span className="text-xs sm:text-sm text-slate-700 group-hover:text-slate-900 font-medium leading-tight">{eje}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+
 
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Metodología Sociocrítica</label>
@@ -389,17 +368,7 @@ export default function PlannerPage() {
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tema o Título del Proyecto</label>
-          <input 
-            type="text" 
-            required 
-            value={tema} 
-            onChange={e => setTema(e.target.value)} 
-            placeholder="Ej. Nuestra historia en el aula: organizando el regreso a clases" 
-            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors" 
-          />
-        </div>
+
 
         <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notas, Diagnóstico y Requerimientos del Maestro</label>
@@ -608,7 +577,6 @@ export default function PlannerPage() {
             </section>
           )}
 
-          {/* Sección 6: Anexos - Listas de Cotejo */}
           {object.anexosListasCotejo && object.anexosListasCotejo.length > 0 && (
             <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
               <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
@@ -616,45 +584,84 @@ export default function PlannerPage() {
                 6. Anexos: Listas de Cotejo para la Evaluación Formativa
               </h4>
               {object.anexosListasCotejo.map((anexo, idx) => (
-                <div key={idx} className="space-y-3">
-                  <h5 className="font-bold text-slate-800 text-sm">{anexo?.tituloAnexo} ({anexo?.campoFormativo})</h5>
+                <div key={idx} className="space-y-4">
+                  <h5 className="font-bold text-slate-800 text-sm">{anexo?.tituloAnexo}</h5>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs text-left border-collapse border border-slate-200">
                       <thead className="bg-slate-100 text-slate-800">
                         <tr>
-                          <th className="p-2.5 border border-slate-200">Indicador de Aprendizaje (PDA Relacionado)</th>
-                          <th className="p-2.5 border border-slate-200 text-center w-24">Logrado (SÍ)</th>
-                          <th className="p-2.5 border border-slate-200 text-center w-24">En Proceso (NO)</th>
-                          <th className="p-2.5 border border-slate-200">Observaciones / Evidencia</th>
+                          <th className="p-2.5 border border-slate-200">Criterio de Evaluación</th>
+                          <th className="p-2.5 border border-slate-200 text-center w-24">Sí</th>
+                          <th className="p-2.5 border border-slate-200 text-center w-24">No</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
-                        {anexo?.indicadores?.map((ind, indIdx) => (
-                          <tr key={indIdx}>
-                            <td className="p-2.5 border border-slate-200 text-slate-800 font-medium">{ind?.pdaIndicador}</td>
-                            <td className="p-2.5 border border-slate-200 text-center font-bold text-emerald-600">{ind?.logrado || 'SÍ'}</td>
-                            <td className="p-2.5 border border-slate-200 text-center text-slate-400">{ind?.enProceso || 'NO'}</td>
-                            <td className="p-2.5 border border-slate-200 text-slate-500">{ind?.observaciones || ''}</td>
+                        {anexo?.criterios?.map((crit, cIdx) => (
+                          <tr key={cIdx}>
+                            <td className="p-2.5 border border-slate-200 text-slate-800 font-medium">{crit?.criterio}</td>
+                            <td className="p-2.5 border border-slate-200 text-center text-slate-400">{crit?.si || ''}</td>
+                            <td className="p-2.5 border border-slate-200 text-center text-slate-400">{crit?.no || ''}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+                  
+                  {anexo?.nivelesDesempeno && anexo.nivelesDesempeno.length > 0 && (
+                    <div className="overflow-x-auto mt-4">
+                      <table className="w-full text-xs text-left border-collapse border border-slate-200">
+                        <thead className="bg-slate-50 text-slate-800">
+                          <tr>
+                            <th className="p-2.5 border border-slate-200 w-1/3">Nivel de Desempeño</th>
+                            <th className="p-2.5 border border-slate-200 w-2/3">Descripción</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {anexo.nivelesDesempeno.map((nivel, nIdx) => (
+                            <tr key={nIdx}>
+                              <td className="p-2.5 border border-slate-200 text-slate-800 font-bold">{nivel?.nivel}</td>
+                              <td className="p-2.5 border border-slate-200 text-slate-700">{nivel?.descripcion}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               ))}
             </section>
           )}
 
-          {/* Sección 7: Referencias Pedagógicas */}
-          {object.referenciasPedagogicas && (
+          {/* Sección 7: Referencias Pedagógicas y Libros SEP */}
+          {object.referenciasLibrosSEP && object.referenciasLibrosSEP.length > 0 && (
             <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3 mt-6">
               <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-600" />
-                7. Referencias Pedagógicas (SEP)
+                7. Referencias a Libros de la SEP
               </h4>
-              <p className="text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
-                {object.referenciasPedagogicas}
+              <p className="text-xs text-slate-500 mb-2">
+                Nota: Las referencias y números de página mostrados a continuación son sugerencias de la inteligencia artificial. Te recomendamos verificarlas con tu material impreso.
               </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse border border-slate-200">
+                  <thead className="bg-slate-800 text-white uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3 border border-slate-700 w-1/4">Libro</th>
+                      <th className="p-3 border border-slate-700 w-1/2">Actividad / Proyecto Relacionado</th>
+                      <th className="p-3 border border-slate-700 w-1/4">Páginas</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {object.referenciasLibrosSEP.map((ref, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="p-3 border border-slate-200 font-bold text-indigo-700">{ref?.libro}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{ref?.actividadRelacionada}</td>
+                        <td className="p-3 border border-slate-200 font-medium text-slate-800">{ref?.paginas}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           )}
 

@@ -39,16 +39,22 @@ const nemPlanningSchema = z.object({
   })),
   estrategiaEvaluacion: z.string().describe("Estrategia de evaluación cualitativa y formativa, diarios de campo, análisis de producciones y uso del error."),
   anexosListasCotejo: z.array(z.object({
-    tituloAnexo: z.string().describe("Ej. 'Anexo 1: Lista de Cotejo de Lectoescritura y Pensamiento Científico'"),
-    campoFormativo: z.string(),
-    indicadores: z.array(z.object({
-      pdaIndicador: z.string().describe("Indicador cualitativo derivado del PDA"),
-      logrado: z.string(),
-      enProceso: z.string(),
-      observaciones: z.string().describe("Espacio para observaciones o evidencias")
+    tituloAnexo: z.string().describe("Ej. 'Anexo 1: Lista de Cotejo de Lectoescritura'"),
+    criterios: z.array(z.object({
+      criterio: z.string().describe("Indicador cualitativo a evaluar derivado de los PDA"),
+      si: z.string().describe("Dejar vacío"),
+      no: z.string().describe("Dejar vacío")
+    })),
+    nivelesDesempeno: z.array(z.object({
+      nivel: z.string().describe("Ej. 'Sobresaliente', 'Suficiente', 'En desarrollo'"),
+      descripcion: z.string().describe("Qué significa estar en este nivel de desempeño")
     }))
   })),
-  referenciasPedagogicas: z.string().describe("Lista de bibliografía, referencias pedagógicas oficiales de la SEP y mención de Libros de Texto Gratuitos acordes a la Fase/Grado que sustenten el proyecto."),
+  referenciasLibrosSEP: z.array(z.object({
+    libro: z.string().describe("Ej. 'Proyectos de Aula', 'Múltiples Lenguajes', 'Nuestros Saberes'"),
+    actividadRelacionada: z.string().describe("De qué trata la actividad o texto recomendado"),
+    paginas: z.string().describe("Páginas sugeridas (Ej. 'Pág. 24-28')")
+  })),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -96,7 +102,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const { fase, tema, notasMaestro, ejesArticuladores, metodologia, duracion, hasTEA, schoolGroup, fechaInicio, fechaTermino, profileData } = await req.json();
+    const { fase, tema, notasMaestro, metodologia, duracion, hasTEA, schoolGroup, fechaInicio, fechaTermino, profileData } = await req.json();
 
     let expectedSessions = 5;
     if (duracion === 'Quincenal') expectedSessions = 10;
@@ -166,8 +172,7 @@ LAS 6 SECCIONES OBLIGATORIAS DE LA PLANEACIÓN:
 2. JUSTIFICACIÓN PEDAGÓGICA Y DIAGNÓSTICO INICIAL: Justificación pedagógica integral (socioemocional y académica). DEBES incluir explícitamente la CONCEPCIÓN DEL ERROR como insumo didáctico y oportunidad de aprendizaje no punitiva.
 3. PROYECTO INTEGRADOR: Título del proyecto, Metodología sociocrítica (${metodologia}) y Propósito pedagógico del proyecto.
 4. ESTRUCTURA CURRICULAR POR CAMPOS FORMATIVOS: Desglose articulado de los Campos Formativos involucrados con sus Contenidos Contextualizados, PDA oficiales de la Fase ${fase} y Ejes Articuladores.
-IMPORTANTE: Para la columna "ejesArticuladores", DEBES USAR EXCLUSIVAMENTE los ejes que el maestro ha seleccionado: ${Array.isArray(ejesArticuladores) && ejesArticuladores.length > 0 ? ejesArticuladores.join(', ') : 'Ninguno seleccionado'}.
-No inventes otros ejes. Escribe únicamente los seleccionados por el maestro que encajen con este contenido.
+IMPORTANTE: Determina tú mismo los Ejes Articuladores más apropiados para el proyecto y lístalos en la columna "ejesArticuladores".
 
 Toma en cuenta las siguientes definiciones de los Ejes Articuladores para justificar su integración en las actividades y contenidos:
 - Inclusión: Perspectiva decolonial, formando espacios comunitarios para todos y todas sin exclusión.
@@ -188,8 +193,8 @@ ${methodologyGuide}
    - Materiales y Recursos específicos y estrategia de evaluación formativa de la fase. IMPORTANTE: En los materiales DEBES incluir siempre una opción de "🌿 Material ECO:" (ej. uso de material reciclado o recursos naturales).
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
-   - ANEXOS: Mínimo 2 Listas de Cotejo Cualitativas estructuradas por Campo Formativo con Indicadores de Aprendizaje directamente basados en los PDA oficiales, con columnas para Logrado (SÍ), En Proceso (NO) y Observaciones/Evidencias.
-   - REFERENCIAS PEDAGÓGICAS: Incluye una sección final con bibliografía, enlaces y referencias de Libros de Texto Gratuitos (SEP) acordes a la Fase (grado). Señala proyectos o páginas sugeridas si aplican.
+   - ANEXOS: Mínimo 2 Listas de Cotejo. En cada lista incluye criterios de evaluación (con columnas Sí/No) y una tabla adicional que describa los Niveles de Desempeño esperados para guiar al docente.
+   - REFERENCIAS A LIBROS DE LA SEP: Genera una lista estructurada con recomendaciones de libros de texto oficiales de la NEM (Proyectos de Aula, Nuestros Saberes, etc.) acordes a la Fase (grado), sugiriendo proyectos o páginas específicas que se relacionen con el tema.
    - FIRMAS OFICIALES: Firma del Docente Titular y Firma del Director(a).
 
 NO OMITAS NINGUNA DE LAS SECCIONES.

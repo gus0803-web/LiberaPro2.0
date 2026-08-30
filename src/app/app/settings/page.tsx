@@ -183,7 +183,7 @@ export default function SettingsPage() {
               {/* Escuela 1 - Activa */}
               {(() => {
                 const index = 0;
-                const schoolGroup = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liberapro_schools') || '[]')[index] || { school: '', group: '', cct: '', turno: 'Matutino', director: '' } : { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
+                const schoolGroup = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('liberapro_schools') || '[]')[index] || { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' } : { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
                 return (
                   <div key={index} className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
                     <div>
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                         defaultValue={schoolGroup.school}
                         onBlur={(e) => {
                           const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
-                          if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
+                          if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
                           schools[index].school = e.target.value;
                           localStorage.setItem('liberapro_schools', JSON.stringify(schools));
                         }}
@@ -210,7 +210,7 @@ export default function SettingsPage() {
                           defaultValue={schoolGroup.group}
                           onBlur={(e) => {
                             const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
-                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
+                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
                             schools[index].group = e.target.value;
                             localStorage.setItem('liberapro_schools', JSON.stringify(schools));
                           }}
@@ -225,7 +225,7 @@ export default function SettingsPage() {
                           defaultValue={schoolGroup.cct}
                           onBlur={(e) => {
                             const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
-                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
+                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
                             schools[index].cct = e.target.value;
                             localStorage.setItem('liberapro_schools', JSON.stringify(schools));
                           }}
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                           defaultValue={schoolGroup.turno || 'Matutino'}
                           onChange={(e) => {
                             const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
-                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
+                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
                             schools[index].turno = e.target.value;
                             localStorage.setItem('liberapro_schools', JSON.stringify(schools));
                           }}
@@ -260,13 +260,33 @@ export default function SettingsPage() {
                           defaultValue={schoolGroup.director}
                           onBlur={(e) => {
                             const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
-                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '' };
+                            if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
                             schools[index].director = e.target.value;
                             localStorage.setItem('liberapro_schools', JSON.stringify(schools));
                           }}
                           className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                         />
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1">{isEs ? 'Fase (Nivel Educativo)' : 'Phase (Educational Level)'}</label>
+                      <select
+                        defaultValue={schoolGroup.fase || 'Fase 3: Primaria (1º y 2º)'}
+                        onChange={(e) => {
+                          const schools = JSON.parse(localStorage.getItem('liberapro_schools') || '[]');
+                          if (!schools[index]) schools[index] = { school: '', group: '', cct: '', turno: 'Matutino', director: '', fase: 'Fase 3: Primaria (1º y 2º)' };
+                          schools[index].fase = e.target.value;
+                          localStorage.setItem('liberapro_schools', JSON.stringify(schools));
+                        }}
+                        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white"
+                      >
+                        <option value="Fase 1: Inicial (Maternal)">Fase 1: Inicial (Maternal)</option>
+                        <option value="Fase 2: Preescolar (1º a 3º)">Fase 2: Preescolar (1º a 3º)</option>
+                        <option value="Fase 3: Primaria (1º y 2º)">Fase 3: Primaria (1º y 2º)</option>
+                        <option value="Fase 4: Primaria (3º y 4º)">Fase 4: Primaria (3º y 4º)</option>
+                        <option value="Fase 5: Primaria (5º y 6º)">Fase 5: Primaria (5º y 6º)</option>
+                        <option value="Fase 6: Secundaria (1º a 3º)">Fase 6: Secundaria (1º a 3º)</option>
+                      </select>
                     </div>
                   </div>
                 );
