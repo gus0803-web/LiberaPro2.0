@@ -200,7 +200,7 @@ export default function PlannerPage() {
       fasesMetodologia: object?.fasesMetodologia,
       estrategiaEvaluacion: object?.estrategiaEvaluacion,
       anexosListasCotejo: object?.anexosListasCotejo,
-      referenciasPedagogicas: object?.referenciasPedagogicas,
+      referenciasLibrosSEP: object?.referenciasLibrosSEP,
       firmas: object?.firmas
     };
 
