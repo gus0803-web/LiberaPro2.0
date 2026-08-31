@@ -376,13 +376,16 @@ export default function DashboardPage() {
   const schoolYearStart = new Date(currentMonth >= 7 ? currentYear : currentYear - 1, 7, 1); // August 1st
 
   const itemsThisMonth = planeacionItems.filter(p => {
-    const d = new Date(p.date);
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    if (!p.date) return false;
+    const [y, m] = p.date.split('-');
+    return parseInt(m, 10) - 1 === currentMonth && parseInt(y, 10) === currentYear;
   });
   
   const itemsThisYear = planeacionItems.filter(p => {
-    const d = new Date(p.date);
-    return d >= schoolYearStart;
+    if (!p.date) return false;
+    const [y, m, d] = p.date.split('-');
+    const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    return dateObj >= schoolYearStart;
   });
 
   const hoursSavedMonth = itemsThisMonth.length * 2;

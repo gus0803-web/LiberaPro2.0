@@ -844,7 +844,8 @@ export default function PlannerPage() {
                         periodoAplicacion: `Del ${selectedDate} al ${finalEndDate}`
                       }
                     }, 
-                    selectedDate 
+                    selectedDate,
+                    horasLiberadas: expectedSessions
                   },
                   createdAt: new Date().toISOString()
                 };

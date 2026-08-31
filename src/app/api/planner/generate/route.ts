@@ -224,6 +224,11 @@ ${methodologyGuide}
    - REGLA ESTRICTA DE ASOCIACIÓN: Asegúrate de que el libro y la actividad sugerida coincidan directamente con los Campos Formativos seleccionados y el Proyecto principal de la secuencia didáctica generada. NO inventes números de página.
    - FIRMAS OFICIALES: Firma del Docente Titular y Firma del Director(a).
 
+REGLAS DE ORTOGRAFÍA Y REDACCIÓN (OBLIGATORIO):
+1. Escribe en español de México con ortografía y gramática impecables.
+2. Asegúrate de incluir tildes (acentos) correctamente en todas las palabras que lo requieran (ej. Planeación, Evaluación, Diagnóstica, Rúbrica, etc.), incluso si el usuario omitió los acentos en su solicitud.
+3. Utiliza mayúsculas y minúsculas de manera adecuada, respetando las reglas ortográficas.
+
 NO OMITAS NINGUNA DE LAS SECCIONES.
 `;
 
