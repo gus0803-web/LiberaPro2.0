@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
+import { PrivacyModal, TermsModal, ContactModal, CollaboratorsModal } from './FooterModals';
 import { FeedbackModal } from './FeedbackTab';
 
-export function AppFooter({ dark = false }: { dark?: boolean }) {
+export function AppFooter({ dark = false, showFeedback = false }: { dark?: boolean, showFeedback?: boolean }) {
   const { language } = useTheme();
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | 'contact' | 'collaborators' | 'feedback' | null>(null);
   const isEs = language === 'es';
 
   return (
@@ -20,25 +20,31 @@ export function AppFooter({ dark = false }: { dark?: boolean }) {
 
         {/* Right - Legal Links */}
         <div className="flex items-center gap-4">
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+          <button onClick={() => setActiveModal('privacy')} className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Política de Privacidad' : 'Privacy Policy'}
-          </Link>
-          <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <Link href="/app/collaborations" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
-            {isEs ? 'Directorio de Colaboradores' : 'Collaborators Directory'}
-          </Link>
-          <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
-            {isEs ? 'Términos de Uso' : 'Terms of Use'}
-          </Link>
-          <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <button onClick={() => setIsFeedbackOpen(true)} className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
-            {isEs ? 'Sugerencias' : 'Feedback'}
           </button>
           <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <Link href="/contact" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+          <button onClick={() => setActiveModal('collaborators')} className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+            {isEs ? 'Directorio de Colaboradores' : 'Collaborators Directory'}
+          </button>
+          <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
+          <button onClick={() => setActiveModal('terms')} className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+            {isEs ? 'Términos de Uso' : 'Terms of Use'}
+          </button>
+          
+          {showFeedback && (
+            <>
+              <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
+              <button onClick={() => setActiveModal('feedback')} className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+                {isEs ? 'Sugerencias' : 'Feedback'}
+              </button>
+            </>
+          )}
+
+          <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
+          <button onClick={() => setActiveModal('contact')} className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Contacto' : 'Contact'}
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -53,7 +59,12 @@ export function AppFooter({ dark = false }: { dark?: boolean }) {
         Owned and operated by LINC-SUITE HOLDINGS
       </p>
 
-      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+      {/* Modals */}
+      <PrivacyModal isOpen={activeModal === 'privacy'} onClose={() => setActiveModal(null)} />
+      <TermsModal isOpen={activeModal === 'terms'} onClose={() => setActiveModal(null)} />
+      <ContactModal isOpen={activeModal === 'contact'} onClose={() => setActiveModal(null)} />
+      <CollaboratorsModal isOpen={activeModal === 'collaborators'} onClose={() => setActiveModal(null)} />
+      <FeedbackModal isOpen={activeModal === 'feedback'} onClose={() => setActiveModal(null)} />
     </footer>
   );
 }

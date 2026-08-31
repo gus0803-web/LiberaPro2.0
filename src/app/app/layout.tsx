@@ -73,7 +73,7 @@ export default async function AppLayout({
             </div>
             {/* Footer moved inside scrolling area so it doesn't take up fixed space on mobile */}
             <div className="mt-8">
-              <AppFooter />
+              <AppFooter showFeedback={true} />
             </div>
           </div>
         </main>
