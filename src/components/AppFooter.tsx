@@ -20,15 +20,15 @@ export function AppFooter({ dark = false }: { dark?: boolean }) {
 
         {/* Right - Legal Links */}
         <div className="flex items-center gap-4">
-          <Link href="/privacy" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Política de Privacidad' : 'Privacy Policy'}
           </Link>
           <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <Link href="/app/collaborations" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+          <Link href="/app/collaborations" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Directorio de Colaboradores' : 'Collaborators Directory'}
           </Link>
           <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <Link href="/terms" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Términos de Uso' : 'Terms of Use'}
           </Link>
           <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
@@ -36,7 +36,7 @@ export function AppFooter({ dark = false }: { dark?: boolean }) {
             {isEs ? 'Sugerencias' : 'Feedback'}
           </button>
           <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <Link href="/contact" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
+          <Link href="/contact" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Contacto' : 'Contact'}
           </Link>
         </div>
