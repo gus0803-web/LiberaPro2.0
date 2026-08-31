@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award, Brain } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Zap, BookOpen, Users, Presentation, Award, Brain, Instagram } from 'lucide-react';
 import { AppFooter } from '@/components/AppFooter';
 
 export default function Home() {
@@ -130,8 +130,16 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all pointer-events-none" />
             
             <div className="space-y-4 relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-950 to-slate-900 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/10 group-hover:scale-110 transition-transform">
-                <Presentation className="w-8 h-8 text-cyan-400" />
+              <div 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open("https://www.instagram.com/liberapro26", "_blank");
+                }}
+                className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-950 to-slate-900 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/10 hover:scale-110 hover:bg-cyan-900 transition-all cursor-pointer relative z-20"
+                title="Síguenos en Instagram"
+              >
+                <Instagram className="w-8 h-8 text-cyan-400 hover:text-white transition-colors" />
               </div>
               
               <div>

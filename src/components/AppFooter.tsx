@@ -39,10 +39,6 @@ export function AppFooter({ dark = false }: { dark?: boolean }) {
           <Link href="/contact" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
             {isEs ? 'Contacto' : 'Contact'}
           </Link>
-          <span className={dark ? 'text-slate-700' : 'text-slate-400'}>|</span>
-          <a href="https://www.instagram.com/liberapro26" target="_blank" rel="noopener noreferrer" className={`transition-colors underline-offset-2 hover:underline ${dark ? 'hover:text-white' : 'hover:text-black'}`}>
-            Instagram
-          </a>
         </div>
       </div>
 
