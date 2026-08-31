@@ -54,9 +54,25 @@ const nemPlanningSchema = z.object({
   })),
   referenciasLibrosSEP: z.array(z.object({
     libro: z.string(),
-    actividadRelacionada: z.string(),
-    paginas: z.string()
+    actividadRelacionada: z.string()
   })),
+  rubricasEvaluacion: z.array(z.object({
+    criterio: z.string(),
+    insuficiente: z.string(),
+    suficiente: z.string(),
+    satisfactorio: z.string(),
+    destacado: z.string()
+  })),
+  cuestionario: z.object({
+    preguntasAbiertas: z.array(z.object({
+      pregunta: z.string(),
+      respuesta: z.string()
+    })),
+    completarOraciones: z.array(z.object({
+      oracion: z.string(),
+      respuesta: z.string()
+    }))
+  }),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -200,6 +216,8 @@ export default function PlannerPage() {
       fasesMetodologia: object?.fasesMetodologia,
       estrategiaEvaluacion: object?.estrategiaEvaluacion,
       anexosListasCotejo: object?.anexosListasCotejo,
+      rubricasEvaluacion: object?.rubricasEvaluacion,
+      cuestionario: object?.cuestionario,
       referenciasLibrosSEP: object?.referenciasLibrosSEP,
       firmas: object?.firmas
     };
@@ -632,23 +650,125 @@ export default function PlannerPage() {
             </section>
           )}
 
-          {/* Sección 7: Referencias Pedagógicas y Libros SEP */}
+          {/* Sección 7: Rúbricas de Evaluación */}
+          {object.rubricasEvaluacion && object.rubricasEvaluacion.length > 0 && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3 mt-6">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-600" />
+                7. Rúbricas de Evaluación
+              </h4>
+              <div className="overflow-x-auto mt-4">
+                <table className="w-full text-xs text-left border-collapse border border-slate-200">
+                  <thead className="bg-slate-800 text-white uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3 border border-slate-700 w-1/5">Criterio a Evaluar</th>
+                      <th className="p-3 border border-slate-700 w-1/5">Insuficiente / Inicial (Nivel 1)</th>
+                      <th className="p-3 border border-slate-700 w-1/5">Suficiente / En Proceso (Nivel 2)</th>
+                      <th className="p-3 border border-slate-700 w-1/5">Satisfactorio / Logrado (Nivel 3)</th>
+                      <th className="p-3 border border-slate-700 w-1/5">Destacado / Avanzado (Nivel 4)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {object.rubricasEvaluacion.map((rub, rIdx) => (
+                      <tr key={rIdx} className="hover:bg-slate-50">
+                        <td className="p-3 border border-slate-200 font-bold bg-slate-50">{rub?.criterio}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{rub?.insuficiente}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{rub?.suficiente}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{rub?.satisfactorio}</td>
+                        <td className="p-3 border border-slate-200 text-slate-700">{rub?.destacado}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {/* Sección 8: Cuestionario de Repaso */}
+          {object.cuestionario && (
+            <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4 mt-6">
+              <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-purple-600" />
+                8. Cuestionario de Repaso (15 Preguntas)
+              </h4>
+              
+              <div className="space-y-4">
+                {object.cuestionario.preguntasAbiertas && object.cuestionario.preguntasAbiertas.length > 0 && (
+                  <div>
+                    <h5 className="font-bold text-slate-800 mb-2">I. Responde las siguientes preguntas (Abiertas):</h5>
+                    <ol className="list-decimal pl-5 space-y-3">
+                      {object.cuestionario.preguntasAbiertas.map((q, idx) => (
+                        <li key={`qa-${idx}`} className="text-sm text-slate-700 font-medium">
+                          {q?.pregunta}
+                          <div className="mt-4 border-b border-slate-300 w-full"></div>
+                          <div className="mt-4 border-b border-slate-300 w-full"></div>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {object.cuestionario.completarOraciones && object.cuestionario.completarOraciones.length > 0 && (
+                  <div className="pt-4">
+                    <h5 className="font-bold text-slate-800 mb-2">II. Completa las siguientes oraciones con la palabra correcta:</h5>
+                    <ol className="list-decimal pl-5 space-y-3" start={(object.cuestionario.preguntasAbiertas?.length || 0) + 1}>
+                      {object.cuestionario.completarOraciones.map((q, idx) => (
+                        <li key={`qc-${idx}`} className="text-sm text-slate-700 font-medium">
+                          {q?.oracion}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </div>
+
+              {/* Answer Key */}
+              <div className="mt-8 pt-4 border-t border-dashed border-slate-300">
+                <h5 className="font-bold text-slate-500 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" /> Answer Key / Clave de Respuestas (Uso Exclusivo del Docente)
+                </h5>
+                <div className="bg-slate-50 p-4 rounded-xl text-xs space-y-4 text-slate-600">
+                  {object.cuestionario.preguntasAbiertas && object.cuestionario.preguntasAbiertas.length > 0 && (
+                    <div>
+                      <strong className="block mb-1 text-slate-700">Respuestas a Preguntas Abiertas:</strong>
+                      <ol className="list-decimal pl-4 space-y-1">
+                        {object.cuestionario.preguntasAbiertas.map((q, idx) => (
+                          <li key={`ans-qa-${idx}`}>{q?.respuesta}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                  {object.cuestionario.completarOraciones && object.cuestionario.completarOraciones.length > 0 && (
+                    <div>
+                      <strong className="block mb-1 text-slate-700">Respuestas a Completar Oraciones:</strong>
+                      <ol className="list-decimal pl-4 space-y-1" start={(object.cuestionario.preguntasAbiertas?.length || 0) + 1}>
+                        {object.cuestionario.completarOraciones.map((q, idx) => (
+                          <li key={`ans-qc-${idx}`}>{q?.respuesta}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Sección 9: Referencias Pedagógicas y Libros SEP */}
           {object.referenciasLibrosSEP && object.referenciasLibrosSEP.length > 0 && (
             <section className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-3 mt-6">
               <h4 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-600" />
-                7. Referencias a Libros de la SEP
+                9. Referencias a Libros de la SEP
               </h4>
               <p className="text-xs text-slate-500 mb-2">
-                Nota: Las referencias y números de página mostrados a continuación son sugerencias de la inteligencia artificial. Te recomendamos verificarlas con tu material impreso.
+                Nota: Usa el botón Buscar para acceder al catálogo oficial de Conaliteg en internet.
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse border border-slate-200">
                   <thead className="bg-slate-800 text-white uppercase tracking-wider">
                     <tr>
-                      <th className="p-3 border border-slate-700 w-1/4">Libro</th>
-                      <th className="p-3 border border-slate-700 w-1/3">Actividad / Proyecto Relacionado</th>
-                      <th className="p-3 border border-slate-700 w-1/4">Páginas</th>
+                      <th className="p-3 border border-slate-700 w-1/3">Libro</th>
+                      <th className="p-3 border border-slate-700 w-1/2">Actividad / Proyecto Relacionado</th>
                       <th className="p-3 border border-slate-700 w-1/6 text-center">Enlace</th>
                     </tr>
                   </thead>
@@ -657,7 +777,6 @@ export default function PlannerPage() {
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="p-3 border border-slate-200 font-bold text-indigo-700">{ref?.libro}</td>
                         <td className="p-3 border border-slate-200 text-slate-700">{ref?.actividadRelacionada}</td>
-                        <td className="p-3 border border-slate-200 font-medium text-slate-800">{ref?.paginas}</td>
                         <td className="p-3 border border-slate-200 text-center">
                           <a 
                             href={`https://www.google.com/search?q=${encodeURIComponent('site:libros.conaliteg.gob.mx ' + ref?.libro)}`} 

@@ -52,9 +52,25 @@ const nemPlanningSchema = z.object({
   })),
   referenciasLibrosSEP: z.array(z.object({
     libro: z.string().describe("Ej. 'Proyectos de Aula', 'Múltiples Lenguajes', 'Nuestros Saberes'"),
-    actividadRelacionada: z.string().describe("De qué trata la actividad o texto recomendado"),
-    paginas: z.string().describe("Páginas sugeridas (Ej. 'Pág. 24-28')")
+    actividadRelacionada: z.string().describe("De qué trata la actividad o texto recomendado")
   })),
+  rubricasEvaluacion: z.array(z.object({
+    criterio: z.string(),
+    insuficiente: z.string(),
+    suficiente: z.string(),
+    satisfactorio: z.string(),
+    destacado: z.string()
+  })).describe("Rúbricas de evaluación con los 4 niveles de desempeño oficiales."),
+  cuestionario: z.object({
+    preguntasAbiertas: z.array(z.object({
+      pregunta: z.string(),
+      respuesta: z.string()
+    })).describe("5 preguntas abiertas"),
+    completarOraciones: z.array(z.object({
+      oracion: z.string().describe("Oración con un espacio en blanco representado por líneas ___"),
+      respuesta: z.string()
+    })).describe("10 oraciones de completar")
+  }),
   firmas: z.object({
     docente: z.string(),
     director: z.string()
@@ -195,9 +211,17 @@ ${methodologyGuide}
 6. ESTRATEGIA DE EVALUACIÓN DIAGNÓSTICA Y FORMATIVA Y ANEXOS:
    - Redacción de la estrategia formativa cualitativa basada en la observación diaria y el error como puente didáctico.
    - ANEXOS: Mínimo 2 Listas de Cotejo. En cada lista incluye criterios de evaluación (con columnas Sí/No) y una tabla adicional que desciba los Niveles de Desempeño esperados para guiar al docente.
-7. REFERENCIAS A LIBROS DE LA SEP: Genera una lista estructurada con recomendaciones de libros de texto oficiales.
+7. RÚBRICAS DE EVALUACIÓN:
+   - Crea tablas de rúbricas basadas en el proyecto. 
+   - Debes usar OBLIGATORIAMENTE estos 4 Niveles de Desempeño Oficiales: Insuficiente / Inicial (Nivel 1), Suficiente / En Proceso (Nivel 2), Satisfactorio / Logrado / Esperado (Nivel 3), y Destacado / Avanzado (Nivel 4). 
+   - Para cada criterio, redacta lo que el alumno hace en cada uno de estos 4 niveles.
+8. CUESTIONARIO DE REPASO Y ANSWER KEY:
+   - Genera exactamente 15 preguntas enfocadas en los temas del proyecto.
+   - 5 serán Preguntas Abiertas (proporciona la pregunta y la respuesta correcta para el Answer Key).
+   - 10 serán Oraciones de Completar (proporciona la oración con espacios '___' y la palabra correcta para el Answer Key).
+9. REFERENCIAS A LIBROS DE LA SEP: Genera una lista estructurada con recomendaciones de libros de texto oficiales.
    - REGLA ESTRICTA DE CATÁLOGO: Utiliza ÚNICAMENTE los nombres de la familia de libros de texto gratuitos de la NEM (Proyectos de Aula, Proyectos Escolares, Proyectos Comunitarios, Nuestros Saberes, Múltiples Lenguajes).
-   - REGLA ESTRICTA DE ASOCIACIÓN: Asegúrate de que el libro y la actividad sugerida coincidan directamente con los Campos Formativos seleccionados y el Proyecto principal de la secuencia didáctica generada.
+   - REGLA ESTRICTA DE ASOCIACIÓN: Asegúrate de que el libro y la actividad sugerida coincidan directamente con los Campos Formativos seleccionados y el Proyecto principal de la secuencia didáctica generada. NO inventes números de página.
    - FIRMAS OFICIALES: Firma del Docente Titular y Firma del Director(a).
 
 NO OMITAS NINGUNA DE LAS SECCIONES.

@@ -275,6 +275,8 @@ export function downloadAgendaItem(item: AgendaItem) {
     const fasesMetodologia = Array.isArray(obj.fasesMetodologia) ? obj.fasesMetodologia : [];
     const evaluacion = obj.estrategiaEvaluacion || '';
     const anexos = Array.isArray(obj.anexosListasCotejo) ? obj.anexosListasCotejo : [];
+    const rubricas = Array.isArray(obj.rubricasEvaluacion) ? obj.rubricasEvaluacion : [];
+    const cuestionario = obj.cuestionario || null;
     const referenciasLibrosSEP = Array.isArray(obj.referenciasLibrosSEP) ? obj.referenciasLibrosSEP : [];
     const firmas = obj.firmas || {};
     
@@ -563,10 +565,127 @@ export function downloadAgendaItem(item: AgendaItem) {
       });
     }
 
-    // Sección 7: Referencias Pedagógicas y Libros SEP
+    // Sección 7: Rúbricas de Evaluación
+    if (rubricas.length > 0) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: "7. Rúbricas de Evaluación", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
+      }));
+
+      const rubricasRows = [
+        new TableRow({
+          children: [
+            createCell('Criterio a Evaluar', true, "334155", 1, "ffffff", 20),
+            createCell('Insuficiente (Nivel 1)', true, "334155", 1, "ffffff", 20),
+            createCell('Suficiente (Nivel 2)', true, "334155", 1, "ffffff", 20),
+            createCell('Satisfactorio (Nivel 3)', true, "334155", 1, "ffffff", 20),
+            createCell('Destacado (Nivel 4)', true, "334155", 1, "ffffff", 20),
+          ]
+        })
+      ];
+
+      rubricas.forEach((rub: any) => {
+        rubricasRows.push(new TableRow({
+          children: [
+            createCell(renderValue(rub.criterio), true, "f8fafc"),
+            createCell(renderValue(rub.insuficiente)),
+            createCell(renderValue(rub.suficiente)),
+            createCell(renderValue(rub.satisfactorio)),
+            createCell(renderValue(rub.destacado)),
+          ]
+        }));
+      });
+
+      children.push(new Table({
+        width: { size: 10800, type: WidthType.DXA },
+        columnWidths: [2160, 2160, 2160, 2160, 2160],
+        layout: TableLayoutType.AUTOFIT,
+        rows: rubricasRows
+      }));
+      children.push(new Paragraph({ spacing: { after: 240 } }));
+    }
+
+    // Sección 8: Cuestionario de Repaso
+    if (cuestionario) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: "8. Cuestionario de Repaso (15 Preguntas)", bold: true, size: 26, color: "0369a1" })],
+        spacing: { before: 300, after: 120 }
+      }));
+
+      const pAbiertas = Array.isArray(cuestionario.preguntasAbiertas) ? cuestionario.preguntasAbiertas : [];
+      const pCompletar = Array.isArray(cuestionario.completarOraciones) ? cuestionario.completarOraciones : [];
+      
+      let num = 1;
+      
+      if (pAbiertas.length > 0) {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: "I. Responde las siguientes preguntas (Abiertas):", bold: true, size: 22 })],
+          spacing: { before: 120, after: 120 }
+        }));
+        pAbiertas.forEach((q: any) => {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: `${num}. ${renderValue(q.pregunta)}`, size: 22 })],
+            spacing: { after: 400 } // Extra spacing for writing
+          }));
+          num++;
+        });
+      }
+
+      if (pCompletar.length > 0) {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: "II. Completa las siguientes oraciones con la palabra correcta:", bold: true, size: 22 })],
+          spacing: { before: 240, after: 120 }
+        }));
+        pCompletar.forEach((q: any) => {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: `${num}. ${renderValue(q.oracion)}`, size: 22 })],
+            spacing: { after: 120 }
+          }));
+          num++;
+        });
+      }
+
+      // Answer Key (in a smaller font, shaded box style)
+      children.push(new Paragraph({ spacing: { before: 300 } }));
+      const keyRows = [
+        new TableRow({
+          children: [
+            createCell('Answer Key / Clave de Respuestas (Uso Exclusivo del Docente)', true, "f1f5f9", 1, "475569")
+          ]
+        })
+      ];
+
+      let keyText = "";
+      if (pAbiertas.length > 0) {
+        keyText += "Respuestas Abiertas:\n";
+        pAbiertas.forEach((q: any, i: number) => {
+          keyText += `${i + 1}. ${renderValue(q.respuesta)}\n`;
+        });
+      }
+      if (pCompletar.length > 0) {
+        keyText += "\nRespuestas Completar Oraciones:\n";
+        pCompletar.forEach((q: any, i: number) => {
+          keyText += `${i + 1 + pAbiertas.length}. ${renderValue(q.respuesta)}\n`;
+        });
+      }
+      
+      keyRows.push(new TableRow({
+        children: [createCell(keyText, false, "f8fafc")]
+      }));
+
+      children.push(new Table({
+        width: { size: 10800, type: WidthType.DXA },
+        columnWidths: [10800],
+        layout: TableLayoutType.AUTOFIT,
+        rows: keyRows
+      }));
+      children.push(new Paragraph({ spacing: { after: 240 } }));
+    }
+
+    // Sección 9: Referencias Pedagógicas y Libros SEP
     if (referenciasLibrosSEP.length > 0) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: "7. Referencias a Libros de la SEP", bold: true, size: 26, color: "0369a1" })],
+        children: [new TextRun({ text: "9. Referencias a Libros de la SEP", bold: true, size: 26, color: "0369a1" })],
         spacing: { before: 300, after: 120 }
       }));
       
@@ -574,8 +693,7 @@ export function downloadAgendaItem(item: AgendaItem) {
         new TableRow({
           children: [
             createCell('Libro', true, "1e293b", 1, "ffffff", 30),
-            createCell('Actividad / Proyecto Relacionado', true, "1e293b", 1, "ffffff", 45),
-            createCell('Páginas', true, "1e293b", 1, "ffffff", 25),
+            createCell('Actividad / Proyecto Relacionado', true, "1e293b", 1, "ffffff", 70),
           ]
         })
       ];
@@ -592,15 +710,14 @@ export function downloadAgendaItem(item: AgendaItem) {
                 new Paragraph({ children: [new TextRun({ text: renderValue(ref.actividadRelacionada), size: 20 })], spacing: { after: 60 } }),
                 new Paragraph({ children: [new TextRun({ text: `Enlace de Búsqueda Conaliteg:\n${searchUrl}`, size: 18, color: "2563eb" })] })
               ]
-            }),
-            createCell(renderValue(ref.paginas))
+            })
           ]
         }));
       });
 
       children.push(new Table({
         width: { size: 10800, type: WidthType.DXA },
-        columnWidths: [3240, 4860, 2700],
+        columnWidths: [3240, 7560],
         layout: TableLayoutType.AUTOFIT,
         rows: refRows
       }));
