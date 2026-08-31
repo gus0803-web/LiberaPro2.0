@@ -12,9 +12,9 @@ import { Users, MapPin, Search } from 'lucide-react';
 // { id: 6, name: 'Nombre Apellido', state: 'Estado', title: 'Director', collaborationType: 'Administrativa' },
 // ==========================================
 const mockTeachers = [
-  { id: 1, name: 'Erendira Mendez Macias', state: 'Aguascalientes', title: 'Maestra Titular', collaborationType: 'Proyectos Comunitarios' },
-  { id: 2, name: 'Erika Mendez Macias', state: 'Aguascalientes', title: 'Especialista', collaborationType: 'STEAM' },
-  { id: 3, name: 'Alejandra Mendez Macias', state: 'Aguascalientes', title: 'Apoyo Pedagógico', collaborationType: 'Diseño Curricular' },
+  { id: 1, name: 'Erendira Mendez', state: 'Aguascalientes', title: 'Doctora en Educación', collaborationType: 'Desarollo de Contenidos' },
+  { id: 2, name: 'Erika Macias', state: 'Aguascalientes', title: 'Maestra en Educación', collaborationType: 'Desarollo de Contenidos' },
+  { id: 3, name: 'Alejandra Macias', state: 'Aguascalientes', title: 'Maestra de ensenanza de Segundo Idioma', collaborationType: 'Diseño Curricular' },
   { id: 4, name: 'TBD', state: 'Jalisco', title: 'Docente de Grupo', collaborationType: 'Proyectos Comunitarios' },
   { id: 5, name: 'Gustavo Arellano', state: 'CDMX', title: 'CEO', collaborationType: 'Dirección General' },
   // ⬇️ PEGA TUS NUEVOS MAESTROS AQUÍ ABAJO ⬇️
